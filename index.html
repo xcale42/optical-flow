@@ -30,11 +30,15 @@
         .control-group label { font-weight: 600; margin-bottom: 5px; color: var(--primary-color); font-size: 10pt; }
         .control-group input, .control-group select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 10pt; }
 
-        /* 微調按鈕樣式 */
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        /* 滑桿微調樣式 */
+        .axis-control { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .axis-label { width: 45px; font-weight: 600; font-size: 10pt; color: var(--primary-color); }
+        .axis-val { width: 85px; font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; }
+        .btn-nudge-small { background: var(--accent-color); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 9pt; font-weight: 600; transition: background 0.2s; }
+        .btn-nudge-small:hover { background: #2980b9; }
         .btn-nudge { background: var(--accent-color); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 10pt; font-weight: 600; transition: background 0.2s;}
         .btn-nudge:hover { background: #2980b9; }
-        .btn-reset { grid-column: span 2; background: #7f8c8d; }
+        .btn-reset { background: #7f8c8d; }
         .btn-reset:hover { background: #606b6d; }
 
         /* 3D 空間網格 */
@@ -42,7 +46,6 @@
         .viewport-card { border: 1px solid #e1e8ed; border-radius: 8px; overflow: hidden; background: #1a1a1a; position: relative;}
         .viewport-card h4 { margin: 0; padding: 10px; background: rgba(255,255,255,0.9); color: var(--primary-color); font-size: 11pt; text-align: center; position: absolute; top: 0; width: 100%; z-index: 10;}
         
-        /* 加入 touch-action: none 鎖定手機觸控，防止拖曳時滑動網頁 */
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; }
         .canvas-3d canvas { touch-action: none; outline: none; }
 
@@ -69,7 +72,6 @@
         .metric-list { list-style: none; padding: 0; margin: 0; font-size: 11pt; }
         .metric-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e1e8ed; }
 
-        /* 手機版響應式優化 (將變數輸入區也改為單欄) */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .container { padding: 15px; }
@@ -90,9 +92,9 @@
         <div class="control-group">
             <label>紋理幾何 (考驗梯度)</label>
             <select id="obj_shape">
-                <option value="checkerboard" selected>高頻率 Checkerboard</option>
+                <option value="checkerboard">高頻率 Checkerboard</option>
                 <option value="noise">區塊隨機白雜訊 (最佳)</option>
-                <option value="gabor">連續 Gabor 斑塊</option>
+                <option value="gabor" selected>連續 Gabor 斑塊</option>
                 <option value="vertical_grating">垂直條紋 (觸發孔徑問題)</option>
                 <option value="rings">同心圓環</option>
             </select>
@@ -157,25 +159,25 @@
                 </tr>
                 <tr>
                     <td>$U$ (橫向)</td>
-                    <td class="val-gt" id="gt_U">0.000 m</td>
-                    <td class="val-est" id="est_U">0.000 m</td>
-                    <td class="val-err" id="err_U">0.000</td>
+                    <td class="val-gt" id="gt_U">0.0000 m</td>
+                    <td class="val-est" id="est_U">0.0000 m</td>
+                    <td class="val-err" id="err_U">0.0000</td>
                 </tr>
                 <tr>
                     <td>$V$ (垂直)</td>
-                    <td class="val-gt" id="gt_V">0.000 m</td>
-                    <td class="val-est" id="est_V">0.000 m</td>
-                    <td class="val-err" id="err_V">0.000</td>
+                    <td class="val-gt" id="gt_V">0.0000 m</td>
+                    <td class="val-est" id="est_V">0.0000 m</td>
+                    <td class="val-err" id="err_V">0.0000</td>
                 </tr>
                 <tr>
                     <td>$W$ (深度)</td>
-                    <td class="val-gt" id="gt_W">0.000 m</td>
-                    <td class="val-est" id="est_W">0.000 m</td>
-                    <td class="val-err" id="err_W">0.000</td>
+                    <td class="val-gt" id="gt_W">0.0000 m</td>
+                    <td class="val-est" id="est_W">0.0000 m</td>
+                    <td class="val-err" id="err_W">0.0000</td>
                 </tr>
                 <tr class="row-summary">
                     <td colspan="3" style="text-align: right; font-weight: bold;">總向量誤差百分比 (Error %)：</td>
-                    <td id="err_pct_total" style="font-weight: bold; font-size: 13pt;">0.00%</td>
+                    <td id="err_pct_total" style="font-weight: bold; font-size: 13pt;">0.0%</td>
                 </tr>
             </table>
         </div>
@@ -184,21 +186,38 @@
             <h3>投影資訊與微調控制</h3>
             <ul class="metric-list">
                 <li><span>中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold;">0, 0</span></li>
-                <li><span>立體視差 (Disparity) $d$:</span><span id="stat_disp" style="font-weight:bold;">0.0 px</span></li>
-                <li><span>目標距離 (Depth) $Z$:</span><span id="stat_depth" style="font-weight:bold;">0.00 m</span></li>
+                <li><span>立體視差 (Disparity) $d$:</span><span id="stat_disp" style="font-weight:bold;">0.00 px</span></li>
+                <li><span>目標距離 (Depth) $Z$:</span><span id="stat_depth" style="font-weight:bold;">0.000 m</span></li>
             </ul>
             
             <div style="margin-top: 20px;">
-                <label style="font-weight: 600; font-size: 11pt; color: var(--primary-color); display:block; margin-bottom: 10px; border-top: 2px solid #eaeded; padding-top:15px;">目標位移微調 ($\pm 5$mm)</label>
-                <div class="btn-grid">
-                    <button class="btn-nudge" onclick="nudgeObj(-0.005, 0, 0)">-X (左移)</button>
-                    <button class="btn-nudge" onclick="nudgeObj(0.005, 0, 0)">+X (右移)</button>
-                    <button class="btn-nudge" onclick="nudgeObj(0, -0.005, 0)">-Y (下移)</button>
-                    <button class="btn-nudge" onclick="nudgeObj(0, 0.005, 0)">+Y (上移)</button>
-                    <button class="btn-nudge" onclick="nudgeObj(0, 0, -0.005)">-Z (拉近)</button>
-                    <button class="btn-nudge" onclick="nudgeObj(0, 0, 0.005)">+Z (推深)</button>
-                    <button class="btn-nudge btn-reset" onclick="resetObj()">位移歸零</button>
+                <label style="font-weight: 600; font-size: 11pt; color: var(--primary-color); display:block; margin-bottom: 12px; border-top: 2px solid #eaeded; padding-top:15px;">相對於當下位置的微調</label>
+                
+                <div class="axis-control">
+                    <span class="axis-label">X 軸：</span>
+                    <button class="btn-nudge-small" onclick="nudgeAxis('X', -0.0001)">-0.0001m</button>
+                    <input type="range" id="slider_X" min="-0.1" max="0.1" step="0.0001" value="0" style="flex:1;">
+                    <button class="btn-nudge-small" onclick="nudgeAxis('X', 0.0001)">+0.0001m</button>
+                    <span id="label_X" class="axis-val">0.0000 m</span>
                 </div>
+
+                <div class="axis-control">
+                    <span class="axis-label">Y 軸：</span>
+                    <button class="btn-nudge-small" onclick="nudgeAxis('Y', -0.0001)">-0.0001m</button>
+                    <input type="range" id="slider_Y" min="-0.1" max="0.1" step="0.0001" value="0" style="flex:1;">
+                    <button class="btn-nudge-small" onclick="nudgeAxis('Y', 0.0001)">+0.0001m</button>
+                    <span id="label_Y" class="axis-val">0.0000 m</span>
+                </div>
+
+                <div class="axis-control" style="margin-bottom: 15px;">
+                    <span class="axis-label">Z 軸：</span>
+                    <button class="btn-nudge-small" onclick="nudgeAxis('Z', -0.0001)">-0.0001m</button>
+                    <input type="range" id="slider_Z" min="-0.1" max="0.1" step="0.0001" value="0" style="flex:1;">
+                    <button class="btn-nudge-small" onclick="nudgeAxis('Z', 0.0001)">+0.0001m</button>
+                    <span id="label_Z" class="axis-val">0.0000 m</span>
+                </div>
+
+                <button class="btn-nudge btn-reset" onclick="resetToT()" style="width: 100%;">位移歸零</button>
             </div>
         </div>
     </div>
@@ -219,56 +238,67 @@
     let scene1, camera1, renderer1, controls1, transform1, object1;
     let scene2, camera2, renderer2, controls2, transform2, object2;
 
+    // 物件 2 的「手動拖拉基準座標」
+    let basePos2 = new THREE.Vector3(0, 0, -2.0);
+
+    // 格式化數字：四捨五入，且完全消除 -0.0000 帶負號的問題
+    function formatNum(val, decimals = 4) {
+        let s = val.toFixed(decimals);
+        if (parseFloat(s) === 0) {
+            return (0).toFixed(decimals);
+        }
+        return s;
+    }
+
+    function setupScene(containerId) {
+        const container = document.getElementById(containerId);
+        const width = container.clientWidth || 400;
+        const height = container.clientHeight || 350;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a1a);
+        
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+        camera.position.set(0, 1.5, 3);
+        camera.lookAt(0, 0, -2);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        renderer.setSize(width, height);
+        container.appendChild(renderer.domElement);
+
+        const gridHelper = new THREE.GridHelper(10, 20, 0x444444, 0x222222);
+        gridHelper.position.y = -1;
+        scene.add(gridHelper);
+
+        const camGeo = new THREE.ConeGeometry(0.08, 0.25, 8);
+        camGeo.rotateX(-Math.PI / 2); 
+        const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0xffff00}));
+        camL.name = 'camL';
+        const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x00ffff}));
+        camR.name = 'camR';
+        scene.add(camL); scene.add(camR);
+
+        const objGeo = new THREE.SphereGeometry(0.2, 32, 32);
+        const objMat = new THREE.MeshNormalMaterial();
+        const object = new THREE.Mesh(objGeo, objMat);
+        scene.add(object);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0, -1);
+        
+        const transform = new THREE.TransformControls(camera, renderer.domElement);
+        transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
+        scene.add(transform);
+        transform.attach(object);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+        return { scene, camera, renderer, controls, transform, object };
+    }
+
     function init3D() {
-        const setupScene = (containerId) => {
-            const container = document.getElementById(containerId);
-            const width = container.clientWidth || 400;
-            const height = container.clientHeight || 350;
-
-            const scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a);
-            
-            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-            camera.position.set(0, 1.5, 3);
-            camera.lookAt(0, 0, -2);
-
-            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-            renderer.setSize(width, height);
-            container.appendChild(renderer.domElement);
-
-            const gridHelper = new THREE.GridHelper(10, 20, 0x444444, 0x222222);
-            gridHelper.position.y = -1;
-            scene.add(gridHelper);
-
-            const camGeo = new THREE.ConeGeometry(0.08, 0.25, 8);
-            camGeo.rotateX(-Math.PI / 2); 
-            const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0xffff00}));
-            camL.name = 'camL';
-            const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x00ffff}));
-            camR.name = 'camR';
-            scene.add(camL); scene.add(camR);
-
-            const objGeo = new THREE.SphereGeometry(0.2, 32, 32);
-            const objMat = new THREE.MeshNormalMaterial();
-            const object = new THREE.Mesh(objGeo, objMat);
-            scene.add(object);
-
-            const controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.target.set(0, 0, -1);
-            
-            const transform = new THREE.TransformControls(camera, renderer.domElement);
-            transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
-            transform.addEventListener('change', updateSystem);
-            transform.attach(object);
-            scene.add(transform);
-
-            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-            return { scene, camera, renderer, controls, transform, object };
-        };
-
         const s1 = setupScene('3d_container_t');
         scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
         
@@ -277,21 +307,72 @@
 
         object1.position.set(0, 0, -2.0);
         object2.position.set(0, 0, -2.0);
+        basePos2.set(0, 0, -2.0);
+
+        // 移動 t 時的監聽器：只單純更新渲染，完全不碰微調滑桿
+        transform1.addEventListener('change', updateSystem);
+
+        // 移動 t+dt 時的監聽器：手動拉箭頭時立刻將滑桿歸零，只針對相對於當下位置的微調
+        transform2.addEventListener('change', () => {
+            if (transform2.dragging) {
+                basePos2.copy(object2.position);
+                document.getElementById('slider_X').value = 0;
+                document.getElementById('slider_Y').value = 0;
+                document.getElementById('slider_Z').value = 0;
+                document.getElementById('label_X').innerText = '0.0000 m';
+                document.getElementById('label_Y').innerText = '0.0000 m';
+                document.getElementById('label_Z').innerText = '0.0000 m';
+            }
+            updateSystem();
+        });
 
         animate3D();
     }
 
-    window.nudgeObj = function(dx, dy, dDepth) {
-        if (!object2) return;
-        object2.position.x += dx;
-        object2.position.y += dy;
-        object2.position.z -= dDepth; 
+    // 當滑桿微調變動時觸發：進行「相對於基準座標 (basePos2) 的局部增量微調」
+    function onSliderInput() {
+        if (!object1 || !object2) return;
+        const dx = parseFloat(document.getElementById('slider_X').value);
+        const dy = parseFloat(document.getElementById('slider_Y').value);
+        const dz = parseFloat(document.getElementById('slider_Z').value);
+        
+        object2.position.x = basePos2.x + dx;
+        object2.position.y = basePos2.y + dy;
+        object2.position.z = basePos2.z - dz; 
+        
+        document.getElementById('label_X').innerText = formatNum(dx) + ' m';
+        document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
+        document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
+        
         updateSystem();
+    }
+
+    // 按鈕精密增量
+    window.nudgeAxis = function(axis, delta) {
+        const slider = document.getElementById('slider_' + axis);
+        if (!slider) return;
+        let val = parseFloat(slider.value) + delta;
+        val = Math.max(-0.1, Math.min(0.1, val));
+        slider.value = val;
+        onSliderInput();
     };
 
-    window.resetObj = function() {
+    // 歸零按鈕：將 t+Δt 移回 t 的位置，並重設基準與滑桿
+    window.resetToT = function() {
         if (!object1 || !object2) return;
+        
+        // 1. 將 t+dt 直接貼齊 t 的物理座標
         object2.position.copy(object1.position);
+        basePos2.copy(object1.position);
+        
+        // 2. 清空網頁微調控制介面
+        document.getElementById('slider_X').value = 0;
+        document.getElementById('slider_Y').value = 0;
+        document.getElementById('slider_Z').value = 0;
+        document.getElementById('label_X').innerText = '0.0000 m';
+        document.getElementById('label_Y').innerText = '0.0000 m';
+        document.getElementById('label_Z').innerText = '0.0000 m';
+        
         updateSystem();
     };
 
@@ -570,13 +651,13 @@
         const gt_W = p1.z - p2.z; 
         const gt_mag = Math.sqrt(gt_U**2 + gt_V**2 + gt_W**2);
 
-        document.getElementById('gt_U').innerText = gt_U.toFixed(4) + ' m';
-        document.getElementById('gt_V').innerText = gt_V.toFixed(4) + ' m';
-        document.getElementById('gt_W').innerText = gt_W.toFixed(4) + ' m';
+        document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
+        document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
+        document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
 
         document.getElementById('stat_coord').innerText = `(${Math.round(px)}, ${Math.round(py)})`;
-        document.getElementById('stat_disp').innerText = `${d_disp.toFixed(2)} px`;
-        document.getElementById('stat_depth').innerText = `${Z.toFixed(3)} m`;
+        document.getElementById('stat_disp').innerText = formatNum(d_disp, 2) + ' px';
+        document.getElementById('stat_depth').innerText = formatNum(Z, 3) + ' m';
         
         const elTotalErr = document.getElementById('err_pct_total');
         
@@ -593,20 +674,20 @@
 
             const isFailed = (err_pct > 25 && err_mag > 0.005) || Number.isNaN(err_mag);
 
-            document.getElementById('est_U').innerText = U_est.toFixed(4) + ' m';
-            document.getElementById('est_V').innerText = V_est.toFixed(4) + ' m';
-            document.getElementById('est_W').innerText = W_est.toFixed(4) + ' m';
+            document.getElementById('est_U').innerText = formatNum(U_est) + ' m';
+            document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
+            document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
 
-            document.getElementById('err_U').innerText = err_U.toFixed(4);
-            document.getElementById('err_V').innerText = err_V.toFixed(4);
-            document.getElementById('err_W').innerText = err_W.toFixed(4);
+            document.getElementById('err_U').innerText = formatNum(err_U);
+            document.getElementById('err_V').innerText = formatNum(err_V);
+            document.getElementById('err_W').innerText = formatNum(err_W);
 
             if (isFailed) {
-                elTotalErr.innerText = `${err_pct.toFixed(1)}% [求解失敗]`;
+                elTotalErr.innerText = formatNum(err_pct, 1) + '% [求解失敗]';
                 elTotalErr.style.color = 'var(--danger-color)';
                 document.querySelectorAll('.val-est, .val-err').forEach(el => el.style.color = 'var(--danger-color)');
             } else {
-                elTotalErr.innerText = `${err_pct.toFixed(1)}% (成功)`;
+                elTotalErr.innerText = formatNum(err_pct, 1) + '% (成功)';
                 elTotalErr.style.color = 'var(--success-color)';
                 
                 document.getElementById('est_U').style.color = 'var(--success-color)';
@@ -648,8 +729,12 @@
             imgBuffers[id] = new Float32Array(imgW * imgH);
         });
 
-        document.querySelectorAll('input, select').forEach(el => {
+        document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
             el.addEventListener('input', updateSystem);
+        });
+
+        ['X', 'Y', 'Z'].forEach(axis => {
+            document.getElementById('slider_' + axis).addEventListener('input', onSliderInput);
         });
 
         init3D();
