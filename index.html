@@ -27,9 +27,9 @@
             --bg-color: #f1f5f9; 
             --panel-bg: #ffffff;
             --border-color: #e2e8f0;
+            --canvas-bg: #1a1a1a; /* 統一的中性深灰背景 */
         }
         * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
-        /* 加入 overflow-x: hidden 強制避免手機版左右滑動 */
         body { background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; overflow-x: hidden; }
         .container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
@@ -69,8 +69,9 @@
 
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
 
+        /* ======== 視圖區域 (統一深灰色背景) ======== */
         .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
-        .viewport-card { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: #0f172a; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .viewport-card { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--canvas-bg); position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .viewport-card h4 { margin: 0; padding: 12px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; text-align: center; position: absolute; top: 0; width: 100%; z-index: 10; font-weight: 600; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; }
         .canvas-3d canvas { touch-action: none; outline: none; }
@@ -78,9 +79,12 @@
         .workspace-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px; }
         .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
-        .canvas-container { background: #1e293b; border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid #334155; width: 100%; }
-        canvas.projection { display: block; background: #1e293b; max-width: 100%; height: auto; margin: auto; }
         
+        /* 2D 畫布容器：與 3D 背景一致 */
+        .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        canvas.projection { display: block; background: transparent; max-width: 100%; height: auto; margin: auto; }
+        
+        /* ======== 數據結果區 ======== */
         .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
         
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
@@ -150,7 +154,6 @@
             .btn-nudge-small.plus { grid-area: plus; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; }
 
-            /* [修正] 手機版 2x2 矩陣排列 */
             .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .block-card { padding: 8px; }
             .block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -292,15 +295,19 @@
     <div class="workspace-grid">
         <div class="block-card">
             <h4>$t$ (左眼 $I_L$)</h4>
+            <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
             <h4>$t$ (右眼 $I_R$)</h4>
+            <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
             <h4>$t+\Delta t$ (左眼 $I_L$)</h4>
+            <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
             <h4>$t+\Delta t$ (右眼 $I_R$)</h4>
+            <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
         </div>
     </div>
 
@@ -413,7 +420,8 @@
         const height = container.clientHeight || 350;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0f172a);
+        // 統一替換為中性深灰，移除原本的深藍偏色
+        scene.background = new THREE.Color(0x1a1a1a);
         
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
         camera.position.set(0, 1.5, 3);
@@ -424,7 +432,8 @@
         renderer.setSize(width, height);
         container.appendChild(renderer.domElement);
 
-        const gridHelper = new THREE.GridHelper(10, 20, 0x334155, 0x1e293b);
+        // 將網格線顏色也改為純灰階，配合同一視覺
+        const gridHelper = new THREE.GridHelper(10, 20, 0x555555, 0x333333);
         gridHelper.position.y = -1;
         scene.add(gridHelper);
 
@@ -645,7 +654,7 @@
                         }
                         buffer[idx] = pattern;
                     } else {
-                        buffer[idx] = 40;
+                        buffer[idx] = -1; // Marker for background
                     }
                 }
             }
@@ -653,10 +662,17 @@
             const imgData = imgDataCaches[key];
             const data = imgData.data;
             for (let i = 0; i < buffer.length; i++) {
-                const val = Math.max(0, Math.min(255, buffer[i]));
+                const val = buffer[i];
                 const pIdx = i * 4;
-                data[pIdx] = data[pIdx+1] = data[pIdx+2] = val;
-                data[pIdx+3] = 255;
+                if (val === -1) {
+                    // Alpha 設為 0 會讓 CSS 中的 #1a1a1a 背景完美透出
+                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; 
+                    data[pIdx+3] = 0; 
+                } else {
+                    const clampedVal = Math.max(0, Math.min(255, val));
+                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal;
+                    data[pIdx+3] = 255; 
+                }
             }
             ctx.putImageData(imgData, 0, 0);
         });
@@ -828,7 +844,6 @@
         const err_U = Math.abs(gt_U - U_est), err_V = Math.abs(gt_V - V_est), err_W = Math.abs(gt_W - W_est);
         const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
         
-        // 修正：總相對誤差的防呆與無窮大處理
         let err_pct = 0;
         if (gt_mag > 1e-4) {
             err_pct = (err_mag / gt_mag) * 100;
@@ -857,7 +872,7 @@
         updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
     }
 
-    // 修正：抽離相對誤差的獨立計算邏輯
+    // 保留：遇到無限大 (GT = 0 且估算錯誤時) 顯示 N/A
     function calcRelativeError(gt, est) {
         const err = Math.abs(gt - est);
         if (Math.abs(gt) < 1e-4) {
@@ -901,12 +916,12 @@
             document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
             document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
             
-            // 導入更新後的單一維度相對誤差邏輯
             document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est);
             document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
             document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
 
-            let pctStr = err_pct === Infinity ? "∞%" : formatNum(err_pct, 1) + "%";
+            // 保留：無限大顯示為 N/A
+            let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
             if (failureMode === 'large_disp') {
                 elTotalErr.innerText = pctStr + ' [大位移失敗]';
