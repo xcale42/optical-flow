@@ -444,6 +444,10 @@
 <script>
     let lastLoadedFailure = null;
 
+    let lastSliderRx = 0;
+    let lastSliderRy = 0;
+    let lastSliderRz = 0;
+
     const imgW = 240, imgH = 200;
     const cx = imgW / 2, cy = imgH / 2;
     const canvasIds = ['Lt', 'Rt', 'Lt1', 'Rt1'];
@@ -624,6 +628,7 @@
                         document.getElementById('slider_' + id).value = 0;
                         document.getElementById('label_' + id).innerText = "0.0°";
                     });
+                    lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
                 }
             }
             updateSystem();
@@ -647,6 +652,7 @@
                     document.getElementById('slider_' + id).value = 0;
                     document.getElementById('label_' + id).innerText = "0.0°";
                 });
+                lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
             }
             updateSystem();
         });
@@ -1126,7 +1132,6 @@
         transform2.setMode(mode); 
         transform1.setMode(mode);
         
-        // 強制無論切換到位移或旋轉，視覺圓環永遠對齊世界座標 (地板網格)
         transform2.setSpace('local');
         transform1.setSpace('local');
         
@@ -1161,41 +1166,60 @@
         if (!object1 || !object2) return;
         lastLoadedFailure = null; 
         
-        // 讀取位移與旋轉滑桿數值
+        // ----------------------------------------------------
+        // 1. 取得當前 UI 的最新數值
+        // ----------------------------------------------------
         const dx = parseFloat(document.getElementById('slider_X').value);
         const dy = parseFloat(document.getElementById('slider_Y').value);
         const dz = parseFloat(document.getElementById('slider_Z').value);
         
-        const drx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
-        const dry = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
-        const drz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
-        
-        // 【1. 對齊物體區域軸的位移 (Local Space Translation)】
+        const currentRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
+        const currentRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
+        const currentRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
+
+        // ----------------------------------------------------
+        // 2. 位移處理：對齊基準的區域座標軸 (保持不變)
+        // ----------------------------------------------------
         const localMove = new THREE.Vector3(dx, dy, -dz);
-        // 依據物體目前的旋轉姿態，將區域位移轉換為世界方向的位移
         localMove.applyQuaternion(baseQuat2); 
         object2.position.copy(basePos2).add(localMove);
+
+        // ----------------------------------------------------
+        // 3. 旋轉處理：計算增量 (Delta)，並讀取當下視覺軸
+        // ----------------------------------------------------
+        const deltaX = currentRx - lastSliderRx;
+        const deltaY = currentRy - lastSliderRy;
+        const deltaZ = currentRz - lastSliderRz;
+
+        // 更新歷史紀錄
+        lastSliderRx = currentRx;
+        lastSliderRy = currentRy;
+        lastSliderRz = currentRz;
+
+        // 若 X 滑桿有變動，讀取「當下」的視覺 X 軸並旋轉
+        if (deltaX !== 0) {
+            const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion);
+            object2.rotateOnWorldAxis(axisX, deltaX);
+        }
         
-        // 【2. 提取視覺座標軸並讓物體沿著旋轉】
-        // 1. 每次計算前，將物體重置回當下保存的「基準姿態」
-        object2.quaternion.copy(baseQuat2);
-
-        // 2. 提取視覺 X 軸：
-        // 取得物體當下的局部 X 軸在世界空間的真實朝向，並強制沿著它旋轉
-        const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion);
-        object2.rotateOnWorldAxis(axisX, drx);
-
-        // 3. 提取視覺 Y 軸：
-        // 這裡提取的是被 X 轉動過後「最新」的視覺 Y 軸，確保它跟隨物體目前的姿態
-        const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion);
-        object2.rotateOnWorldAxis(axisY, dry);
-
-        // 4. 提取視覺 Z 軸：
-        // 提取最後的視覺 Z 軸，並沿著它旋轉
-        const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion);
-        object2.rotateOnWorldAxis(axisZ, drz);
+        // 若 Y 滑桿有變動，讀取「當下」的視覺 Y 軸並旋轉
+        if (deltaY !== 0) {
+            const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion);
+            object2.rotateOnWorldAxis(axisY, deltaY);
+        }
         
-        // 更新 UI 文字顯示
+        // 若 Z 滑桿有變動，讀取「當下」的視覺 Z 軸並旋轉
+        if (deltaZ !== 0) {
+            const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion);
+            object2.rotateOnWorldAxis(axisZ, deltaZ);
+        }
+
+        // 避免浮點數誤差隨時間累積，強制單位化
+        object2.quaternion.normalize();
+
+        // ----------------------------------------------------
+        // 4. 更新 UI 文字顯示
+        // ----------------------------------------------------
         document.getElementById('label_X').innerText = formatNum(dx) + ' m';
         document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
         document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
@@ -1231,6 +1255,7 @@
         
         ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
         ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
+        lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
         updateSystem();
     };
 
@@ -1247,6 +1272,7 @@
 
         ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
         ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
+        lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
         
         const f = parseFloat(document.getElementById('param_f').value);
         const Z = Math.abs(basePos2.z);
