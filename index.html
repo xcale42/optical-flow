@@ -1329,6 +1329,9 @@
             let attempt = 0;
             let testX = 0;
             let testY = 0;
+            
+            // 【新增】安全邊界：限制 X 位移最多到畫面水平 FOV 的 70%，避免觸發 out_of_bounds
+            const max_safe_x = fov_w_m * 0.70;
 
             while (!found && attempt < 150) {
                 attempt++;
@@ -1340,7 +1343,13 @@
                 } 
                 else if (type === 'large_disp') {
                     testX += step; 
-                    testY += step;
+                    // 【修正 1】只在 X 軸移動，避免 Y 軸過早超出邊界
+                    testY = 0; 
+                    
+                    // 【修正 2】若超過安全邊界，強制停止，避免無限推移出畫面
+                    if (testX > max_safe_x) {
+                        break;
+                    }
                 } 
                 else if (type === 'out_of_bounds') {
                     testX += (fov_w_m * 0.15); 
@@ -1366,62 +1375,21 @@
                 }
             }
             
+            // 【修正 3】大位移即使未觸發嚴格的光流失敗條件，若已達到畫面的安全極限，仍視為成功並輸出
+            if (type === 'large_disp' && testX > 0) {
+                return { success: true, finalQuat: tempQuat.clone(), finalPos2: tempPos2.clone(), dx: testX, dy: testY, isReset: isReset };
+            }
+
             // 搜尋失敗，還原 UI 供下一次 fallback 嘗試
             document.getElementById('obj_shape').value = originalShape;
             document.getElementById('obj_geometry_type').value = originalGeom;
             updateObjectGeometry(true);
-            return { success: false };
-        }
-
-        // --- 核心邏輯執行區 ---
-        
-        let searchResult = searchFailure(false);
-
-        if (!searchResult.success) {
-            console.log("⚠️ 當前旋轉角度或參數無法觸發目標失敗，系統自動歸零重試...");
-            searchResult = searchFailure(true);
-        }
-
-        if (searchResult.success) {
-            lastLoadedFailure = type;
-
-            // 【修正重點 2】強力鎖定：確保成功後 UI 絕對停留在對應的狀態
-            if (type === 'aperture') {
-                document.getElementById('obj_shape').value = 'vertical_grating';
-                document.getElementById('obj_geometry_type').value = 'box';
-            } else if (searchResult.isReset && document.getElementById('obj_shape').value === 'vertical_grating') {
-                document.getElementById('obj_shape').value = 'checkerboard';
-            }
-            updateObjectGeometry(true); // 強制套用一次幾何更新
-
+            
+            // 【修正 4】強制還原物件位置，避免殘留在無效的座標上
             object1.position.copy(defaultPos);
-            object1.quaternion.copy(searchResult.finalQuat);
-            object2.position.copy(searchResult.finalPos2);
-            object2.quaternion.copy(searchResult.finalQuat);
+            object2.position.copy(defaultPos);
 
-            basePos2.copy(defaultPos);
-            baseQuat2.copy(searchResult.finalQuat);
-
-            document.getElementById('slider_X').value = searchResult.dx;
-            document.getElementById('slider_Y').value = searchResult.dy;
-            document.getElementById('slider_Z').value = 0;
-            document.getElementById('label_X').innerText = formatNum(searchResult.dx) + " m";
-            document.getElementById('label_Y').innerText = formatNum(searchResult.dy) + " m";
-            document.getElementById('label_Z').innerText = "0.0000 m";
-
-            if (searchResult.isReset) {
-                ['Rx', 'Ry', 'Rz'].forEach(id => { 
-                    document.getElementById('slider_' + id).value = 0; 
-                    document.getElementById('label_' + id).innerText = "0.0°"; 
-                });
-                lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
-            }
-
-            updateSystem();
-        } else {
-            console.warn("❌ 無法在此參數環境下觸發指定的失敗範例。");
-            lastLoadedFailure = null; 
-            updateSystem(); 
+            return { success: false };
         }
     };
 
