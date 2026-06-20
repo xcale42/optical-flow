@@ -27,7 +27,7 @@
             --bg-color: #f1f5f9; 
             --panel-bg: #ffffff;
             --border-color: #e2e8f0;
-            --canvas-bg: #1a1a1a; /* 統一的中性深灰背景 */
+            --canvas-bg: #1a1a1a;
         }
         * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
         body { background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; overflow-x: hidden; }
@@ -50,7 +50,7 @@
         .panel { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--panel-bg); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .panel h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; font-size: 14pt; }
         
-        .axis-control { display: grid; grid-template-columns: 55px 85px 1fr 85px 85px; gap: 10px; align-items: center; margin-bottom: 12px; }
+        .axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; }
         .axis-label { font-weight: 600; font-size: 10pt; color: var(--primary-color); white-space: nowrap; }
         .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; }
         
@@ -69,7 +69,6 @@
 
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
 
-        /* ======== 視圖區域 (統一深灰色背景) ======== */
         .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
         .viewport-card { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--canvas-bg); position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .viewport-card h4 { margin: 0; padding: 12px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; text-align: center; position: absolute; top: 0; width: 100%; z-index: 10; font-weight: 600; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); }
@@ -80,11 +79,9 @@
         .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
         
-        /* 2D 畫布容器：與 3D 背景一致 */
         .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        canvas.projection { display: block; background: transparent; max-width: 100%; height: auto; margin: auto; }
+        canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
         
-        /* ======== 數據結果區 ======== */
         .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
         
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
@@ -101,7 +98,6 @@
         .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
         .metric-list li:last-child { border-bottom: none; }
 
-        /* ======== RWD ======== */
         @media (max-width: 1024px) {
             .control-grid { grid-template-columns: repeat(4, 1fr); }
             .workspace-grid { grid-template-columns: 1fr 1fr; }
@@ -128,13 +124,11 @@
             .control-grid { grid-template-columns: 1fr; gap: 8px; }
 
             .axis-control { 
-                display: grid;
-                grid-template-columns: 45px 1fr 45px;
-                grid-template-rows: auto auto;
-                grid-template-areas: 
-                    "label label val"
-                    "minus slider plus";
-                gap: 8px 8px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px 0;
                 background: #f8fafc;
                 padding: 12px;
                 border-radius: 8px;
@@ -142,16 +136,16 @@
                 margin-bottom: 10px;
             }
             
-            .axis-label { grid-area: label; font-size: 10pt; text-align: left; margin: 0; }
-            .axis-val { grid-area: val; font-size: 10pt; text-align: right; }
+            .axis-label { width: 48%; text-align: left; margin: 0; font-size: 10pt; }
+            .axis-val { width: 48%; text-align: right; margin: 0; font-size: 10pt; }
             
             .btn-nudge-small { font-size: 0; padding: 10px 0; border-radius: 6px; }
-            .btn-nudge-small.minus { grid-area: minus; }
+            .btn-nudge-small.minus { width: 45px; }
             .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; }
             
-            .axis-control input[type="range"] { grid-area: slider; width: 100%; align-self: center; }
+            .axis-control input[type="range"] { width: calc(100% - 110px); flex-grow: 1; margin: 0 10px; align-self: center; }
             
-            .btn-nudge-small.plus { grid-area: plus; }
+            .btn-nudge-small.plus { width: 45px; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; }
 
             .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
@@ -207,7 +201,14 @@
         </div>
         <div class="control-group">
             <label>金字塔層數</label>
-            <input type="number" id="param_pyr" value="3" min="1" max="6" step="1">
+            <select id="param_pyr">
+                <option value="1">1層</option>
+                <option value="2">2層</option>
+                <option value="3" selected>3層</option>
+                <option value="4">4層</option>
+                <option value="5">5層</option>
+                <option value="6">6層</option>
+            </select>
         </div>
     </div>
 
@@ -268,7 +269,7 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="width: 100%;">手動微調歸零 (對齊原始位置)</button>
+            <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="width: 100%;">手動微調歸零 (對齊時間t位置)</button>
         </div>
     </div>
 
@@ -318,8 +319,8 @@
                 <table class="compare-table">
                     <tr>
                         <th>維度</th>
-                        <th>真實運動 $\Delta$ (GT)</th>
-                        <th>方程解算 $\mathbf{V}$ (Est)</th>
+                        <th>真實運動 $\Delta$</th>
+                        <th>方程解算 $\mathbf{V}$</th>
                         <th>相對誤差</th>
                     </tr>
                     <tr>
@@ -420,7 +421,6 @@
         const height = container.clientHeight || 350;
 
         const scene = new THREE.Scene();
-        // 統一替換為中性深灰，移除原本的深藍偏色
         scene.background = new THREE.Color(0x1a1a1a);
         
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
@@ -432,7 +432,6 @@
         renderer.setSize(width, height);
         container.appendChild(renderer.domElement);
 
-        // 將網格線顏色也改為純灰階，配合同一視覺
         const gridHelper = new THREE.GridHelper(10, 20, 0x555555, 0x333333);
         gridHelper.position.y = -1;
         scene.add(gridHelper);
@@ -654,7 +653,7 @@
                         }
                         buffer[idx] = pattern;
                     } else {
-                        buffer[idx] = -1; // Marker for background
+                        buffer[idx] = -1;
                     }
                 }
             }
@@ -665,7 +664,6 @@
                 const val = buffer[i];
                 const pIdx = i * 4;
                 if (val === -1) {
-                    // Alpha 設為 0 會讓 CSS 中的 #1a1a1a 背景完美透出
                     data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; 
                     data[pIdx+3] = 0; 
                 } else {
@@ -738,11 +736,16 @@
         let U_est = 0, V_est = 0, W_est = 0;
         let isDegenerate = false, isOutOfBounds = false;
         
-        const outMargin = 40;
-        if (projData.Lt.x < -outMargin || projData.Lt.x >= imgW + outMargin || 
-            projData.Lt.y < -outMargin || projData.Lt.y >= imgH + outMargin ||
-            projData.Lt1.x < -outMargin || projData.Lt1.x >= imgW + outMargin || 
-            projData.Lt1.y < -outMargin || projData.Lt1.y >= imgH + outMargin) {
+        // --- 修正：動態計算螢幕投影半徑，取代原本寫死的 40px ---
+        const R_size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
+        const obj_px_radius = (f * R_size) / Z;
+        // 如果中心點超出螢幕的距離超過了自身半徑的某個比例，代表已經移出視野
+        const bounds_margin = -obj_px_radius * 0.5; 
+
+        if (px < bounds_margin || px >= imgW - bounds_margin || 
+            py < bounds_margin || py >= imgH - bounds_margin ||
+            projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || 
+            projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
             isOutOfBounds = true;
         }
 
@@ -822,6 +825,7 @@
                         }
                     }
 
+                    // --- 修正：如果在最底層(原圖大小)連 5 個有效重疊像素都找不到，嚴格判定移出視野 ---
                     if (validPixels < 5) {
                         if (lvl === 0) isOutOfBounds = true;
                         break;
@@ -840,7 +844,6 @@
         const gt_U = p2.x - p1.x, gt_V = p2.y - p1.y, gt_W = p1.z - p2.z; 
         const gt_mag = Math.sqrt(gt_U**2 + gt_V**2 + gt_W**2);
 
-        let failureMode = 'none';
         const err_U = Math.abs(gt_U - U_est), err_V = Math.abs(gt_V - V_est), err_W = Math.abs(gt_W - W_est);
         const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
         
@@ -851,20 +854,31 @@
             err_pct = err_mag > 1e-4 ? Infinity : 0;
         }
 
-        const isFailed = (err_pct > 25 && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
+        // --- 修正：計算金字塔的物理極限與真實二維像素位移 ---
+        const true_px_move = Math.sqrt((projData.Lt1.x - projData.Lt.x)**2 + (projData.Lt1.y - projData.Lt.y)**2);
+        // 理論最大可追蹤像素 = 半個計算窗口 * 2^(層數-1) * 容錯緩衝(約1.2~1.5)
+        const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
+
+        let failureMode = 'none';
 
         if (isOutOfBounds) {
             failureMode = 'out_of_bounds';
         } else if (isDegenerate) {
             failureMode = 'aperture';
-        } else if (isFailed) {
-            if (document.getElementById('obj_shape').value === 'vertical_grating' && Math.abs(err_V) > 0.02) {
-                failureMode = 'aperture';
-            } else {
-                failureMode = 'large_disp';
-            }
+        } else if (true_px_move > max_trackable_px) {
+            // 如果真實的螢幕移動像素超越了金字塔感受野極限，必定大位移失效
+            failureMode = 'large_disp';
         } else {
-            failureMode = 'success';
+            const isFailed = (err_pct > 25 && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
+            if (isFailed) {
+                if (document.getElementById('obj_shape').value === 'vertical_grating' && Math.abs(err_V) > 0.02) {
+                    failureMode = 'aperture';
+                } else {
+                    failureMode = 'large_disp';
+                }
+            } else {
+                failureMode = 'success';
+            }
         }
 
         if (dryRun) return { failureMode };
@@ -872,7 +886,6 @@
         updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
     }
 
-    // 保留：遇到無限大 (GT = 0 且估算錯誤時) 顯示 N/A
     function calcRelativeError(gt, est) {
         const err = Math.abs(gt - est);
         if (Math.abs(gt) < 1e-4) {
@@ -902,12 +915,12 @@
             elTotalErr.style.color = 'var(--danger-color)';
             document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
             
+            elTotalErr.innerText = "計算失敗";
+            
             if (failureMode === 'aperture') {
-                elTotalErr.innerText = "矩陣退化 [求解失敗]";
-                errorExp.innerHTML = "<strong>⚠️ 孔徑問題 (Aperture Problem)</strong><br>特徵矩陣嚴重退化。物體紋理單一並伴隨平行方向運動，導致方程組無法確定唯一解。";
+                errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
             } else {
-                elTotalErr.innerText = "匹配失效 [移出視野]";
-                errorExp.innerHTML = "<strong>⚠️ 移出視野 (Out of Bounds)</strong><br>有效匹配像素不足。變換後的物體已移出相機投影範圍，無法進行連續追蹤。";
+                errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
             }
             errorExp.style.display = 'block';
 
@@ -920,14 +933,13 @@
             document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
             document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
 
-            // 保留：無限大顯示為 N/A
             let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
             if (failureMode === 'large_disp') {
-                elTotalErr.innerText = pctStr + ' [大位移失敗]';
+                elTotalErr.innerText = "計算失敗";
                 elTotalErr.style.color = 'var(--danger-color)';
                 document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
-                errorExp.innerHTML = "<strong>⚠️ 大位移失效 (Large Displacement)</strong><br>物體位移量已超出「計算窗口」感受野極限，泰勒展開預測失效。";
+                errorExp.innerHTML = "<strong>⚠️ 移動距離過大 (Large Displacement)</strong><br>物體的位移量超出了目前設定的「計算窗口」與「金字塔層數」所能涵蓋的最大追蹤極限，打破了光流法中「微小運動」的數學假設，導致數值預測失效。";
                 errorExp.style.display = 'block';
             } else {
                 elTotalErr.innerText = pctStr + ' (成功)';
