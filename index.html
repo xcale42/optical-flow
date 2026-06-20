@@ -1176,14 +1176,24 @@
         localMove.applyQuaternion(baseQuat2); 
         object2.position.copy(basePos2).add(localMove);
         
-        // 【2. 標準區域旋轉 (Local Euler Angles)】
-        // 這是 3D 軟體中標準的歐拉角處理方式
-        // 採用 'YXZ' 順序 (Yaw-Pitch-Roll)：這能讓 Y軸當作水平轉盤，X軸作俯仰，Z軸作側傾，操作最自然
-        const euler = new THREE.Euler(drx, dry, drz, 'YXZ');
-        const qDelta = new THREE.Quaternion().setFromEuler(euler);
-        
-        // 透過右乘 (multiply) 套用到基準姿態上，確保是以物體當下的區域座標系為基準
-        object2.quaternion.copy(baseQuat2).multiply(qDelta);
+        // 【2. 提取視覺座標軸並讓物體沿著旋轉】
+        // 1. 每次計算前，將物體重置回當下保存的「基準姿態」
+        object2.quaternion.copy(baseQuat2);
+
+        // 2. 提取視覺 X 軸：
+        // 取得物體當下的局部 X 軸在世界空間的真實朝向，並強制沿著它旋轉
+        const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion);
+        object2.rotateOnWorldAxis(axisX, drx);
+
+        // 3. 提取視覺 Y 軸：
+        // 這裡提取的是被 X 轉動過後「最新」的視覺 Y 軸，確保它跟隨物體目前的姿態
+        const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion);
+        object2.rotateOnWorldAxis(axisY, dry);
+
+        // 4. 提取視覺 Z 軸：
+        // 提取最後的視覺 Z 軸，並沿著它旋轉
+        const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion);
+        object2.rotateOnWorldAxis(axisZ, drz);
         
         // 更新 UI 文字顯示
         document.getElementById('label_X').innerText = formatNum(dx) + ' m';
