@@ -299,6 +299,15 @@
                 <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉模式</button>
             </div>
 
+            <div class="control-group type-sel dimmable" style="margin-bottom: 15px;">
+                <label style="font-size: 9pt; font-weight: 600; color: var(--primary-color); margin-bottom: 4px; display: block;">平移參考座標系</label>
+                <select id="trans_space" onchange="onSliderInput()" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 9.5pt; background: #fff;">
+                    <option value="local_dynamic">🔄 旋轉後座標 (Local - 沿目前朝向，拉旋轉會公轉)</option>
+                    <option value="world">🌍 世界座標 (World - 絕對方向)</option>
+                    <option value="local_base" selected>🔒 初始局部座標 (Base - 避免公轉，上次的修復)</option>
+                </select>
+            </div>
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 15px;">
                 <div>
                     <div class="axis-control">
@@ -1172,14 +1181,31 @@
         const dry = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
         const drz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
         
+        // 1. 計算並設定新的自轉角度
         const newRot = new THREE.Euler(baseRot2.x + drx, baseRot2.y + dry, baseRot2.z + drz);
         object2.rotation.copy(newRot);
         
+        // 2. 獲取使用者選擇的座標系，並計算平移量
+        const space = document.getElementById('trans_space').value;
         const localMove = new THREE.Vector3(dx, dy, -dz);
-        localMove.applyEuler(baseRot2);
         
+        if (space === 'world') {
+            // 【模式一：世界座標】不套用任何旋轉，直接依據絕對 XYZ 軸平移
+            // localMove 不做任何 applyEuler
+        } else if (space === 'local_dynamic') {
+            // 【模式二：旋轉後座標】平移方向嚴格跟隨即時旋轉
+            // 數學現象：若先平移再拉動旋轉滑桿，必然會產生公轉
+            localMove.applyEuler(newRot);
+        } else {
+            // 【模式三：初始局部座標】平移方向鎖定在拖曳前的初始朝向
+            // 這是為了在 UI 滑桿操作上將位移與旋轉解耦，避免意外的公轉
+            localMove.applyEuler(baseRot2);
+        }
+        
+        // 3. 設定最終位置
         object2.position.set(basePos2.x + localMove.x, basePos2.y + localMove.y, basePos2.z + localMove.z);
         
+        // 4. 更新 UI 數字標籤
         document.getElementById('label_X').innerText = formatNum(dx) + ' m';
         document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
         document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
