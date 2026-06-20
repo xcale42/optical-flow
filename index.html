@@ -996,7 +996,7 @@ baseTraceS = trace;
 
                 if (!S_inv || Math.abs(detS) < 1e-5) continue;
                 // 【修復核心】：加入 cond < 1e-4 提早攔截病態矩陣，防止反矩陣數值爆炸導致的 OutOfBounds 誤判
-                if (!S_inv || Math.abs(detS) < 1e-5 || cond < 1e-4) continue;
+                if (!S_inv || Math.abs(detS) < 1e-5 || cond < 1e-2) continue;
 
 for (let iter = 0; iter < 10; iter++) {
 let Atb = [0, 0, 0], validPixels = 0;
@@ -1061,16 +1061,7 @@ if (gt_mag > 1e-4) {
 err_pct = (err_mag / gt_mag) * 100;
 } else {
 err_pct = err_mag > 1e-4 ? Infinity : 0;
-}
-
-        // ---------------------------------------------------------
-        // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
-        // ---------------------------------------------------------
-        
-        // ---------------------------------------------------------
-        // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
-        // ---------------------------------------------------------
-        
+}   
 let failureMode = 'none';
 
 const true_px_move = Math.sqrt(Math.pow(projData.Lt1.x - projData.Lt.x, 2) + Math.pow(projData.Lt1.y - projData.Lt.y, 2));
@@ -1082,7 +1073,7 @@ const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
 if (isOutOfBounds) {
 failureMode = 'out_of_bounds';
 } 
-else if (baseTraceS < 1e-5 || condIndex < 1e-4) {
+else if (baseTraceS < 1e-5 || condIndex < 1e-2) {
             // 【修正重點 1】孔徑問題必須優先判斷！
             // 只要矩陣缺乏多方向特徵(奇異化)，連微小位移都無法解算，因此優先級大於大位移
 failureMode = 'aperture';
