@@ -1064,51 +1064,36 @@
         // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
         // ---------------------------------------------------------
         
+        // ---------------------------------------------------------
+        // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
+        // ---------------------------------------------------------
+        
         let failureMode = 'none';
 
-        // 數值特徵 1：計算兩幀畫面中，目標在像素平面上的真實位移長度 (Ground Truth 像素位移)
         const true_px_move = Math.sqrt(Math.pow(projData.Lt1.x - projData.Lt.x, 2) + Math.pow(projData.Lt1.y - projData.Lt.y, 2));
-        
-        // 數值特徵 2：計算當前設定下，演算法的「理論最大追蹤半徑」
-        // 公式：(窗口半徑) * 2^(最高層級數)。乘上 1.5 作為邊緣緩衝。
         const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
-
-        // 數值特徵 3：Hessian 矩陣病態指數 (Matrix Condition Approximation)
-        // 透過 det(S) 與 (trace(S)/3)^3 的比例，精確判斷是否缺乏多方向梯度。
-        // 比值極小代表存在至少一個維度沒有資訊（即孔徑問題的數學定義）。
         const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
 
         // --- 開始階層式檢定 (嚴格遵守順序，條件互斥) ---
 
         if (isOutOfBounds) {
-            // [階層 1] 越界失效 (Out of Bounds)：
-            // 最根本的物理失效，目標已經離開相機視錐，根本沒有像素可以算。
             failureMode = 'out_of_bounds';
         } 
-        else if (true_px_move > max_trackable_px) {
-            // [階層 2] 理論極限失效 (Large Displacement)：
-            // 位移速度過快，超出了金字塔層次與運算窗口能「看」到的最大範圍，違反了泰勒展開式的微小位移假設。
-            failureMode = 'large_disp';
-        } 
         else if (baseTraceS < 1e-5 || condIndex < 1e-4) {
-            // [階層 3] 數學奇異性失效 (Aperture Problem)：
-            // 物理上追得到，但紋理特徵不足。特徵矩陣 S 接近奇異矩陣 (Singular)，
-            // 方程式有無數組解，導致光流只能沿著法向量滑動。
+            // 【修正重點 1】孔徑問題必須優先判斷！
+            // 只要矩陣缺乏多方向特徵(奇異化)，連微小位移都無法解算，因此優先級大於大位移
             failureMode = 'aperture';
         } 
+        else if (true_px_move > max_trackable_px) {
+            // 位移速度過快，超出了金字塔層次與運算窗口能「看」到的最大範圍
+            failureMode = 'large_disp';
+        } 
         else {
-            // [階層 4 & 5] 收斂結果檢驗
-            // 走到這裡代表：目標在畫面內、速度沒有過快、且表面紋理足夠豐富。
-            // 我們最後檢驗演算法輸出的結果是否落在使用者的「容許誤差閥值」內。
+            // 收斂結果檢驗
             const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
-            
             if (isFailed) {
-                // [階層 4] 局部最佳解 (Local Minimum / Tracking Loss)：
-                // 數學條件都成立，但因為迭代過程掉進了錯誤的低谷，導致結果失準。
-                // 視覺上表現為「跟丟了」，故歸類為大位移失效的延伸。
                 failureMode = 'large_disp'; 
             } else {
-                // [階層 5] 完美成功
                 failureMode = 'success';
             }
         }
@@ -1317,39 +1302,31 @@
     window.loadFailureCase = function(type) {
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
 
-        // 取得當前的相機與系統參數
         const currentF = parseFloat(document.getElementById('param_f').value);
         const currentB = parseFloat(document.getElementById('param_B').value);
         const currentWin = parseInt(document.getElementById('param_win').value);
         const currentPyr = parseInt(document.getElementById('param_pyr').value);
         
-        // 規定：一律從網頁初始載入的位置作為搜尋起點
         const defaultPos = new THREE.Vector3(0, 0, -4.0);
         const Z = Math.abs(defaultPos.z);
         
-        // 依據當前參數計算合適的搜尋步伐
         const max_px_radius = Math.floor(currentWin / 2) * Math.pow(2, Math.max(0, currentPyr - 1));
         const fov_w_m = (cx * Z) / currentF;               
         const max_m_disp = Math.min((max_px_radius * Z) / currentF, fov_w_m * 0.8); 
         const step = max_m_disp * 0.1; 
 
-        // 建立背景搜尋機制 (使用單一執行緒特性的隱形運算)
         function searchFailure(isReset) {
             let tempPos1 = defaultPos.clone();
             let tempPos2 = defaultPos.clone();
-            // 決定是否保留使用者當前的旋轉角度，或是強制歸零
             let tempQuat = isReset ? new THREE.Quaternion() : baseQuat2.clone(); 
 
             let originalShape = document.getElementById('obj_shape').value;
             let originalGeom = document.getElementById('obj_geometry_type').value;
 
-            // 孔徑問題的核心：需要平坦表面與單一方向紋理。
             if (type === 'aperture') {
                 document.getElementById('obj_shape').value = 'vertical_grating';
-                // 【關鍵修正】強制轉為正方體，消滅球體曲率造成的微小 Y 軸梯度
                 document.getElementById('obj_geometry_type').value = 'box'; 
             } else if (isReset) {
-                // 若大位移/越界重試時卡在條紋，換成棋盤格確保特徵足夠
                 if (originalShape === 'vertical_grating') {
                     document.getElementById('obj_shape').value = 'checkerboard'; 
                 }
@@ -1364,12 +1341,9 @@
             while (!found && attempt < 150) {
                 attempt++;
                 
-                // 依據不同的目標，設定增量邏輯
                 if (type === 'aperture') {
-                    // 孔徑問題與距離無關，不需累加距離。給定一個固定小位移即可。
                     testY = 0.02;
                     testX = 0;
-                    // 若第一圈沒中 (通常是因為使用者手動旋轉了物體)，直接跳出，交給外部 isReset=true 處理
                     if (attempt > 1) break;
                 } 
                 else if (type === 'large_disp') {
@@ -1377,10 +1351,9 @@
                     testY += step;
                 } 
                 else if (type === 'out_of_bounds') {
-                    testX += (fov_w_m * 0.15); // 加大步伐快速移出視野
+                    testX += (fov_w_m * 0.15); 
                 } 
 
-                // 套用旋轉矩陣，模擬使用者真實拖拉滑桿的區域座標行為
                 let localMove = new THREE.Vector3(testX, testY, 0);
                 localMove.applyQuaternion(tempQuat);
                 tempPos2.copy(tempPos1).add(localMove);
@@ -1401,7 +1374,7 @@
                 }
             }
             
-            // 若搜尋失敗，還原 UI 與幾何設定供下一次 fallback 嘗試
+            // 搜尋失敗，還原 UI 供下一次 fallback 嘗試
             document.getElementById('obj_shape').value = originalShape;
             document.getElementById('obj_geometry_type').value = originalGeom;
             updateObjectGeometry(true);
@@ -1410,18 +1383,24 @@
 
         // --- 核心邏輯執行區 ---
         
-        // 1. 先用「當下的參數與旋轉角度」進行背景尋找
         let searchResult = searchFailure(false);
 
-        // 2. 只有在「找不到」時，才將旋轉角度與參數歸零重新計算
         if (!searchResult.success) {
             console.log("⚠️ 當前旋轉角度或參數無法觸發目標失敗，系統自動歸零重試...");
             searchResult = searchFailure(true);
         }
 
-        // 3. 輸出最終成功的結果到畫面上
         if (searchResult.success) {
             lastLoadedFailure = type;
+
+            // 【修正重點 2】強力鎖定：確保成功後 UI 絕對停留在對應的狀態
+            if (type === 'aperture') {
+                document.getElementById('obj_shape').value = 'vertical_grating';
+                document.getElementById('obj_geometry_type').value = 'box';
+            } else if (searchResult.isReset && document.getElementById('obj_shape').value === 'vertical_grating') {
+                document.getElementById('obj_shape').value = 'checkerboard';
+            }
+            updateObjectGeometry(true); // 強制套用一次幾何更新
 
             object1.position.copy(defaultPos);
             object1.quaternion.copy(searchResult.finalQuat);
@@ -1446,7 +1425,6 @@
                 lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
             }
 
-            // 最終更新整個系統 (這時瀏覽器才會一次把畫面畫出來)
             updateSystem();
         } else {
             console.warn("❌ 無法在此參數環境下觸發指定的失敗範例。");
