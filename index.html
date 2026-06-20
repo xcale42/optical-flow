@@ -483,8 +483,9 @@
 
     let scene1, camera1, renderer1, controls1, transform1, object1;
     let scene2, camera2, renderer2, controls2, transform2, object2;
-    let basePos2 = new THREE.Vector3(0, 0, -4.0);
-    let baseRot2 = new THREE.Euler(0, 0, 0);
+    
+    // 【全新邏輯】：紀錄滑桿的前一次狀態，專門用來計算微調增量 (Delta)
+    let lastSliderValues = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
 
     const rayTarget = new THREE.Vector3();
     const invQuaternion = new THREE.Quaternion();
@@ -499,7 +500,30 @@
         return parseFloat(s) === 0 ? "0.0°" : s + "°";
     }
 
-    // 頁籤切換邏輯
+    // 統一清空滑桿並重置追蹤值的函數
+    window.resetSlidersUI = function() {
+        ['X', 'Y', 'Z'].forEach(axis => {
+            const el = document.getElementById('slider_' + axis);
+            if(el) el.value = 0;
+            const lbl = document.getElementById('label_' + axis);
+            if(lbl) lbl.innerText = "0.0000 m";
+        });
+        ['Rx', 'Ry', 'Rz'].forEach(id => {
+            const el = document.getElementById('slider_' + id);
+            if(el) el.value = 0;
+            const lbl = document.getElementById('label_' + id);
+            if(lbl) lbl.innerText = "0.0°";
+        });
+        lastSliderValues = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
+    };
+
+    window.updateTransformSpace = function() {
+        const space = document.getElementById('rot_space_sel').value;
+        if (transform1) transform1.setSpace(space);
+        if (transform2) transform2.setSpace(space);
+        updateSystem();
+    };
+
     window.switchTab = function(tabId) {
         document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
         document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
@@ -507,12 +531,8 @@
         document.getElementById('btn_tab_finetune').classList.toggle('active', tabId === 'finetune');
     };
 
-    // 手機控制側邊抽屜開關
-    window.toggleDrawer = function() {
-        document.body.classList.toggle('drawer-open');
-    }
+    window.toggleDrawer = function() { document.body.classList.toggle('drawer-open'); };
 
-    // 焦點模式：拖曳滑桿時讓整個面板變為全透明，僅留下半透明的活動滑桿
     function initSliderFocus() {
         document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
             const wrap = slider.closest('.axis-control');
@@ -526,7 +546,6 @@
                 document.body.classList.remove('slider-focus-mode');
                 wrap.classList.remove('active-slider');
             };
-            
             slider.addEventListener('touchstart', activate, {passive: true});
             slider.addEventListener('touchend', deactivate);
             slider.addEventListener('touchcancel', deactivate);
@@ -535,22 +554,15 @@
         });
     }
 
-    // 分開處理兩側的 3D 防誤觸鎖定
     window.toggleLock3D_t = function() {
         const isLocked = document.getElementById('lock_3d_t').checked;
-        if(controls1 && transform1) {
-            controls1.enabled = !isLocked;
-            transform1.enabled = !isLocked; transform1.visible = !isLocked;
-        }
+        if(controls1 && transform1) { controls1.enabled = !isLocked; transform1.enabled = !isLocked; transform1.visible = !isLocked; }
         document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
     };
 
     window.toggleLock3D_t1 = function() {
         const isLocked = document.getElementById('lock_3d_t1').checked;
-        if(controls2 && transform2) {
-            controls2.enabled = !isLocked;
-            transform2.enabled = !isLocked; transform2.visible = !isLocked;
-        }
+        if(controls2 && transform2) { controls2.enabled = !isLocked; transform2.enabled = !isLocked; transform2.visible = !isLocked; }
         document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
     };
 
@@ -611,7 +623,8 @@
         controls.target.set(0, 0, -4);
         
         const transform = new THREE.TransformControls(camera, renderer.domElement);
-        transform.setSpace('local');
+        const initialSpace = document.getElementById('rot_space_sel') ? document.getElementById('rot_space_sel').value : 'world';
+        transform.setSpace(initialSpace);
         transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
         scene.add(transform);
         transform.attach(object);
@@ -630,20 +643,16 @@
 
         object1.position.set(0, 0, -4.0);
         object2.position.set(0, 0, -4.0);
-        basePos2.set(0, 0, -4.0);
-        baseRot2.set(0, 0, 0);
+        
+        resetSlidersUI();
 
         transform1.addEventListener('change', () => {
             if (transform1.dragging) {
                 lastLoadedFailure = null; 
                 if (transform1.getMode() === 'rotate') {
-                    object2.rotation.copy(object1.rotation);
-                    baseRot2.copy(object1.rotation);
-                    ['Rx', 'Ry', 'Rz'].forEach(id => {
-                        document.getElementById('slider_' + id).value = 0;
-                        document.getElementById('label_' + id).innerText = "0.0°";
-                    });
+                    object2.quaternion.copy(object1.quaternion);
                 }
+                resetSlidersUI(); // 當滑鼠直接控制物體時，將微調滑桿的基準點重設
             }
             updateSystem();
         });
@@ -652,26 +661,15 @@
             if (transform2.dragging) {
                 lastLoadedFailure = null; 
                 if (transform2.getMode() === 'rotate') {
-                    object1.rotation.copy(object2.rotation);
+                    object1.quaternion.copy(object2.quaternion);
                 }
-                basePos2.copy(object2.position);
-                baseRot2.copy(object2.rotation);
-                
-                ['X', 'Y', 'Z'].forEach(axis => {
-                    document.getElementById('slider_' + axis).value = 0;
-                    document.getElementById('label_' + axis).innerText = "0.0000 m";
-                });
-                ['Rx', 'Ry', 'Rz'].forEach(id => {
-                    document.getElementById('slider_' + id).value = 0;
-                    document.getElementById('label_' + id).innerText = "0.0°";
-                });
+                resetSlidersUI(); // 當滑鼠直接控制物體時，將微調滑桿的基準點重設
             }
             updateSystem();
         });
 
         toggleLock3D_t();
         toggleLock3D_t1();
-
         animate3D();
     }
 
@@ -712,7 +710,7 @@
         if(object1.position.z > -0.2) object1.position.z = -0.2;
         if(object2.position.z > -0.2) object2.position.z = -0.2;
 
-        if (!transform1.dragging) object1.rotation.copy(object2.rotation);
+        if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
 
         const f = parseFloat(document.getElementById('param_f').value);
         const B = parseFloat(document.getElementById('param_B').value);
@@ -723,6 +721,8 @@
         calculateSceneFlow(p1, p2, f, B, false);
     }
 
+    // （此處省略 renderAll2DScenes, downsample, getPLevel, invertMatrix3x3, calculateSceneFlow, updateResultsUI 等原封不動的方法以節省空間...請保留你原本的這些方法）
+    // 注意：因系統字數限制，請確保你沒有刪掉上面這些跟影像與渲染有關的函式。
     function renderAll2DScenes() {
         const shape = document.getElementById('obj_shape').value;
         const geomType = document.getElementById('obj_geometry_type').value;
@@ -730,148 +730,86 @@
         const R = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
         const f = parseFloat(document.getElementById('param_f').value);
         const B = parseFloat(document.getElementById('param_B').value);
-        
         const rayDirs = getRayCache(f);
-
         canvasIds.forEach(key => {
             const ctx = contexts[key];
             const buffer = imgBuffers[key];
-            
             let camX = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
             let obj = (key === 'Lt' || key === 'Rt') ? object1 : object2;
-            
             const Ox = camX, Oy = 0, Oz = 0;
             const Cx = obj.position.x, Cy = obj.position.y, Cz = obj.position.z;
-            
             invQuaternion.copy(obj.quaternion).invert();
             const vx = Cx - Ox, vy = Cy - Oy, vz = Cz - Oz;
             const distToCenter = Math.sqrt(vx*vx + vy*vy + vz*vz);
             const closeThreshold = (R * 1.8) * (R * 1.8);
-
             for (let y = 0; y < imgH; y++) {
                 for (let x = 0; x < imgW; x++) {
                     const idx = y * imgW + x;
                     const rIdx = idx * 3;
-                    
                     const Dx = rayDirs[rIdx], Dy = rayDirs[rIdx+1], Dz = rayDirs[rIdx+2];
-                    
                     const proj = vx*Dx + vy*Dy + vz*Dz;
                     const closX = vx - proj*Dx, closY = vy - proj*Dy, closZ = vz - proj*Dz;
                     const closenessSq = closX*closX + closY*closY + closZ*closZ;
-                    
                     let hit = false;
                     let lx_raw = 0, ly_raw = 0, lz_raw = 0;
                     let hitPx = 0, hitPy = 0; 
-                    
                     if (closenessSq <= closeThreshold && proj > 0) {
                         let t = distToCenter - R * 1.8; if (t < 0) t = 0;
                         const maxT = distToCenter + R * 1.8;
-                        
                         for (let step = 0; step < 24; step++) {
                             const Px = Ox + t * Dx, Py = Oy + t * Dy, Pz = Oz + t * Dz;
                             lx_raw = Px - Cx; ly_raw = Py - Cy; lz_raw = Pz - Cz;
-                            
                             rayTarget.set(lx_raw, ly_raw, lz_raw).applyQuaternion(invQuaternion);
                             const lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            
                             let d = 0;
-                            if (geomType === 'sphere') {
-                                d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R;
-                            } else if (geomType === 'box') {
-                                d = Math.max(Math.abs(lx) - R, Math.max(Math.abs(ly) - R, Math.abs(lz) - R));
-                            } else if (geomType === 'cylinder') {
-                                d = Math.max(Math.sqrt(lx*lx + lz*lz) - R, Math.abs(ly) - R);
-                            } else if (geomType === 'torus') {
-                                const r_hz = Math.sqrt(lx*lx + ly*ly);
-                                d = Math.sqrt((r_hz - R*0.7)**2 + lz**2) - R*0.25;
-                            } else if (geomType === 'cone') {
-                                let cone_r = Math.max(0, R * (1.0 - (ly + R) / (R * 2)));
-                                d = Math.max(Math.sqrt(lx*lx + lz*lz) - cone_r, Math.abs(ly) - R);
-                            } else if (geomType === 'octahedron') {
-                                d = (Math.abs(lx) + Math.abs(ly) + Math.abs(lz)) - R;
-                            }
-                            
-                            if (d < 0.0004) { 
-                                hit = true; 
-                                hitPx = Px; hitPy = Py;
-                                break; 
-                            }
+                            if (geomType === 'sphere') d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R;
+                            else if (geomType === 'box') d = Math.max(Math.abs(lx) - R, Math.max(Math.abs(ly) - R, Math.abs(lz) - R));
+                            else if (geomType === 'cylinder') d = Math.max(Math.sqrt(lx*lx + lz*lz) - R, Math.abs(ly) - R);
+                            else if (geomType === 'torus') { const r_hz = Math.sqrt(lx*lx + ly*ly); d = Math.sqrt((r_hz - R*0.7)**2 + lz**2) - R*0.25; }
+                            else if (geomType === 'cone') { let cone_r = Math.max(0, R * (1.0 - (ly + R) / (R * 2))); d = Math.max(Math.sqrt(lx*lx + lz*lz) - cone_r, Math.abs(ly) - R); }
+                            else if (geomType === 'octahedron') d = (Math.abs(lx) + Math.abs(ly) + Math.abs(lz)) - R;
+                            if (d < 0.0004) { hit = true; hitPx = Px; hitPy = Py; break; }
                             t += d; if (t > maxT) break;
                         }
                     }
-                    
                     if (hit) {
                         let texX, texY;
-                        
                         if (texMode === 'local') {
                             let lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            
                             if (geomType === 'box') {
                                 let ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
                                 if (ax >= ay && ax >= az) { texX = lz * Math.sign(lx); texY = ly; }
                                 else if (ay >= ax && ay >= az) { texX = lx; texY = lz * Math.sign(ly); }
                                 else { texX = lx * Math.sign(lz); texY = ly; }
-                            } else if (geomType === 'cylinder' || geomType === 'cone') {
-                                texX = Math.atan2(lx, lz) * R;
-                                texY = ly;
-                            } else if (geomType === 'torus') {
-                                let theta = Math.atan2(lx, lz);
-                                let r_hz = Math.sqrt(lx*lx + lz*lz);
-                                let phi = Math.atan2(ly, r_hz - R*0.7);
-                                texX = theta * R;
-                                texY = phi * R * 0.3;
-                            } else if (geomType === 'sphere') {
-                                texX = Math.atan2(lx, lz) * R;
-                                texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R;
-                            } else {
-                                texX = lx; texY = ly;
-                            }
+                            } else if (geomType === 'cylinder' || geomType === 'cone') { texX = Math.atan2(lx, lz) * R; texY = ly; }
+                            else if (geomType === 'torus') { let theta = Math.atan2(lx, lz); let r_hz = Math.sqrt(lx*lx + lz*lz); let phi = Math.atan2(ly, r_hz - R*0.7); texX = theta * R; texY = phi * R * 0.3; }
+                            else if (geomType === 'sphere') { texX = Math.atan2(lx, lz) * R; texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R; }
+                            else { texX = lx; texY = ly; }
                             texX *= 250; texY *= 250;
-                        } else {
-                            texX = hitPx * 250; texY = hitPy * 250;
-                        }
+                        } else { texX = hitPx * 250; texY = hitPy * 250; }
 
                         let pattern = 128;
-                        if (shape === 'checkerboard') {
-                            pattern = (Math.floor(texX / 4.0) + Math.floor(texY / 4.0)) % 2 === 0 ? 240 : 40;
-                        } else if (shape === 'gabor') {
-                            pattern = 128 + 100 * Math.sin(texX / 4) * Math.cos(texY / 4);
-                        } else if (shape === 'noise') {
-                            const seed = Math.floor(texX / 3.0) * 12.9898 + Math.floor(texY / 3.0) * 78.233;
-                            pattern = 40 + Math.abs((Math.sin(seed) * 43758.5453) % 1) * 200;
-                        } else if (shape === 'vertical_grating') {
-                            pattern = 128 + 127 * Math.cos(texX / 2.0);
-                        } else if (shape === 'rings') {
-                            pattern = 128 + 127 * Math.cos(Math.sqrt(texX*texX + texY*texY) / 3);
-                        }
+                        if (shape === 'checkerboard') pattern = (Math.floor(texX / 4.0) + Math.floor(texY / 4.0)) % 2 === 0 ? 240 : 40;
+                        else if (shape === 'gabor') pattern = 128 + 100 * Math.sin(texX / 4) * Math.cos(texY / 4);
+                        else if (shape === 'noise') { const seed = Math.floor(texX / 3.0) * 12.9898 + Math.floor(texY / 3.0) * 78.233; pattern = 40 + Math.abs((Math.sin(seed) * 43758.5453) % 1) * 200; }
+                        else if (shape === 'vertical_grating') pattern = 128 + 127 * Math.cos(texX / 2.0);
+                        else if (shape === 'rings') pattern = 128 + 127 * Math.cos(Math.sqrt(texX*texX + texY*texY) / 3);
                         buffer[idx] = pattern;
-                    } else {
-                        buffer[idx] = -1;
-                    }
+                    } else buffer[idx] = -1;
                 }
             }
-            
-            const imgData = imgDataCaches[key];
-            const data = imgData.data;
+            const imgData = imgDataCaches[key]; const data = imgData.data;
             for (let i = 0; i < buffer.length; i++) {
-                const val = buffer[i];
-                const pIdx = i * 4;
-                if (val === -1) {
-                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; 
-                    data[pIdx+3] = 0; 
-                } else {
-                    const clampedVal = Math.max(0, Math.min(255, val));
-                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal;
-                    data[pIdx+3] = 255; 
-                }
+                const val = buffer[i]; const pIdx = i * 4;
+                if (val === -1) { data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; data[pIdx+3] = 0; }
+                else { const clampedVal = Math.max(0, Math.min(255, val)); data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal; data[pIdx+3] = 255; }
             }
             ctx.putImageData(imgData, 0, 0);
         });
     }
 
     function downsample(buf, w, h) {
-        const nw = Math.floor(w/2), nh = Math.floor(h/2);
-        const nbuf = new Float32Array(nw * nh);
+        const nw = Math.floor(w/2), nh = Math.floor(h/2); const nbuf = new Float32Array(nw * nh);
         for(let y = 0; y < nh; y++) {
             for(let x = 0; x < nw; x++) {
                 const i00 = (y*2)*w + (x*2);
@@ -882,10 +820,8 @@
     }
 
     function getPLevel(pyrObj, x, y) {
-        const {buf, w, h} = pyrObj;
-        if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
-        const x0 = Math.floor(x), y0 = Math.floor(y);
-        const dx = x - x0, dy = y - y0;
+        const {buf, w, h} = pyrObj; if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
+        const x0 = Math.floor(x), y0 = Math.floor(y); const dx = x - x0, dy = y - y0;
         return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
     }
 
@@ -902,43 +838,26 @@
     function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
         let totalLevels = parseInt(document.getElementById('param_pyr').value);
         if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
-        const win = parseInt(document.getElementById('param_win').value);
-        const halfW = Math.floor(win / 2);
-        
-        const px = projData.Lt.x, py = projData.Lt.y;
-        const d_disp = projData.Lt.x - projData.Rt.x;
-        const Z = -p1.z; 
-
+        const win = parseInt(document.getElementById('param_win').value); const halfW = Math.floor(win / 2);
+        const px = projData.Lt.x, py = projData.Lt.y; const d_disp = projData.Lt.x - projData.Rt.x; const Z = -p1.z; 
         const err_threshold = parseFloat(document.getElementById('param_err_thresh').value) || 25;
 
-        if (!dryRun) {
-            document.getElementById('stat_px_to_m').innerText = (Z / f).toFixed(5);
-            document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m";
-        }
+        if (!dryRun) { document.getElementById('stat_px_to_m').innerText = (Z / f).toFixed(5); document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m"; }
 
-        const pyrLt = [{buf: imgBuffers.Lt, w: imgW, h: imgH}];
-        const pyrRt = [{buf: imgBuffers.Rt, w: imgW, h: imgH}];
-        const pyrLt1 = [{buf: imgBuffers.Lt1, w: imgW, h: imgH}];
-        const pyrRt1 = [{buf: imgBuffers.Rt1, w: imgW, h: imgH}];
+        const pyrLt = [{buf: imgBuffers.Lt, w: imgW, h: imgH}]; const pyrRt = [{buf: imgBuffers.Rt, w: imgW, h: imgH}];
+        const pyrLt1 = [{buf: imgBuffers.Lt1, w: imgW, h: imgH}]; const pyrRt1 = [{buf: imgBuffers.Rt1, w: imgW, h: imgH}];
 
         for(let i = 1; i < totalLevels; i++) {
-            pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h));
-            pyrRt.push(downsample(pyrRt[i-1].buf, pyrRt[i-1].w, pyrRt[i-1].h));
-            pyrLt1.push(downsample(pyrLt1[i-1].buf, pyrLt1[i-1].w, pyrLt1[i-1].h));
-            pyrRt1.push(downsample(pyrRt1[i-1].buf, pyrRt1[i-1].w, pyrRt1[i-1].h));
+            pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h)); pyrRt.push(downsample(pyrRt[i-1].buf, pyrRt[i-1].w, pyrRt[i-1].h));
+            pyrLt1.push(downsample(pyrLt1[i-1].buf, pyrLt1[i-1].w, pyrLt1[i-1].h)); pyrRt1.push(downsample(pyrRt1[i-1].buf, pyrRt1[i-1].w, pyrRt1[i-1].h));
         }
 
-        let U_est = 0, V_est = 0, W_est = 0;
-        let isDegenerate = false, isOutOfBounds = false;
-        
+        let U_est = 0, V_est = 0, W_est = 0; let isDegenerate = false, isOutOfBounds = false;
         const R_size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        const obj_px_radius = (f * R_size) / Z;
-        const bounds_margin = -obj_px_radius * 0.5; 
+        const obj_px_radius = (f * R_size) / Z; const bounds_margin = -obj_px_radius * 0.5; 
 
-        if (px < bounds_margin || px >= imgW - bounds_margin || 
-            py < bounds_margin || py >= imgH - bounds_margin ||
-            projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || 
-            projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
+        if (px < bounds_margin || px >= imgW - bounds_margin || py < bounds_margin || py >= imgH - bounds_margin ||
+            projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
             isOutOfBounds = true;
         }
 
@@ -955,7 +874,6 @@
                     for (let dx = -halfW; dx <= halfW; dx++) {
                         const xL = px_l + dx; const yL = py_l + dy;
                         const xR = xL - d_disp_l; const yR = yL;
-
                         if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
 
                         const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
@@ -966,41 +884,29 @@
                         const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
                         const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
 
-                        for(let m=0; m<3; m++) {
-                            for(let n=0; n<3; n++) { S[m][n] += rowL[m]*rowL[n] + rowR[m]*rowR[n]; }
-                        }
+                        for(let m=0; m<3; m++) for(let n=0; n<3; n++) S[m][n] += rowL[m]*rowL[n] + rowR[m]*rowR[n];
                     }
                 }
 
                 const detS = S[0][0]*(S[1][1]*S[2][2] - S[1][2]*S[2][1]) - S[0][1]*(S[1][0]*S[2][2] - S[1][2]*S[2][0]) + S[0][2]*(S[1][0]*S[2][1] - S[1][1]*S[2][0]);
                 const S_inv = invertMatrix3x3(S);
-                
                 const trace = S[0][0] + S[1][1] + S[2][2];
                 const cond = Math.abs(detS) / (trace * trace * trace + 1e-12);
                 if (lvl === 0 && (!S_inv || cond < 1e-4)) isDegenerate = true;
-                
                 if (!S_inv || Math.abs(detS) < 1e-5) continue;
 
                 for (let iter = 0; iter < 10; iter++) {
                     let Atb = [0, 0, 0], validPixels = 0;
-
                     for (let dy = -halfW; dy <= halfW; dy++) {
                         for (let dx = -halfW; dx <= halfW; dx++) {
-                            const xL = px_l + dx, yL = py_l + dy;
-                            const xR = xL - d_disp_l, yR = yL;
-
+                            const xL = px_l + dx, yL = py_l + dy; const xR = xL - d_disp_l, yR = yL;
                             if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
 
-                            const X_p = (xL - cx_l) * Z / f_l - B/2;
-                            const Y_p = -(yL - cy_l) * Z / f_l;
-
-                            const xL_warp = cx_l + f_l * (X_p + U_est + B/2) / (Z + W_est);
-                            const yL_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
-                            const xR_warp = cx_l + f_l * (X_p + U_est - B/2) / (Z + W_est);
-                            const yR_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
+                            const X_p = (xL - cx_l) * Z / f_l - B/2; const Y_p = -(yL - cy_l) * Z / f_l;
+                            const xL_warp = cx_l + f_l * (X_p + U_est + B/2) / (Z + W_est); const yL_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
+                            const xR_warp = cx_l + f_l * (X_p + U_est - B/2) / (Z + W_est); const yR_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
 
                             if (xL_warp < 0 || xL_warp >= cw-1 || yL_warp < 0 || yL_warp >= ch-1 || xR_warp < 0 || xR_warp >= cw-1 || yR_warp < 0 || yR_warp >= ch-1) continue;
-
                             validPixels++;
 
                             const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
@@ -1018,11 +924,7 @@
                         }
                     }
 
-                    if (validPixels < 5) {
-                        if (lvl === 0) isOutOfBounds = true;
-                        break;
-                    }
-
+                    if (validPixels < 5) { if (lvl === 0) isOutOfBounds = true; break; }
                     const dU = S_inv[0][0]*Atb[0] + S_inv[0][1]*Atb[1] + S_inv[0][2]*Atb[2];
                     const dV = S_inv[1][0]*Atb[0] + S_inv[1][1]*Atb[1] + S_inv[1][2]*Atb[2];
                     const dW = S_inv[2][0]*Atb[0] + S_inv[2][1]*Atb[1] + S_inv[2][2]*Atb[2];
@@ -1040,11 +942,8 @@
         const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
         
         let err_pct = 0;
-        if (gt_mag > 1e-4) {
-            err_pct = (err_mag / gt_mag) * 100;
-        } else {
-            err_pct = err_mag > 1e-4 ? Infinity : 0;
-        }
+        if (gt_mag > 1e-4) err_pct = (err_mag / gt_mag) * 100;
+        else err_pct = err_mag > 1e-4 ? Infinity : 0;
 
         const true_px_move = Math.sqrt((projData.Lt1.x - projData.Lt.x)**2 + (projData.Lt1.y - projData.Lt.y)**2);
         const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
@@ -1060,14 +959,9 @@
         } else {
             const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
             if (isFailed) {
-                if (document.getElementById('obj_shape').value === 'vertical_grating' && Math.abs(err_V) > 0.02) {
-                    failureMode = 'aperture';
-                } else {
-                    failureMode = 'large_disp';
-                }
-            } else {
-                failureMode = 'success';
-            }
+                if (document.getElementById('obj_shape').value === 'vertical_grating' && Math.abs(err_V) > 0.02) failureMode = 'aperture';
+                else failureMode = 'large_disp';
+            } else failureMode = 'success';
         }
 
         if (dryRun) return { failureMode };
@@ -1077,9 +971,7 @@
 
     function calcRelativeError(gt, est) {
         const err = Math.abs(gt - est);
-        if (Math.abs(gt) < 1e-4) {
-            return err < 1e-4 ? "0.0%" : "N/A";
-        }
+        if (Math.abs(gt) < 1e-4) return err < 1e-4 ? "0.0%" : "N/A";
         const pct = (err / Math.abs(gt)) * 100;
         return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
     }
@@ -1096,43 +988,26 @@
         errorExp.style.display = 'none';
 
         if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
-            ['U', 'V', 'W'].forEach(axis => {
-                document.getElementById('est_' + axis).innerText = "NaN";
-                document.getElementById('rel_' + axis).innerText = "失敗";
-            });
-            
-            elTotalErr.style.color = 'var(--danger-color)';
-            document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
-            
+            ['U', 'V', 'W'].forEach(axis => { document.getElementById('est_' + axis).innerText = "NaN"; document.getElementById('rel_' + axis).innerText = "失敗"; });
+            elTotalErr.style.color = 'var(--danger-color)'; document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
             elTotalErr.innerText = "計算失敗";
             
-            if (failureMode === 'aperture') {
-                errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
-            } else {
-                errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
-            }
+            if (failureMode === 'aperture') errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
+            else errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
             errorExp.style.display = 'block';
-
         } else {
-            document.getElementById('est_U').innerText = formatNum(U_est) + ' m';
-            document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
-            document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
-            
-            document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est);
-            document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
-            document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
+            document.getElementById('est_U').innerText = formatNum(U_est) + ' m'; document.getElementById('est_V').innerText = formatNum(V_est) + ' m'; document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
+            document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est); document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est); document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
 
             let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
             if (failureMode === 'large_disp') {
-                elTotalErr.innerText = "計算失敗";
-                elTotalErr.style.color = 'var(--danger-color)';
+                elTotalErr.innerText = "計算失敗"; elTotalErr.style.color = 'var(--danger-color)';
                 document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
                 errorExp.innerHTML = "<strong>⚠️ 移動距離過大或誤差超標 (Large Displacement)</strong><br>物體的位移量超出了目前設定的「計算窗口」與「金字塔層數」所能涵蓋的最大追蹤極限，或解析出的數值超過了你所設定的容許誤差閥值，導致預測被標記為失效。";
                 errorExp.style.display = 'block';
             } else {
-                elTotalErr.innerText = pctStr + ' (成功)';
-                elTotalErr.style.color = 'var(--success-color)';
+                elTotalErr.innerText = pctStr + ' (成功)'; elTotalErr.style.color = 'var(--success-color)';
                 ['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
                 document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
             }
@@ -1169,49 +1044,67 @@
         if (dryRun !== true) updateSystem();
     };
 
+    // 【核心修正】：增量累加演算法 (Delta Accumulation) 
     function onSliderInput() {
         if (!object1 || !object2) return;
         lastLoadedFailure = null; 
         
-        const dx = parseFloat(document.getElementById('slider_X').value);
-        const dy = parseFloat(document.getElementById('slider_Y').value);
-        const dz = parseFloat(document.getElementById('slider_Z').value);
+        const space = document.getElementById('rot_space_sel').value; // 'world' 或 'local'
         
-        const drx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
-        const dry = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
-        const drz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
+        // 1. 抓取滑桿當前數值
+        const cur = {
+            X: parseFloat(document.getElementById('slider_X').value),
+            Y: parseFloat(document.getElementById('slider_Y').value),
+            Z: parseFloat(document.getElementById('slider_Z').value),
+            Rx: parseFloat(document.getElementById('slider_Rx').value),
+            Ry: parseFloat(document.getElementById('slider_Ry').value),
+            Rz: parseFloat(document.getElementById('slider_Rz').value)
+        };
         
-        // 1. 計算並設定新的自轉角度
-        const newRot = new THREE.Euler(baseRot2.x + drx, baseRot2.y + dry, baseRot2.z + drz);
-        object2.rotation.copy(newRot);
+        // 2. 計算變化量 (當前值 - 上次值)
+        const dX = cur.X - lastSliderValues.X;
+        const dY = cur.Y - lastSliderValues.Y;
+        const dZ = cur.Z - lastSliderValues.Z;
         
-        // 2. 獲取使用者選擇的座標系，並計算平移量
-        const space = document.getElementById('trans_space').value;
-        const localMove = new THREE.Vector3(dx, dy, -dz);
+        const dRx = (cur.Rx - lastSliderValues.Rx) * Math.PI / 180;
+        const dRy = (cur.Ry - lastSliderValues.Ry) * Math.PI / 180;
+        const dRz = (cur.Rz - lastSliderValues.Rz) * Math.PI / 180;
+        
+        // --- 處理位移 (Translation) ---
+        const translation = new THREE.Vector3(dX, dY, -dZ); // Z 預設拉滑桿是往相機靠，也就是負 Z
+        if (space === 'local') {
+            // 如果選 Local，將平移向量套用物體當前的旋轉
+            translation.applyQuaternion(object2.quaternion);
+        }
+        object2.position.add(translation); // 將平移增量加到當前位置
+        
+        // --- 處理旋轉 (Rotation) ---
+        // 產生 X, Y, Z 三個純淨的旋轉四元數
+        const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dRx);
+        const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dRy);
+        const qZ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), dRz);
+        
+        // 將微小增量合併。因為一次只會有一個滑桿在拖動，所以這其實等於單獨一個純四元數
+        const qDelta = new THREE.Quaternion().multiply(qZ).multiply(qY).multiply(qX); 
         
         if (space === 'world') {
-            // 【模式一：世界座標】不套用任何旋轉，直接依據絕對 XYZ 軸平移
-            // localMove 不做任何 applyEuler
-        } else if (space === 'local_dynamic') {
-            // 【模式二：旋轉後座標】平移方向嚴格跟隨即時旋轉
-            // 數學現象：若先平移再拉動旋轉滑桿，必然會產生公轉
-            localMove.applyEuler(newRot);
+            // 世界座標：將變化量左乘，從外部視角旋轉
+            object2.quaternion.premultiply(qDelta);
         } else {
-            // 【模式三：初始局部座標】平移方向鎖定在拖曳前的初始朝向
-            // 這是為了在 UI 滑桿操作上將位移與旋轉解耦，避免意外的公轉
-            localMove.applyEuler(baseRot2);
+            // 區域座標：將變化量右乘，從物件內部視角旋轉
+            object2.quaternion.multiply(qDelta);
         }
         
-        // 3. 設定最終位置
-        object2.position.set(basePos2.x + localMove.x, basePos2.y + localMove.y, basePos2.z + localMove.z);
+        // 3. 儲存本次滑桿的值，準備作為下一次的基準
+        lastSliderValues = cur;
         
-        // 4. 更新 UI 數字標籤
-        document.getElementById('label_X').innerText = formatNum(dx) + ' m';
-        document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
-        document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
-        document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
-        document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
-        document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
+        // 更新 UI 數字
+        document.getElementById('label_X').innerText = formatNum(cur.X) + ' m';
+        document.getElementById('label_Y').innerText = formatNum(cur.Y) + ' m';
+        document.getElementById('label_Z').innerText = formatNum(cur.Z) + ' m';
+        document.getElementById('label_Rx').innerText = formatDeg(cur.Rx);
+        document.getElementById('label_Ry').innerText = formatDeg(cur.Ry);
+        document.getElementById('label_Rz').innerText = formatDeg(cur.Rz);
         
         updateSystem();
     }
@@ -1224,6 +1117,7 @@
     };
 
     window.nudgeRotation = function(axis, delta) {
+        // 大小寫對齊，對應 HTML 的 slider_Rx, slider_Ry, slider_Rz
         const slider = document.getElementById('slider_R' + axis.toLowerCase());
         if (!slider) return;
         slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
@@ -1235,12 +1129,9 @@
         lastLoadedFailure = null; 
         
         object2.position.copy(object1.position);
-        object2.rotation.copy(object1.rotation);
-        basePos2.copy(object1.position);
-        baseRot2.copy(object1.rotation);
+        object2.quaternion.copy(object1.quaternion); 
         
-        ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
-        ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
+        resetSlidersUI();
         updateSystem();
     };
 
@@ -1249,17 +1140,15 @@
         lastLoadedFailure = type;
 
         const defaultPos = new THREE.Vector3(0, 0, -4.0);
-        const defaultRot = new THREE.Euler(0, 0, 0);
+        const defaultQuat = new THREE.Quaternion(); // 乾淨的初始狀態
 
-        object1.position.copy(defaultPos); object1.rotation.copy(defaultRot);
-        object2.position.copy(defaultPos); object2.rotation.copy(defaultRot);
-        basePos2.copy(defaultPos); baseRot2.copy(defaultRot);
-
-        ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
-        ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
+        object1.position.copy(defaultPos); object1.quaternion.copy(defaultQuat);
+        object2.position.copy(defaultPos); object2.quaternion.copy(defaultQuat);
+        
+        resetSlidersUI();
         
         const f = parseFloat(document.getElementById('param_f').value);
-        const Z = Math.abs(basePos2.z);
+        const Z = Math.abs(defaultPos.z);
         const win = parseInt(document.getElementById('param_win').value);
         const pyr = parseInt(document.getElementById('param_pyr').value);
         const B = parseFloat(document.getElementById('param_B').value);
@@ -1274,7 +1163,7 @@
 
         updateObjectGeometry(true);
 
-        let origBasePos2 = basePos2.clone();
+        let origBasePos2 = defaultPos.clone();
         let found = false, attempt = 0, testX = 0, testY = 0;
         const step = max_m_disp * 0.1; 
 
@@ -1284,9 +1173,8 @@
             else if (type === 'large_disp') { testX += step; testY += step; } 
             else if (type === 'out_of_bounds') testX += (fov_w_m * 0.2); 
 
-            basePos2.copy(origBasePos2);
-            basePos2.x += testX; basePos2.y += testY;
-            object2.position.copy(basePos2);
+            object2.position.copy(origBasePos2);
+            object2.position.x += testX; object2.position.y += testY;
             
             updateProjData(object1.position, object2.position, f, B);
             renderAll2DScenes();
@@ -1309,13 +1197,9 @@
             el.addEventListener('change', (e) => {
                 if (e.target.type === 'number') {
                     let val = parseFloat(e.target.value);
-                    let min = parseFloat(e.target.min);
-                    let max = parseFloat(e.target.max);
-                    let step = parseFloat(e.target.step);
-
-                    if (isNaN(val)) {
-                        val = !isNaN(min) ? min : 0;
-                    } else {
+                    let min = parseFloat(e.target.min); let max = parseFloat(e.target.max); let step = parseFloat(e.target.step);
+                    if (isNaN(val)) { val = !isNaN(min) ? min : 0; } 
+                    else {
                         if (!isNaN(step) && step > 0) {
                             let base = !isNaN(min) ? min : 0;
                             let steps = Math.round((val - base) / step);
