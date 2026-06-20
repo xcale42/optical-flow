@@ -1,224 +1,224 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Scene Flow 金字塔光流實驗室</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
-        };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/TransformControls.js"></script>
-    
-    <style>
-        :root { 
-            --primary-color: #1e293b; 
-            --accent-color: #3b82f6; 
-            --success-color: #10b981; 
-            --danger-color: #ef4444; 
-            --bg-color: #f1f5f9; 
-            --panel-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --canvas-bg: #1a1a1a;
-        }
-        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; overflow-x: hidden; }
-        .container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
-        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
-        header h1 { margin: 0; color: var(--primary-color); font-size: 24pt; font-weight: 700; letter-spacing: -0.5px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Scene Flow 金字塔光流實驗室</title>
 
-        .panel { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--panel-bg); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-        .panel h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; font-size: 14pt; }
-        
-        /* 頁籤設計 (Tabs) */
-        .tab-header { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; font-weight: 600; cursor: pointer; color: #64748b; transition: all 0.2s; font-size: 11pt; }
-        .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-        .control-grid { 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;
-            background: transparent; border: none; padding: 0; margin-bottom: 0;
-        }
-        .control-grid label { font-weight: 600; margin-bottom: 6px; color: var(--primary-color); font-size: 9pt; display: block; white-space: nowrap; }
-        .control-grid input, .control-grid select { 
-            padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5pt; width: 100%; 
-            transition: border-color 0.2s, box-shadow 0.2s; background: #fff;
-        }
-        .control-grid input:focus, .control-grid select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .control-grid select { text-align: left; }
-        .control-grid input[type="number"] { text-align: right; }
+<script>
+window.MathJax = {
+tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/TransformControls.js"></script>
 
-        .axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; transition: opacity 0.3s, transform 0.2s; }
-        .axis-label { font-weight: 600; font-size: 10pt; color: var(--primary-color); white-space: nowrap; }
-        .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; }
-        
-        .btn { 
-            border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; 
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block;
-        }
-        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); filter: brightness(0.95); }
-        
-        .btn-nudge-small { background: var(--accent-color); padding: 8px 0; font-size: 9pt; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
-        .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-        .btn-reset { background: #64748b; }
-        
-        input[type="range"] { width: 100%; margin: 0; cursor: pointer; accent-color: var(--accent-color); }
+<style>
+:root { 
+--primary-color: #1e293b; 
+--accent-color: #3b82f6; 
+--success-color: #10b981; 
+--danger-color: #ef4444; 
+--bg-color: #f1f5f9; 
+--panel-bg: #ffffff;
+--border-color: #e2e8f0;
+--canvas-bg: #1a1a1a;
+}
+* { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+body { background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; overflow-x: hidden; }
+.container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
 
-        .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
+header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+header h1 { margin: 0; color: var(--primary-color); font-size: 24pt; font-weight: 700; letter-spacing: -0.5px; }
 
-        .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
-        .viewport-card { 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            background: var(--canvas-bg); 
-            position: relative; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-            /* 修正手機版被裁切隱藏的問題 */
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
-            z-index: 1;
-        }
-        .viewport-card h4 { 
-            margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); 
-            font-size: 11pt; font-weight: 600; position: absolute; top: 0; width: 100%; z-index: 10; 
-            backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
-        
-        /* 強制 3D 畫布撐滿外框 */
-        .canvas-3d canvas { 
-            touch-action: none; 
-            outline: none; 
-            width: 100% !important; 
-            height: 100% !important; 
-            display: block; 
-        }
-        .canvas-3d.locked { touch-action: auto !important; }
-        .canvas-3d.locked canvas { touch-action: auto !important; pointer-events: none; }
+.panel { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--panel-bg); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+.panel h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; font-size: 14pt; }
 
-        .workspace-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px; }
-        .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
-        
-        .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
-        
-        .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
-        
-        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
-        .compare-table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 10pt; text-align: center; background: white; white-space: nowrap;}
-        .compare-table th, .compare-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
-        .compare-table th { background: #f8fafc; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 600; }
-        .compare-table tr:last-child td { border-bottom: none; }
-        .val-gt { color: var(--accent-color); font-weight: bold; }
-        .val-est { color: var(--success-color); font-weight: bold; }
-        .val-rel { font-weight: bold; }
-        .row-summary { background-color: #f1f5f9; }
+/* 頁籤設計 (Tabs) */
+.tab-header { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 6px; border-radius: 10px; border: 1px solid var(--border-color); }
+.tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; font-weight: 600; cursor: pointer; color: #64748b; transition: all 0.2s; font-size: 11pt; }
+.tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
 
-        .metric-list { list-style: none; padding: 0; margin: 0; font-size: 11pt; }
-        .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
-        .metric-list li:last-child { border-bottom: none; }
+.control-grid { 
+display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;
+background: transparent; border: none; padding: 0; margin-bottom: 0;
+}
+.control-grid label { font-weight: 600; margin-bottom: 6px; color: var(--primary-color); font-size: 9pt; display: block; white-space: nowrap; }
+.control-grid input, .control-grid select { 
+padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5pt; width: 100%; 
+transition: border-color 0.2s, box-shadow 0.2s; background: #fff;
+}
+.control-grid input:focus, .control-grid select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+.control-grid select { text-align: left; }
+.control-grid input[type="number"] { text-align: right; }
 
-        .fab-settings {
-            display: none; position: fixed; bottom: 20px; right: 20px;
-            width: 55px; height: 55px; border-radius: 50%;
-            background: var(--accent-color); color: white;
-            align-items: center; justify-content: center;
-            font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s;
-        }
-        .fab-settings:active { transform: scale(0.95); }
-        .drawer-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); transition: opacity 0.3s;
-        }
-        body.drawer-open .drawer-overlay { display: block; }
+.axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; transition: opacity 0.3s, transform 0.2s; }
+.axis-label { font-weight: 600; font-size: 10pt; color: var(--primary-color); white-space: nowrap; }
+.axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; }
 
-        @media (max-width: 1024px) {
-            .workspace-grid { grid-template-columns: 1fr 1fr; }
-            .results-section { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 8px; }
-            .container { padding: 12px; border-radius: 10px; }
-            header h1 { font-size: 16pt; margin-bottom: 15px; }
+.btn { 
+border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; 
+transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); filter: brightness(0.95); }
 
-            #settings_drawer {
-                position: fixed; top: 0; right: -340px; width: 320px; height: 100vh;
-                background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
-                transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px; margin: 0; border-radius: 0; border: none;
-            }
-            body.drawer-open #settings_drawer { right: 0; }
-            .fab-settings { display: flex; }
-            
-            .tab-header { margin-bottom: 10px; padding: 4px; }
-            .tab-btn { padding: 8px; font-size: 10pt; }
+.btn-nudge-small { background: var(--accent-color); padding: 8px 0; font-size: 9pt; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
+.btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.btn-reset { background: #64748b; }
 
-            .control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 8px; grid-auto-flow: dense; }
-            .control-group.type-sel { grid-column: 1; }
-            .control-group.type-num { grid-column: 2; }
-            .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
-            .control-group input, .control-group select { padding: 6px; font-size: 9pt; }
+input[type="range"] { width: 100%; margin: 0; cursor: pointer; accent-color: var(--accent-color); }
 
-            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
-            body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
-            
-            .dimmable { transition: opacity 0.2s; }
-            body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
-            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
-            
-            .axis-control.active-slider { 
-                opacity: 0.75 !important; 
-                transform: scale(1.03); 
-                z-index: 10; 
-                background: rgba(255, 255, 255, 0.85); 
-                border-radius: 8px; 
-                box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
-                border: 1px solid var(--accent-color);
-            }
+.failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
 
-            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
-            .failure-buttons { flex-direction: column; gap: 10px; }
-            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
-            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
-            .results-section { gap: 15px; }
-            .panel:not(#settings_drawer) { padding: 15px; }
-        }
+.viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
+.viewport-card { 
+border: 1px solid var(--border-color); 
+border-radius: 12px; 
+overflow: hidden; 
+background: var(--canvas-bg); 
+position: relative; 
+box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+/* 修正手機版被裁切隱藏的問題 */
+transform: translateZ(0);
+-webkit-transform: translateZ(0);
+z-index: 1;
+}
+.viewport-card h4 { 
+margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); 
+font-size: 11pt; font-weight: 600; position: absolute; top: 0; width: 100%; z-index: 10; 
+backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color);
+display: flex; justify-content: space-between; align-items: center;
+}
+.canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
 
-        @media (max-width: 480px) {
-            .axis-control { 
-                display: grid; grid-template-columns: 42px auto 1fr 42px; gap: 6px 8px;
-                align-items: center; background: #f8fafc; padding: 6px 8px; border-radius: 8px;
-                border: 1px solid var(--border-color); margin-bottom: 6px;
-            }
-            .axis-label { grid-column: 1 / 3; grid-row: 1; width: auto; text-align: left; margin: 0; font-size: 9.5pt; }
-            .axis-val   { grid-column: 3 / 5; grid-row: 1; width: auto; text-align: right; margin: 0; font-size: 9.5pt; }
-            .btn-nudge-small { font-size: 0; padding: 6px 0; border-radius: 6px; }
-            .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; width: 100%; }
-            .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
-            .axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; width: 100%; margin: 0; align-self: center; }
-            .btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; width: 100%; }
-            .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
+/* 強制 3D 畫布撐滿外框 */
+.canvas-3d canvas { 
+touch-action: none; 
+outline: none; 
+width: 100% !important; 
+height: 100% !important; 
+display: block; 
+}
+.canvas-3d.locked { touch-action: auto !important; }
+.canvas-3d.locked canvas { touch-action: auto !important; pointer-events: none; }
 
-            .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .block-card { padding: 8px; }
-            .block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        }
-    </style>
+.workspace-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px; }
+.block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
+
+.canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
+
+.results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+
+.table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+.compare-table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 10pt; text-align: center; background: white; white-space: nowrap;}
+.compare-table th, .compare-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
+.compare-table th { background: #f8fafc; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 600; }
+.compare-table tr:last-child td { border-bottom: none; }
+.val-gt { color: var(--accent-color); font-weight: bold; }
+.val-est { color: var(--success-color); font-weight: bold; }
+.val-rel { font-weight: bold; }
+.row-summary { background-color: #f1f5f9; }
+
+.metric-list { list-style: none; padding: 0; margin: 0; font-size: 11pt; }
+.metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
+.metric-list li:last-child { border-bottom: none; }
+
+.fab-settings {
+display: none; position: fixed; bottom: 20px; right: 20px;
+width: 55px; height: 55px; border-radius: 50%;
+background: var(--accent-color); color: white;
+align-items: center; justify-content: center;
+font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s;
+}
+.fab-settings:active { transform: scale(0.95); }
+.drawer-overlay {
+display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); transition: opacity 0.3s;
+}
+body.drawer-open .drawer-overlay { display: block; }
+
+@media (max-width: 1024px) {
+.workspace-grid { grid-template-columns: 1fr 1fr; }
+.results-section { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+body { padding: 8px; }
+.container { padding: 12px; border-radius: 10px; }
+header h1 { font-size: 16pt; margin-bottom: 15px; }
+
+#settings_drawer {
+position: fixed; top: 0; right: -340px; width: 320px; height: 100vh;
+background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
+transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
+box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px; margin: 0; border-radius: 0; border: none;
+}
+body.drawer-open #settings_drawer { right: 0; }
+.fab-settings { display: flex; }
+
+.tab-header { margin-bottom: 10px; padding: 4px; }
+.tab-btn { padding: 8px; font-size: 10pt; }
+
+.control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 8px; grid-auto-flow: dense; }
+.control-group.type-sel { grid-column: 1; }
+.control-group.type-num { grid-column: 2; }
+.control-group label { font-size: 8.5pt; margin-bottom: 4px; }
+.control-group input, .control-group select { padding: 6px; font-size: 9pt; }
+
+body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
+body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
+
+.dimmable { transition: opacity 0.2s; }
+body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
+body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
+
+.axis-control.active-slider { 
+opacity: 0.75 !important; 
+transform: scale(1.03); 
+z-index: 10; 
+background: rgba(255, 255, 255, 0.85); 
+border-radius: 8px; 
+box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+border: 1px solid var(--accent-color);
+}
+
+.viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
+.failure-buttons { flex-direction: column; gap: 10px; }
+.failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
+.compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
+.results-section { gap: 15px; }
+.panel:not(#settings_drawer) { padding: 15px; }
+}
+
+@media (max-width: 480px) {
+.axis-control { 
+display: grid; grid-template-columns: 42px auto 1fr 42px; gap: 6px 8px;
+align-items: center; background: #f8fafc; padding: 6px 8px; border-radius: 8px;
+border: 1px solid var(--border-color); margin-bottom: 6px;
+}
+.axis-label { grid-column: 1 / 3; grid-row: 1; width: auto; text-align: left; margin: 0; font-size: 9.5pt; }
+.axis-val   { grid-column: 3 / 5; grid-row: 1; width: auto; text-align: right; margin: 0; font-size: 9.5pt; }
+.btn-nudge-small { font-size: 0; padding: 6px 0; border-radius: 6px; }
+.btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; width: 100%; }
+.btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
+.axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; width: 100%; margin: 0; align-self: center; }
+.btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; width: 100%; }
+.btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
+
+.workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.block-card { padding: 8px; }
+.block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+</style>
 </head>
 <body>
 
@@ -226,1271 +226,1287 @@
 <button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
 
 <div class="container">
-    <header>
-        <h1>3D Scene Flow 金字塔光流實驗室</h1>
-    </header>
+<header>
+<h1>3D Scene Flow 金字塔光流實驗室</h1>
+</header>
 
-    <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
-        <div class="tab-header dimmable">
-            <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')">⚙️ 參數設定</button>
-            <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')">🎛️ 微調控制</button>
-        </div>
+<div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
+<div class="tab-header dimmable">
+<button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')">⚙️ 參數設定</button>
+<button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')">🎛️ 微調控制</button>
+</div>
 
-        <div id="tab_params" class="tab-content dimmable">
-            <div class="control-grid">
-                <div class="control-group type-sel">
-                    <label>紋理選擇</label>
-                    <select id="obj_shape">
-                        <option value="checkerboard">Checkerboard</option>
-                        <option value="noise">隨機白雜訊</option>
-                        <option value="gabor" selected>Gabor斑塊</option>
-                        <option value="vertical_grating">垂直條紋</option>
-                        <option value="rings">同心圓環</option>
-                    </select>
-                </div>
-                <div class="control-group type-sel">
-                    <label>幾何形狀</label>
-                    <select id="obj_geometry_type">
-                        <option value="sphere" selected>球體</option>
-                        <option value="box">正方體</option>
-                        <option value="cylinder">圓柱體</option>
-                        <option value="torus">圓環體</option>
-                        <option value="cone">圓錐體</option>
-                        <option value="octahedron">正八面體</option>
-                    </select>
-                </div>
-                <div class="control-group type-sel">
-                    <label>貼圖時機</label>
-                    <select id="param_tex_mode">
-                        <option value="local" selected>先貼 (跟隨物體)</option>
-                        <option value="global">後貼 (全域空間)</option>
-                    </select>
-                </div>
-                <div class="control-group type-num">
-                    <label>大小 (m)</label>
-                    <input type="number" id="param_obj_size" value="0.200" min="0.050" max="0.500" step="0.001">
-                </div>
-                <div class="control-group type-num">
-                    <label>相機焦距 $f$ (px)</label>
-                    <input type="number" id="param_f" value="400" min="100" max="1000" step="10">
-                </div>
-                <div class="control-group type-num">
-                    <label>基線距離 $B$ (m)</label>
-                    <input type="number" id="param_B" value="0.30" min="0.05" max="1.00" step="0.01">
-                </div>
-                <div class="control-group type-num">
-                    <label>計算窗口 (px)</label>
-                    <input type="number" id="param_win" value="15" min="3" max="51" step="2">
-                </div>
-                <div class="control-group type-sel">
-                    <label>金字塔層數</label>
-                    <select id="param_pyr">
-                        <option value="1">1層</option>
-                        <option value="2">2層</option>
-                        <option value="3" selected>3層</option>
-                        <option value="4">4層</option>
-                        <option value="5">5層</option>
-                        <option value="6">6層</option>
-                    </select>
-                </div>
-                <div class="control-group type-num">
-                    <label>容許誤差閥值(%)</label>
-                    <input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1">
-                </div>
-            </div>
-        </div>
+<div id="tab_params" class="tab-content dimmable">
+<div class="control-grid">
+<div class="control-group type-sel">
+<label>紋理選擇</label>
+<select id="obj_shape">
+<option value="checkerboard">Checkerboard</option>
+<option value="noise">隨機白雜訊</option>
+<option value="gabor" selected>Gabor斑塊</option>
+<option value="vertical_grating">垂直條紋</option>
+<option value="rings">同心圓環</option>
+</select>
+</div>
+<div class="control-group type-sel">
+<label>幾何形狀</label>
+<select id="obj_geometry_type">
+<option value="sphere" selected>球體</option>
+<option value="box">正方體</option>
+<option value="cylinder">圓柱體</option>
+<option value="torus">圓環體</option>
+<option value="cone">圓錐體</option>
+<option value="octahedron">正八面體</option>
+</select>
+</div>
+<div class="control-group type-sel">
+<label>貼圖時機</label>
+<select id="param_tex_mode">
+<option value="local" selected>先貼 (跟隨物體)</option>
+<option value="global">後貼 (全域空間)</option>
+</select>
+</div>
+<div class="control-group type-num">
+<label>大小 (m)</label>
+<input type="number" id="param_obj_size" value="0.200" min="0.050" max="0.500" step="0.001">
+</div>
+<div class="control-group type-num">
+<label>相機焦距 $f$ (px)</label>
+<input type="number" id="param_f" value="400" min="100" max="1000" step="10">
+</div>
+<div class="control-group type-num">
+<label>基線距離 $B$ (m)</label>
+<input type="number" id="param_B" value="0.30" min="0.05" max="1.00" step="0.01">
+</div>
+<div class="control-group type-num">
+<label>計算窗口 (px)</label>
+<input type="number" id="param_win" value="15" min="3" max="51" step="2">
+</div>
+<div class="control-group type-sel">
+<label>金字塔層數</label>
+<select id="param_pyr">
+<option value="1">1層</option>
+<option value="2">2層</option>
+<option value="3" selected>3層</option>
+<option value="4">4層</option>
+<option value="5">5層</option>
+<option value="6">6層</option>
+</select>
+</div>
+<div class="control-group type-num">
+<label>容許誤差閥值(%)</label>
+<input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1">
+</div>
+</div>
+</div>
 
-        <div id="tab_finetune" class="tab-content" style="display: none;">
-            <div class="ft-mode-btn-container dimmable" style="margin-bottom: 20px; display: flex; gap: 8px;">
-                <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')">位移模式</button>
-                <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉模式</button>
-            </div>
+<div id="tab_finetune" class="tab-content" style="display: none;">
+<div class="ft-mode-btn-container dimmable" style="margin-bottom: 20px; display: flex; gap: 8px;">
+<button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')">位移模式</button>
+<button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉模式</button>
+</div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 15px;">
-                <div>
-                    <div class="axis-control">
-                        <span class="axis-label">X 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001m</button>
-                        <input type="range" id="slider_X" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001m</button>
-                        <span id="label_X" class="axis-val">0.0000 m</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label">Y 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001m</button>
-                        <input type="range" id="slider_Y" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001m</button>
-                        <span id="label_Y" class="axis-val">0.0000 m</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label">Z 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001m</button>
-                        <input type="range" id="slider_Z" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001m</button>
-                        <span id="label_Z" class="axis-val">0.0000 m</span>
-                    </div>
-                </div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 15px;">
+<div>
+<div class="axis-control">
+<span class="axis-label">X 位移:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001m</button>
+<input type="range" id="slider_X" min="-2.0" max="2.0" step="0.0001" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001m</button>
+<span id="label_X" class="axis-val">0.0000 m</span>
+</div>
+<div class="axis-control">
+<span class="axis-label">Y 位移:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001m</button>
+<input type="range" id="slider_Y" min="-2.0" max="2.0" step="0.0001" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001m</button>
+<span id="label_Y" class="axis-val">0.0000 m</span>
+</div>
+<div class="axis-control">
+<span class="axis-label">Z 位移:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001m</button>
+<input type="range" id="slider_Z" min="-2.0" max="2.0" step="0.0001" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001m</button>
+<span id="label_Z" class="axis-val">0.0000 m</span>
+</div>
+</div>
 
-                <div>
-                    <div class="axis-control">
-                        <span class="axis-label">X 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('X', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Rx" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('X', 0.1)">+0.1°</button>
-                        <span id="label_Rx" class="axis-val">0.0°</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label">Y 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Y', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Ry" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Y', 0.1)">+0.1°</button>
-                        <span id="label_Ry" class="axis-val">0.0°</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label">Z 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Z', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Rz" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Z', 0.1)">+0.1°</button>
-                        <span id="label_Rz" class="axis-val">0.0°</span>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-nudge btn-reset dimmable" onclick="resetToT()" style="width: 100%; margin-top: 4px;">手動微調歸零 (對齊時間t位置)</button>
-        </div>
-    </div>
+<div>
+<div class="axis-control">
+<span class="axis-label">X 旋轉:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeRotation('X', -0.1)">-0.1°</button>
+<input type="range" id="slider_Rx" min="-180" max="180" step="0.1" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeRotation('X', 0.1)">+0.1°</button>
+<span id="label_Rx" class="axis-val">0.0°</span>
+</div>
+<div class="axis-control">
+<span class="axis-label">Y 旋轉:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeRotation('Y', -0.1)">-0.1°</button>
+<input type="range" id="slider_Ry" min="-180" max="180" step="0.1" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeRotation('Y', 0.1)">+0.1°</button>
+<span id="label_Ry" class="axis-val">0.0°</span>
+</div>
+<div class="axis-control">
+<span class="axis-label">Z 旋轉:</span>
+<button class="btn btn-nudge-small minus" onclick="nudgeRotation('Z', -0.1)">-0.1°</button>
+<input type="range" id="slider_Rz" min="-180" max="180" step="0.1" value="0">
+<button class="btn btn-nudge-small plus" onclick="nudgeRotation('Z', 0.1)">+0.1°</button>
+<span id="label_Rz" class="axis-val">0.0°</span>
+</div>
+</div>
+</div>
+<button class="btn btn-nudge btn-reset dimmable" onclick="resetToT()" style="width: 100%; margin-top: 4px;">手動微調歸零 (對齊時間t位置)</button>
+</div>
+</div>
 
-    <div class="viewport-3d-container">
-        <div class="viewport-card">
-            <h4>
-                <span>時間 $t$ 真實 3D 空間</span>
-                <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
-                    <input type="checkbox" id="lock_3d_t" onchange="toggleLock3D_t()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    🔒 防誤觸
-                </label>
-            </h4>
-            <div id="3d_container_t" class="canvas-3d"></div>
-        </div>
-        <div class="viewport-card">
-            <h4>
-                <span>時間 $t+\Delta t$ 真實 3D 空間</span>
-                <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
-                    <input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D_t1()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    🔒 防誤觸
-                </label>
-            </h4>
-            <div id="3d_container_t1" class="canvas-3d"></div>
-        </div>
-    </div>
+<div class="viewport-3d-container">
+<div class="viewport-card">
+<h4>
+<span>時間 $t$ 真實 3D 空間</span>
+<label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
+<input type="checkbox" id="lock_3d_t" onchange="toggleLock3D_t()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
+🔒 防誤觸
+</label>
+</h4>
+<div id="3d_container_t" class="canvas-3d"></div>
+</div>
+<div class="viewport-card">
+<h4>
+<span>時間 $t+\Delta t$ 真實 3D 空間</span>
+<label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
+<input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D_t1()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
+🔒 防誤觸
+</label>
+</h4>
+<div id="3d_container_t1" class="canvas-3d"></div>
+</div>
+</div>
 
-    <div class="workspace-grid">
-        <div class="block-card">
-            <h4>$t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4>$t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4>$t+\Delta t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4>$t+\Delta t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
-        </div>
-    </div>
+<div class="workspace-grid">
+<div class="block-card">
+<h4>$t$ (左眼 $I_L$)</h4>
+<div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
+</div>
+<div class="block-card">
+<h4>$t$ (右眼 $I_R$)</h4>
+<div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
+</div>
+<div class="block-card">
+<h4>$t+\Delta t$ (左眼 $I_L$)</h4>
+<div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
+</div>
+<div class="block-card">
+<h4>$t+\Delta t$ (右眼 $I_R$)</h4>
+<div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
+</div>
+</div>
 
-    <div class="panel" id="special_cases_panel">
-        <h3 style="margin-bottom: 15px;">特殊情境實驗</h3>
-        <div class="failure-buttons">
-            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')">⚠️ 觸發：孔徑問題 (Aperture Problem)</button>
-            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')">⚠️ 觸發：大位移失效 (Large Displacement)</button>
-            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')">⚠️ 觸發：移出視野 (Out of Bounds)</button>
-        </div>
-    </div>
+<div class="panel" id="special_cases_panel">
+<h3 style="margin-bottom: 15px;">特殊情境實驗</h3>
+<div class="failure-buttons">
+<button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')">⚠️ 觸發：孔徑問題 (Aperture Problem)</button>
+<button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')">⚠️ 觸發：大位移失效 (Large Displacement)</button>
+<button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')">⚠️ 觸發：移出視野 (Out of Bounds)</button>
+</div>
+</div>
 
-    <div class="results-section">
-        <div class="panel" style="margin-bottom: 0;">
-            <h3>速度場驗證：真實 vs. 估算</h3>
-            <div class="table-wrapper">
-                <table class="compare-table">
-                    <tr>
-                        <th>維度</th>
-                        <th>真實運動 $\Delta$</th>
-                        <th>方程解算 $\mathbf{V}$</th>
-                        <th>相對誤差</th>
-                    </tr>
-                    <tr>
-                        <td>$U$ (橫向)</td>
-                        <td class="val-gt" id="gt_U">0.0000 m</td>
-                        <td class="val-est" id="est_U">0.0000 m</td>
-                        <td class="val-rel" id="rel_U">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td>$V$ (垂直)</td>
-                        <td class="val-gt" id="gt_V">0.0000 m</td>
-                        <td class="val-est" id="est_V">0.0000 m</td>
-                        <td class="val-rel" id="rel_V">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td>$W$ (深度)</td>
-                        <td class="val-gt" id="gt_W">0.0000 m</td>
-                        <td class="val-est" id="est_W">0.0000 m</td>
-                        <td class="val-rel" id="rel_W">0.0%</td>
-                    </tr>
-                    <tr class="row-summary">
-                        <td colspan="3" style="text-align: right; font-weight: bold;">總向量誤差百分比：</td>
-                        <td id="err_pct_total" style="font-weight: bold; font-size: 12pt;">0.0%</td>
-                    </tr>
-                </table>
-            </div>
-            <div id="error_explanation" style="margin-top: 15px; padding: 12px; font-size: 10pt; color: var(--danger-color); background: #fef2f2; border-radius: 8px; border: 1px solid #fca5a5; display: none; line-height: 1.6;"></div>
-        </div>
+<div class="results-section">
+<div class="panel" style="margin-bottom: 0;">
+<h3>速度場驗證：真實 vs. 估算</h3>
+<div class="table-wrapper">
+<table class="compare-table">
+<tr>
+<th>維度</th>
+<th>真實運動 $\Delta$</th>
+<th>方程解算 $\mathbf{V}$</th>
+<th>相對誤差</th>
+</tr>
+<tr>
+<td>$U$ (橫向)</td>
+<td class="val-gt" id="gt_U">0.0000 m</td>
+<td class="val-est" id="est_U">0.0000 m</td>
+<td class="val-rel" id="rel_U">0.0%</td>
+</tr>
+<tr>
+<td>$V$ (垂直)</td>
+<td class="val-gt" id="gt_V">0.0000 m</td>
+<td class="val-est" id="est_V">0.0000 m</td>
+<td class="val-rel" id="rel_V">0.0%</td>
+</tr>
+<tr>
+<td>$W$ (深度)</td>
+<td class="val-gt" id="gt_W">0.0000 m</td>
+<td class="val-est" id="est_W">0.0000 m</td>
+<td class="val-rel" id="rel_W">0.0%</td>
+</tr>
+<tr class="row-summary">
+<td colspan="3" style="text-align: right; font-weight: bold;">總向量誤差百分比：</td>
+<td id="err_pct_total" style="font-weight: bold; font-size: 12pt;">0.0%</td>
+</tr>
+</table>
+</div>
+<div id="error_explanation" style="margin-top: 15px; padding: 12px; font-size: 10pt; color: var(--danger-color); background: #fef2f2; border-radius: 8px; border: 1px solid #fca5a5; display: none; line-height: 1.6;"></div>
+</div>
 
-        <div class="panel" style="margin-bottom: 0;">
-            <h3>投影相機幾何資訊</h3>
-            <ul class="metric-list">
-                <li><span>中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold; font-family:monospace;">0, 0</span></li>
-                <li><span>立體視差 $d$:</span><span id="stat_disp" style="font-weight:bold; font-family:monospace;">0.00 px</span></li>
-                <li><span>目標距離 $Z$:</span><span id="stat_depth" style="font-weight:bold; font-family:monospace;">0.000 m</span></li>
-                <li><span>空間解析度關係:</span><span style="color:var(--accent-color); font-weight:bold; font-family:monospace;">1 px = <span id="stat_px_to_m">0.00500</span> m</span></li>
-            </ul>
-        </div>
-    </div>
+<div class="panel" style="margin-bottom: 0;">
+<h3>投影相機幾何資訊</h3>
+<ul class="metric-list">
+<li><span>中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold; font-family:monospace;">0, 0</span></li>
+<li><span>立體視差 $d$:</span><span id="stat_disp" style="font-weight:bold; font-family:monospace;">0.00 px</span></li>
+<li><span>目標距離 $Z$:</span><span id="stat_depth" style="font-weight:bold; font-family:monospace;">0.000 m</span></li>
+<li><span>空間解析度關係:</span><span style="color:var(--accent-color); font-weight:bold; font-family:monospace;">1 px = <span id="stat_px_to_m">0.00500</span> m</span></li>
+</ul>
+</div>
+</div>
 </div>
 
 <script>
-    let lastLoadedFailure = null;
+let lastLoadedFailure = null;
 
-    let lastSliderRx = 0;
-    let lastSliderRy = 0;
-    let lastSliderRz = 0;
+let lastSliderRx = 0;
+let lastSliderRy = 0;
+let lastSliderRz = 0;
 
-    const imgW = 240, imgH = 200;
-    const cx = imgW / 2, cy = imgH / 2;
-    const canvasIds = ['Lt', 'Rt', 'Lt1', 'Rt1'];
-    
-    const contexts = {};
-    const imgBuffers = {};
-    const imgDataCaches = {}; 
-    
-    let currentRayF = -1;
-    let rayDirCache = new Float32Array(imgW * imgH * 3);
+const imgW = 240, imgH = 200;
+const cx = imgW / 2, cy = imgH / 2;
+const canvasIds = ['Lt', 'Rt', 'Lt1', 'Rt1'];
 
-    let projData = {
-        Lt: {x: cx, y: cy, scale: 1}, Rt: {x: cx, y: cy, scale: 1},
-        Lt1: {x: cx, y: cy, scale: 1}, Rt1: {x: cx, y: cy, scale: 1}
-    };
+const contexts = {};
+const imgBuffers = {};
+const imgDataCaches = {}; 
 
-    let scene1, camera1, renderer1, controls1, transform1, object1;
-    let scene2, camera2, renderer2, controls2, transform2, object2;
-    
-    // 【修改核心】：全面廢棄 Euler，改用 Quaternion 儲存基準狀態
-    let basePos2 = new THREE.Vector3(0, 0, -4.0);
-    let baseQuat2 = new THREE.Quaternion(); // 預設就是 (0,0,0,1)
+let currentRayF = -1;
+let rayDirCache = new Float32Array(imgW * imgH * 3);
 
-    const rayTarget = new THREE.Vector3();
-    const invQuaternion = new THREE.Quaternion();
+let projData = {
+Lt: {x: cx, y: cy, scale: 1}, Rt: {x: cx, y: cy, scale: 1},
+Lt1: {x: cx, y: cy, scale: 1}, Rt1: {x: cx, y: cy, scale: 1}
+};
 
-    function formatNum(val, decimals = 4) {
-        let s = val.toFixed(decimals);
-        return parseFloat(s) === 0 ? (0).toFixed(decimals) : s;
-    }
+let scene1, camera1, renderer1, controls1, transform1, object1;
+let scene2, camera2, renderer2, controls2, transform2, object2;
 
-    function formatDeg(val) {
-        let s = val.toFixed(1);
-        return parseFloat(s) === 0 ? "0.0°" : s + "°";
-    }
+// 【修改核心】：全面廢棄 Euler，改用 Quaternion 儲存基準狀態
+let basePos2 = new THREE.Vector3(0, 0, -4.0);
+let baseQuat2 = new THREE.Quaternion(); // 預設就是 (0,0,0,1)
 
-    window.switchTab = function(tabId) {
-        document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
-        document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
-        document.getElementById('btn_tab_params').classList.toggle('active', tabId === 'params');
-        document.getElementById('btn_tab_finetune').classList.toggle('active', tabId === 'finetune');
-    };
+const rayTarget = new THREE.Vector3();
+const invQuaternion = new THREE.Quaternion();
 
-    window.toggleDrawer = function() {
-        document.body.classList.toggle('drawer-open');
-    }
+function formatNum(val, decimals = 4) {
+let s = val.toFixed(decimals);
+return parseFloat(s) === 0 ? (0).toFixed(decimals) : s;
+}
 
-    function initSliderFocus() {
-        document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
-            const wrap = slider.closest('.axis-control');
-            const activate = () => {
-                if(window.innerWidth <= 768) {
-                    document.body.classList.add('slider-focus-mode');
-                    wrap.classList.add('active-slider');
-                }
-            };
-            const deactivate = () => {
-                document.body.classList.remove('slider-focus-mode');
-                wrap.classList.remove('active-slider');
-            };
-            
-            slider.addEventListener('touchstart', activate, {passive: true});
-            slider.addEventListener('touchend', deactivate);
-            slider.addEventListener('touchcancel', deactivate);
-            slider.addEventListener('mousedown', activate);
-            window.addEventListener('mouseup', deactivate);
-        });
-    }
+function formatDeg(val) {
+let s = val.toFixed(1);
+return parseFloat(s) === 0 ? "0.0°" : s + "°";
+}
 
-    window.toggleLock3D_t = function() {
-        const isLocked = document.getElementById('lock_3d_t').checked;
-        if(controls1 && transform1) {
-            controls1.enabled = !isLocked;
-            transform1.enabled = !isLocked; transform1.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
-    };
+window.switchTab = function(tabId) {
+document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
+document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
+document.getElementById('btn_tab_params').classList.toggle('active', tabId === 'params');
+document.getElementById('btn_tab_finetune').classList.toggle('active', tabId === 'finetune');
+};
 
-    window.toggleLock3D_t1 = function() {
-        const isLocked = document.getElementById('lock_3d_t1').checked;
-        if(controls2 && transform2) {
-            controls2.enabled = !isLocked;
-            transform2.enabled = !isLocked; transform2.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
-    };
+window.toggleDrawer = function() {
+document.body.classList.toggle('drawer-open');
+}
 
-    function getRayCache(f) {
-        if (currentRayF === f) return rayDirCache;
-        currentRayF = f;
-        let idx = 0;
-        for (let y = 0; y < imgH; y++) {
-            for (let x = 0; x < imgW; x++) {
-                const rdx = x - cx, rdy = -(y - cy), rdz = -f;
-                const rlen = Math.sqrt(rdx*rdx + rdy*rdy + rdz*rdz);
-                rayDirCache[idx++] = rdx / rlen;
-                rayDirCache[idx++] = rdy / rlen;
-                rayDirCache[idx++] = rdz / rlen;
-            }
-        }
-        return rayDirCache;
-    }
+function initSliderFocus() {
+document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
+const wrap = slider.closest('.axis-control');
+const activate = () => {
+if(window.innerWidth <= 768) {
+document.body.classList.add('slider-focus-mode');
+wrap.classList.add('active-slider');
+}
+};
+const deactivate = () => {
+document.body.classList.remove('slider-focus-mode');
+wrap.classList.remove('active-slider');
+};
 
-    function setupScene(containerId) {
-        const container = document.getElementById(containerId);
-        const width = container.clientWidth || 400;
-        const height = container.clientHeight || 350;
+slider.addEventListener('touchstart', activate, {passive: true});
+slider.addEventListener('touchend', deactivate);
+slider.addEventListener('touchcancel', deactivate);
+slider.addEventListener('mousedown', activate);
+window.addEventListener('mouseup', deactivate);
+});
+}
 
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
-        
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-        camera.position.set(0, 1.5, 3);
-        camera.lookAt(0, 0, -4);
+window.toggleLock3D_t = function() {
+const isLocked = document.getElementById('lock_3d_t').checked;
+if(controls1 && transform1) {
+controls1.enabled = !isLocked;
+transform1.enabled = !isLocked; transform1.visible = !isLocked;
+}
+document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
+};
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-        renderer.setSize(width, height);
-        container.appendChild(renderer.domElement);
+window.toggleLock3D_t1 = function() {
+const isLocked = document.getElementById('lock_3d_t1').checked;
+if(controls2 && transform2) {
+controls2.enabled = !isLocked;
+transform2.enabled = !isLocked; transform2.visible = !isLocked;
+}
+document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
+};
 
-        const gridHelper = new THREE.GridHelper(10, 20, 0x555555, 0x333333);
-        gridHelper.position.y = -1;
-        scene.add(gridHelper);
+function getRayCache(f) {
+if (currentRayF === f) return rayDirCache;
+currentRayF = f;
+let idx = 0;
+for (let y = 0; y < imgH; y++) {
+for (let x = 0; x < imgW; x++) {
+const rdx = x - cx, rdy = -(y - cy), rdz = -f;
+const rlen = Math.sqrt(rdx*rdx + rdy*rdy + rdz*rdz);
+rayDirCache[idx++] = rdx / rlen;
+rayDirCache[idx++] = rdy / rlen;
+rayDirCache[idx++] = rdz / rlen;
+}
+}
+return rayDirCache;
+}
 
-        const camGeo = new THREE.ConeGeometry(0.12, 1, 16);
-        camGeo.translate(0, -0.5, 0); 
-        camGeo.rotateX(Math.PI / 2);  
-        
-        const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x3b82f6}));
-        camL.name = 'camL';
-        const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x10b981}));
-        camR.name = 'camR';
-        scene.add(camL); scene.add(camR);
+function setupScene(containerId) {
+const container = document.getElementById(containerId);
+const width = container.clientWidth || 400;
+const height = container.clientHeight || 350;
 
-        const objGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-        const objMat = new THREE.MeshNormalMaterial();
-        const object = new THREE.Mesh(objGeo, objMat);
-        scene.add(object);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a1a1a);
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.target.set(0, 0, -4);
-        
-        const transform = new THREE.TransformControls(camera, renderer.domElement);
-        
-        // 【嚴格遵循需求】：永遠對齊世界座標系
-        transform.setSpace('local');
-        
-        transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
-        scene.add(transform);
-        transform.attach(object);
+const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+camera.position.set(0, 1.5, 3);
+camera.lookAt(0, 0, -4);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
 
-        return { scene, camera, renderer, controls, transform, object };
-    }
+const gridHelper = new THREE.GridHelper(10, 20, 0x555555, 0x333333);
+gridHelper.position.y = -1;
+scene.add(gridHelper);
 
-    function init3D() {
-        const s1 = setupScene('3d_container_t');
-        scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
-        
-        const s2 = setupScene('3d_container_t1');
-        scene2 = s2.scene; camera2 = s2.camera; renderer2 = s2.renderer; controls2 = s2.controls; transform2 = s2.transform; object2 = s2.object;
+const camGeo = new THREE.ConeGeometry(0.12, 1, 16);
+camGeo.translate(0, -0.5, 0); 
+camGeo.rotateX(Math.PI / 2);  
 
-        object1.position.set(0, 0, -4.0);
-        object2.position.set(0, 0, -4.0);
-        basePos2.set(0, 0, -4.0);
-        baseQuat2.identity(); // 歸零
+const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x3b82f6}));
+camL.name = 'camL';
+const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x10b981}));
+camR.name = 'camR';
+scene.add(camL); scene.add(camR);
 
-        transform1.addEventListener('change', () => {
-            if (transform1.dragging) {
-                lastLoadedFailure = null; 
-                if (transform1.getMode() === 'rotate') {
-                    // 同步時使用 Quaternion 拷貝，不丟失維度
-                    object2.quaternion.copy(object1.quaternion);
-                    baseQuat2.copy(object1.quaternion);
-                    ['Rx', 'Ry', 'Rz'].forEach(id => {
-                        document.getElementById('slider_' + id).value = 0;
-                        document.getElementById('label_' + id).innerText = "0.0°";
-                    });
-                    lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
-                }
-            }
-            updateSystem();
-        });
+const objGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+const objMat = new THREE.MeshNormalMaterial();
+const object = new THREE.Mesh(objGeo, objMat);
+scene.add(object);
 
-        transform2.addEventListener('change', () => {
-            if (transform2.dragging) {
-                lastLoadedFailure = null; 
-                if (transform2.getMode() === 'rotate') {
-                    object1.quaternion.copy(object2.quaternion);
-                }
-                basePos2.copy(object2.position);
-                // 每次手動拖曳後，乾淨地將四元數存入 baseQuat2
-                baseQuat2.copy(object2.quaternion);
-                
-                ['X', 'Y', 'Z'].forEach(axis => {
-                    document.getElementById('slider_' + axis).value = 0;
-                    document.getElementById('label_' + axis).innerText = "0.0000 m";
-                });
-                ['Rx', 'Ry', 'Rz'].forEach(id => {
-                    document.getElementById('slider_' + id).value = 0;
-                    document.getElementById('label_' + id).innerText = "0.0°";
-                });
-                lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
-            }
-            updateSystem();
-        });
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 0, -4);
 
-        toggleLock3D_t();
-        toggleLock3D_t1();
+const transform = new THREE.TransformControls(camera, renderer.domElement);
 
-        animate3D();
-    }
+// 【嚴格遵循需求】：永遠對齊世界座標系
+transform.setSpace('local');
 
-    function animate3D() {
-        requestAnimationFrame(animate3D);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const f = parseFloat(document.getElementById('param_f').value);
-        const coneScaleZ = f / 1000;
+transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
+scene.add(transform);
+transform.attach(object);
 
-        if(scene1 && scene2) {
-            ['camL', 'camR'].forEach((name, i) => {
-                const offsetX = (i === 0 ? -B/2 : B/2);
-                const c1 = scene1.getObjectByName(name);
-                if (c1) { c1.position.set(offsetX, 0, 0); c1.scale.set(1, 1, coneScaleZ); }
-                const c2 = scene2.getObjectByName(name);
-                if (c2) { c2.position.set(offsetX, 0, 0); c2.scale.set(1, 1, coneScaleZ); }
-            });
-        }
-        if(controls1 && controls2) {
-            controls1.update(); controls2.update();
-            renderer1.render(scene1, camera1);
-            renderer2.render(scene2, camera2);
-        }
-    }
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-    function updateProjData(p1, p2, f, B) {
-        const Z1 = -p1.z; const Z2 = -p2.z;
-        projData.Lt.x = cx + f * (p1.x - (-B/2)) / Z1; projData.Lt.y = cy - f * p1.y / Z1;
-        projData.Rt.x = cx + f * (p1.x - (B/2)) / Z1;  projData.Rt.y = cy - f * p1.y / Z1;
-        projData.Lt1.x = cx + f * (p2.x - (-B/2)) / Z2; projData.Lt1.y = cy - f * p2.y / Z2;
-        projData.Rt1.x = cx + f * (p2.x - (B/2)) / Z2;  projData.Rt1.y = cy - f * p2.y / Z2;
-        projData.Lt.scale = projData.Rt.scale = 2.0 / Z1;
-        projData.Lt1.scale = projData.Rt1.scale = 2.0 / Z2;
-    }
+return { scene, camera, renderer, controls, transform, object };
+}
 
-    function updateSystem() {
-        if (!object1 || !object2) return;
-        if(object1.position.z > -0.2) object1.position.z = -0.2;
-        if(object2.position.z > -0.2) object2.position.z = -0.2;
+function init3D() {
+const s1 = setupScene('3d_container_t');
+scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
 
-        if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
+const s2 = setupScene('3d_container_t1');
+scene2 = s2.scene; camera2 = s2.camera; renderer2 = s2.renderer; controls2 = s2.controls; transform2 = s2.transform; object2 = s2.object;
 
-        const f = parseFloat(document.getElementById('param_f').value);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const p1 = object1.position; const p2 = object2.position;
-        
-        updateProjData(p1, p2, f, B);
-        renderAll2DScenes();
-        calculateSceneFlow(p1, p2, f, B, false);
-    }
+object1.position.set(0, 0, -4.0);
+object2.position.set(0, 0, -4.0);
+basePos2.set(0, 0, -4.0);
+baseQuat2.identity(); // 歸零
 
-    function renderAll2DScenes() {
-        const shape = document.getElementById('obj_shape').value;
-        const geomType = document.getElementById('obj_geometry_type').value;
-        const texMode = document.getElementById('param_tex_mode').value;
-        const R = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        const f = parseFloat(document.getElementById('param_f').value);
-        const B = parseFloat(document.getElementById('param_B').value);
-        
-        const rayDirs = getRayCache(f);
+transform1.addEventListener('change', () => {
+if (transform1.dragging) {
+lastLoadedFailure = null; 
+if (transform1.getMode() === 'rotate') {
+// 同步時使用 Quaternion 拷貝，不丟失維度
+object2.quaternion.copy(object1.quaternion);
+baseQuat2.copy(object1.quaternion);
+['Rx', 'Ry', 'Rz'].forEach(id => {
+document.getElementById('slider_' + id).value = 0;
+document.getElementById('label_' + id).innerText = "0.0°";
+});
+lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+}
+}
+updateSystem();
+});
 
-        canvasIds.forEach(key => {
-            const ctx = contexts[key];
-            const buffer = imgBuffers[key];
-            
-            let camX = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
-            let obj = (key === 'Lt' || key === 'Rt') ? object1 : object2;
-            
-            const Ox = camX, Oy = 0, Oz = 0;
-            const Cx = obj.position.x, Cy = obj.position.y, Cz = obj.position.z;
-            
-            invQuaternion.copy(obj.quaternion).invert();
-            const vx = Cx - Ox, vy = Cy - Oy, vz = Cz - Oz;
-            const distToCenter = Math.sqrt(vx*vx + vy*vy + vz*vz);
-            const closeThreshold = (R * 1.8) * (R * 1.8);
+transform2.addEventListener('change', () => {
+if (transform2.dragging) {
+lastLoadedFailure = null; 
+if (transform2.getMode() === 'rotate') {
+object1.quaternion.copy(object2.quaternion);
+}
+basePos2.copy(object2.position);
+// 每次手動拖曳後，乾淨地將四元數存入 baseQuat2
+baseQuat2.copy(object2.quaternion);
 
-            for (let y = 0; y < imgH; y++) {
-                for (let x = 0; x < imgW; x++) {
-                    const idx = y * imgW + x;
-                    const rIdx = idx * 3;
-                    
-                    const Dx = rayDirs[rIdx], Dy = rayDirs[rIdx+1], Dz = rayDirs[rIdx+2];
-                    
-                    const proj = vx*Dx + vy*Dy + vz*Dz;
-                    const closX = vx - proj*Dx, closY = vy - proj*Dy, closZ = vz - proj*Dz;
-                    const closenessSq = closX*closX + closY*closY + closZ*closZ;
-                    
-                    let hit = false;
-                    let lx_raw = 0, ly_raw = 0, lz_raw = 0;
-                    let hitPx = 0, hitPy = 0; 
-                    
-                    if (closenessSq <= closeThreshold && proj > 0) {
-                        let t = distToCenter - R * 1.8; if (t < 0) t = 0;
-                        const maxT = distToCenter + R * 1.8;
-                        
-                        for (let step = 0; step < 24; step++) {
-                            const Px = Ox + t * Dx, Py = Oy + t * Dy, Pz = Oz + t * Dz;
-                            lx_raw = Px - Cx; ly_raw = Py - Cy; lz_raw = Pz - Cz;
-                            
-                            rayTarget.set(lx_raw, ly_raw, lz_raw).applyQuaternion(invQuaternion);
-                            const lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            
-                            let d = 0;
-                            if (geomType === 'sphere') {
-                                d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R;
-                            } else if (geomType === 'box') {
-                                d = Math.max(Math.abs(lx) - R, Math.max(Math.abs(ly) - R, Math.abs(lz) - R));
-                            } else if (geomType === 'cylinder') {
-                                d = Math.max(Math.sqrt(lx*lx + lz*lz) - R, Math.abs(ly) - R);
-                            } else if (geomType === 'torus') {
-                                const r_hz = Math.sqrt(lx*lx + ly*ly);
-                                d = Math.sqrt((r_hz - R*0.7)**2 + lz**2) - R*0.25;
-                            } else if (geomType === 'cone') {
-                                let cone_r = Math.max(0, R * (1.0 - (ly + R) / (R * 2)));
-                                d = Math.max(Math.sqrt(lx*lx + lz*lz) - cone_r, Math.abs(ly) - R);
-                            } else if (geomType === 'octahedron') {
-                                d = (Math.abs(lx) + Math.abs(ly) + Math.abs(lz)) - R;
-                            }
-                            
-                            if (d < 0.0004) { 
-                                hit = true; 
-                                hitPx = Px; hitPy = Py;
-                                break; 
-                            }
-                            t += d; if (t > maxT) break;
-                        }
-                    }
-                    
-                    if (hit) {
-                        let texX, texY;
-                        
-                        if (texMode === 'local') {
-                            let lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            
-                            if (geomType === 'box') {
-                                let ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
-                                if (ax >= ay && ax >= az) { texX = lz * Math.sign(lx); texY = ly; }
-                                else if (ay >= ax && ay >= az) { texX = lx; texY = lz * Math.sign(ly); }
-                                else { texX = lx * Math.sign(lz); texY = ly; }
-                            } else if (geomType === 'cylinder' || geomType === 'cone') {
-                                texX = Math.atan2(lx, lz) * R;
-                                texY = ly;
-                            } else if (geomType === 'torus') {
-                                let theta = Math.atan2(lx, lz);
-                                let r_hz = Math.sqrt(lx*lx + lz*lz);
-                                let phi = Math.atan2(ly, r_hz - R*0.7);
-                                texX = theta * R;
-                                texY = phi * R * 0.3;
-                            } else if (geomType === 'sphere') {
-                                texX = Math.atan2(lx, lz) * R;
-                                texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R;
-                            } else {
-                                texX = lx; texY = ly;
-                            }
-                            texX *= 250; texY *= 250;
-                        } else {
-                            texX = hitPx * 250; texY = hitPy * 250;
-                        }
+['X', 'Y', 'Z'].forEach(axis => {
+document.getElementById('slider_' + axis).value = 0;
+document.getElementById('label_' + axis).innerText = "0.0000 m";
+});
+['Rx', 'Ry', 'Rz'].forEach(id => {
+document.getElementById('slider_' + id).value = 0;
+document.getElementById('label_' + id).innerText = "0.0°";
+});
+lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+}
+updateSystem();
+});
 
-                        let pattern = 128;
-                        if (shape === 'checkerboard') {
-                            pattern = (Math.floor(texX / 4.0) + Math.floor(texY / 4.0)) % 2 === 0 ? 240 : 40;
-                        } else if (shape === 'gabor') {
-                            pattern = 128 + 100 * Math.sin(texX / 4) * Math.cos(texY / 4);
-                        } else if (shape === 'noise') {
-                            const seed = Math.floor(texX / 3.0) * 12.9898 + Math.floor(texY / 3.0) * 78.233;
-                            pattern = 40 + Math.abs((Math.sin(seed) * 43758.5453) % 1) * 200;
-                        } else if (shape === 'vertical_grating') {
-                            pattern = 128 + 127 * Math.cos(texX / 2.0);
-                        } else if (shape === 'rings') {
-                            pattern = 128 + 127 * Math.cos(Math.sqrt(texX*texX + texY*texY) / 3);
-                        }
-                        buffer[idx] = pattern;
-                    } else {
-                        buffer[idx] = -1;
-                    }
-                }
-            }
-            
-            const imgData = imgDataCaches[key];
-            const data = imgData.data;
-            for (let i = 0; i < buffer.length; i++) {
-                const val = buffer[i];
-                const pIdx = i * 4;
-                if (val === -1) {
-                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; 
-                    data[pIdx+3] = 0; 
-                } else {
-                    const clampedVal = Math.max(0, Math.min(255, val));
-                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal;
-                    data[pIdx+3] = 255; 
-                }
-            }
-            ctx.putImageData(imgData, 0, 0);
-        });
-    }
+toggleLock3D_t();
+toggleLock3D_t1();
 
-    function downsample(buf, w, h) {
-        const nw = Math.floor(w/2), nh = Math.floor(h/2);
-        const nbuf = new Float32Array(nw * nh);
-        for(let y = 0; y < nh; y++) {
-            for(let x = 0; x < nw; x++) {
-                const i00 = (y*2)*w + (x*2);
-                nbuf[y*nw + x] = (buf[i00] + buf[i00+1] + buf[i00+w] + buf[i00+w+1]) * 0.25;
-            }
-        }
-        return { buf: nbuf, w: nw, h: nh };
-    }
+animate3D();
+}
 
-    function getPLevel(pyrObj, x, y) {
-        const {buf, w, h} = pyrObj;
-        if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
-        const x0 = Math.floor(x), y0 = Math.floor(y);
-        const dx = x - x0, dy = y - y0;
-        return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
-    }
+function animate3D() {
+requestAnimationFrame(animate3D);
+const B = parseFloat(document.getElementById('param_B').value);
+const f = parseFloat(document.getElementById('param_f').value);
+const coneScaleZ = f / 1000;
 
-    function invertMatrix3x3(m) {
-        const det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-        if (Math.abs(det) < 1e-12) return null;
-        return [
-            [(m[1][1] * m[2][2] - m[2][1] * m[1][2]) / det, (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
-            [(m[1][2] * m[2][0] - m[1][0] * m[2][2]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, (m[1][0] * m[0][2] - m[0][0] * m[1][2]) / det],
-            [(m[1][0] * m[2][1] - m[2][0] * m[1][1]) / det, (m[2][0] * m[0][1] - m[0][0] * m[2][1]) / det, (m[0][0] * m[1][1] - m[1][0] * m[0][1]) / det]
-        ];
-    }
+if(scene1 && scene2) {
+['camL', 'camR'].forEach((name, i) => {
+const offsetX = (i === 0 ? -B/2 : B/2);
+const c1 = scene1.getObjectByName(name);
+if (c1) { c1.position.set(offsetX, 0, 0); c1.scale.set(1, 1, coneScaleZ); }
+const c2 = scene2.getObjectByName(name);
+if (c2) { c2.position.set(offsetX, 0, 0); c2.scale.set(1, 1, coneScaleZ); }
+});
+}
+if(controls1 && controls2) {
+controls1.update(); controls2.update();
+renderer1.render(scene1, camera1);
+renderer2.render(scene2, camera2);
+}
+}
 
-    function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
-        let totalLevels = parseInt(document.getElementById('param_pyr').value);
-        if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
-        const win = parseInt(document.getElementById('param_win').value);
-        const halfW = Math.floor(win / 2);
-        
-        const px = projData.Lt.x, py = projData.Lt.y;
-        const d_disp = projData.Lt.x - projData.Rt.x;
-        const Z = -p1.z; 
+function updateProjData(p1, p2, f, B) {
+const Z1 = -p1.z; const Z2 = -p2.z;
+projData.Lt.x = cx + f * (p1.x - (-B/2)) / Z1; projData.Lt.y = cy - f * p1.y / Z1;
+projData.Rt.x = cx + f * (p1.x - (B/2)) / Z1;  projData.Rt.y = cy - f * p1.y / Z1;
+projData.Lt1.x = cx + f * (p2.x - (-B/2)) / Z2; projData.Lt1.y = cy - f * p2.y / Z2;
+projData.Rt1.x = cx + f * (p2.x - (B/2)) / Z2;  projData.Rt1.y = cy - f * p2.y / Z2;
+projData.Lt.scale = projData.Rt.scale = 2.0 / Z1;
+projData.Lt1.scale = projData.Rt1.scale = 2.0 / Z2;
+}
 
-        const err_threshold = parseFloat(document.getElementById('param_err_thresh').value) || 25;
+function updateSystem() {
+if (!object1 || !object2) return;
+if(object1.position.z > -0.2) object1.position.z = -0.2;
+if(object2.position.z > -0.2) object2.position.z = -0.2;
 
-        if (!dryRun) {
-            document.getElementById('stat_px_to_m').innerText = (Z / f).toFixed(5);
-            document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m";
-        }
+if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
 
-        const pyrLt = [{buf: imgBuffers.Lt, w: imgW, h: imgH}];
-        const pyrRt = [{buf: imgBuffers.Rt, w: imgW, h: imgH}];
-        const pyrLt1 = [{buf: imgBuffers.Lt1, w: imgW, h: imgH}];
-        const pyrRt1 = [{buf: imgBuffers.Rt1, w: imgW, h: imgH}];
+const f = parseFloat(document.getElementById('param_f').value);
+const B = parseFloat(document.getElementById('param_B').value);
+const p1 = object1.position; const p2 = object2.position;
 
-        for(let i = 1; i < totalLevels; i++) {
-            pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h));
-            pyrRt.push(downsample(pyrRt[i-1].buf, pyrRt[i-1].w, pyrRt[i-1].h));
-            pyrLt1.push(downsample(pyrLt1[i-1].buf, pyrLt1[i-1].w, pyrLt1[i-1].h));
-            pyrRt1.push(downsample(pyrRt1[i-1].buf, pyrRt1[i-1].w, pyrRt1[i-1].h));
-        }
+updateProjData(p1, p2, f, B);
+renderAll2DScenes();
+calculateSceneFlow(p1, p2, f, B, false);
+}
 
-        let U_est = 0, V_est = 0, W_est = 0;
+function renderAll2DScenes() {
+const shape = document.getElementById('obj_shape').value;
+const geomType = document.getElementById('obj_geometry_type').value;
+const texMode = document.getElementById('param_tex_mode').value;
+const R = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
+const f = parseFloat(document.getElementById('param_f').value);
+const B = parseFloat(document.getElementById('param_B').value);
+
+const rayDirs = getRayCache(f);
+
+canvasIds.forEach(key => {
+const ctx = contexts[key];
+const buffer = imgBuffers[key];
+
+let camX = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
+let obj = (key === 'Lt' || key === 'Rt') ? object1 : object2;
+
+const Ox = camX, Oy = 0, Oz = 0;
+const Cx = obj.position.x, Cy = obj.position.y, Cz = obj.position.z;
+
+invQuaternion.copy(obj.quaternion).invert();
+const vx = Cx - Ox, vy = Cy - Oy, vz = Cz - Oz;
+const distToCenter = Math.sqrt(vx*vx + vy*vy + vz*vz);
+const closeThreshold = (R * 1.8) * (R * 1.8);
+
+for (let y = 0; y < imgH; y++) {
+for (let x = 0; x < imgW; x++) {
+const idx = y * imgW + x;
+const rIdx = idx * 3;
+
+const Dx = rayDirs[rIdx], Dy = rayDirs[rIdx+1], Dz = rayDirs[rIdx+2];
+
+const proj = vx*Dx + vy*Dy + vz*Dz;
+const closX = vx - proj*Dx, closY = vy - proj*Dy, closZ = vz - proj*Dz;
+const closenessSq = closX*closX + closY*closY + closZ*closZ;
+
+let hit = false;
+let lx_raw = 0, ly_raw = 0, lz_raw = 0;
+let hitPx = 0, hitPy = 0; 
+
+if (closenessSq <= closeThreshold && proj > 0) {
+let t = distToCenter - R * 1.8; if (t < 0) t = 0;
+const maxT = distToCenter + R * 1.8;
+
+for (let step = 0; step < 24; step++) {
+const Px = Ox + t * Dx, Py = Oy + t * Dy, Pz = Oz + t * Dz;
+lx_raw = Px - Cx; ly_raw = Py - Cy; lz_raw = Pz - Cz;
+
+rayTarget.set(lx_raw, ly_raw, lz_raw).applyQuaternion(invQuaternion);
+const lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
+
+let d = 0;
+if (geomType === 'sphere') {
+d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R;
+} else if (geomType === 'box') {
+d = Math.max(Math.abs(lx) - R, Math.max(Math.abs(ly) - R, Math.abs(lz) - R));
+} else if (geomType === 'cylinder') {
+d = Math.max(Math.sqrt(lx*lx + lz*lz) - R, Math.abs(ly) - R);
+} else if (geomType === 'torus') {
+const r_hz = Math.sqrt(lx*lx + ly*ly);
+d = Math.sqrt((r_hz - R*0.7)**2 + lz**2) - R*0.25;
+} else if (geomType === 'cone') {
+let cone_r = Math.max(0, R * (1.0 - (ly + R) / (R * 2)));
+d = Math.max(Math.sqrt(lx*lx + lz*lz) - cone_r, Math.abs(ly) - R);
+} else if (geomType === 'octahedron') {
+d = (Math.abs(lx) + Math.abs(ly) + Math.abs(lz)) - R;
+}
+
+if (d < 0.0004) { 
+hit = true; 
+hitPx = Px; hitPy = Py;
+break; 
+}
+t += d; if (t > maxT) break;
+}
+}
+
+if (hit) {
+let texX, texY;
+
+if (texMode === 'local') {
+let lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
+
+if (geomType === 'box') {
+let ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
+if (ax >= ay && ax >= az) { texX = lz * Math.sign(lx); texY = ly; }
+else if (ay >= ax && ay >= az) { texX = lx; texY = lz * Math.sign(ly); }
+else { texX = lx * Math.sign(lz); texY = ly; }
+} else if (geomType === 'cylinder' || geomType === 'cone') {
+texX = Math.atan2(lx, lz) * R;
+texY = ly;
+} else if (geomType === 'torus') {
+let theta = Math.atan2(lx, lz);
+let r_hz = Math.sqrt(lx*lx + lz*lz);
+let phi = Math.atan2(ly, r_hz - R*0.7);
+texX = theta * R;
+texY = phi * R * 0.3;
+} else if (geomType === 'sphere') {
+texX = Math.atan2(lx, lz) * R;
+texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R;
+} else {
+texX = lx; texY = ly;
+}
+texX *= 250; texY *= 250;
+} else {
+texX = hitPx * 250; texY = hitPy * 250;
+}
+
+let pattern = 128;
+if (shape === 'checkerboard') {
+pattern = (Math.floor(texX / 4.0) + Math.floor(texY / 4.0)) % 2 === 0 ? 240 : 40;
+} else if (shape === 'gabor') {
+pattern = 128 + 100 * Math.sin(texX / 4) * Math.cos(texY / 4);
+} else if (shape === 'noise') {
+const seed = Math.floor(texX / 3.0) * 12.9898 + Math.floor(texY / 3.0) * 78.233;
+pattern = 40 + Math.abs((Math.sin(seed) * 43758.5453) % 1) * 200;
+} else if (shape === 'vertical_grating') {
+pattern = 128 + 127 * Math.cos(texX / 2.0);
+} else if (shape === 'rings') {
+pattern = 128 + 127 * Math.cos(Math.sqrt(texX*texX + texY*texY) / 3);
+}
+buffer[idx] = pattern;
+} else {
+buffer[idx] = -1;
+}
+}
+}
+
+const imgData = imgDataCaches[key];
+const data = imgData.data;
+for (let i = 0; i < buffer.length; i++) {
+const val = buffer[i];
+const pIdx = i * 4;
+if (val === -1) {
+data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; 
+data[pIdx+3] = 0; 
+} else {
+const clampedVal = Math.max(0, Math.min(255, val));
+data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal;
+data[pIdx+3] = 255; 
+}
+}
+ctx.putImageData(imgData, 0, 0);
+});
+}
+
+function downsample(buf, w, h) {
+const nw = Math.floor(w/2), nh = Math.floor(h/2);
+const nbuf = new Float32Array(nw * nh);
+for(let y = 0; y < nh; y++) {
+for(let x = 0; x < nw; x++) {
+const i00 = (y*2)*w + (x*2);
+nbuf[y*nw + x] = (buf[i00] + buf[i00+1] + buf[i00+w] + buf[i00+w+1]) * 0.25;
+}
+}
+return { buf: nbuf, w: nw, h: nh };
+}
+
+function getPLevel(pyrObj, x, y) {
+const {buf, w, h} = pyrObj;
+if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
+const x0 = Math.floor(x), y0 = Math.floor(y);
+const dx = x - x0, dy = y - y0;
+return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
+}
+
+function invertMatrix3x3(m) {
+const det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+if (Math.abs(det) < 1e-12) return null;
+return [
+[(m[1][1] * m[2][2] - m[2][1] * m[1][2]) / det, (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
+[(m[1][2] * m[2][0] - m[1][0] * m[2][2]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, (m[1][0] * m[0][2] - m[0][0] * m[1][2]) / det],
+[(m[1][0] * m[2][1] - m[2][0] * m[1][1]) / det, (m[2][0] * m[0][1] - m[0][0] * m[2][1]) / det, (m[0][0] * m[1][1] - m[1][0] * m[0][1]) / det]
+];
+}
+
+function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
+let totalLevels = parseInt(document.getElementById('param_pyr').value);
+if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
+const win = parseInt(document.getElementById('param_win').value);
+const halfW = Math.floor(win / 2);
+
+const px = projData.Lt.x, py = projData.Lt.y;
+const d_disp = projData.Lt.x - projData.Rt.x;
+const Z = -p1.z; 
+
+const err_threshold = parseFloat(document.getElementById('param_err_thresh').value) || 25;
+
+if (!dryRun) {
+document.getElementById('stat_px_to_m').innerText = (Z / f).toFixed(5);
+document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m";
+}
+
+const pyrLt = [{buf: imgBuffers.Lt, w: imgW, h: imgH}];
+const pyrRt = [{buf: imgBuffers.Rt, w: imgW, h: imgH}];
+const pyrLt1 = [{buf: imgBuffers.Lt1, w: imgW, h: imgH}];
+const pyrRt1 = [{buf: imgBuffers.Rt1, w: imgW, h: imgH}];
+
+for(let i = 1; i < totalLevels; i++) {
+pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h));
+pyrRt.push(downsample(pyrRt[i-1].buf, pyrRt[i-1].w, pyrRt[i-1].h));
+pyrLt1.push(downsample(pyrLt1[i-1].buf, pyrLt1[i-1].w, pyrLt1[i-1].h));
+pyrRt1.push(downsample(pyrRt1[i-1].buf, pyrRt1[i-1].w, pyrRt1[i-1].h));
+}
+
+let U_est = 0, V_est = 0, W_est = 0;
+        let isDegenerate = false, isOutOfBounds = false;
         let isOutOfBounds = false;
-        
-        const R_size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        const obj_px_radius = (f * R_size) / Z;
-        const bounds_margin = -obj_px_radius * 0.5; 
 
-        if (px < bounds_margin || px >= imgW - bounds_margin || 
-            py < bounds_margin || py >= imgH - bounds_margin ||
-            projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || 
-            projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
-            isOutOfBounds = true;
-        }
+const R_size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
+const obj_px_radius = (f * R_size) / Z;
+const bounds_margin = -obj_px_radius * 0.5; 
 
-        let baseDetS = 0;
-        let baseTraceS = 0;
+if (px < bounds_margin || px >= imgW - bounds_margin || 
+py < bounds_margin || py >= imgH - bounds_margin ||
+projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || 
+projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
+isOutOfBounds = true;
+}
 
-        if (!isOutOfBounds) {
-            for (let lvl = totalLevels - 1; lvl >= 0; lvl--) {
-                const scale = 1 / Math.pow(2, lvl);
-                const cw = pyrLt[lvl].w, ch = pyrLt[lvl].h;
-                const f_l = f * scale, cx_l = cx * scale, cy_l = cy * scale;
-                const px_l = px * scale, py_l = py * scale, d_disp_l = d_disp * scale;
+let baseDetS = 0;
+let baseTraceS = 0;
 
-                let S = [[0,0,0], [0,0,0], [0,0,0]];
-                
-                for (let dy = -halfW; dy <= halfW; dy++) {
-                    for (let dx = -halfW; dx <= halfW; dx++) {
-                        const xL = px_l + dx; const yL = py_l + dy;
-                        const xR = xL - d_disp_l; const yR = yL;
+if (!isOutOfBounds) {
+for (let lvl = totalLevels - 1; lvl >= 0; lvl--) {
+const scale = 1 / Math.pow(2, lvl);
+const cw = pyrLt[lvl].w, ch = pyrLt[lvl].h;
+const f_l = f * scale, cx_l = cx * scale, cy_l = cy * scale;
+const px_l = px * scale, py_l = py * scale, d_disp_l = d_disp * scale;
 
-                        if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
+let S = [[0,0,0], [0,0,0], [0,0,0]];
 
-                        const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
-                        const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
-                        const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-                        const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
+for (let dy = -halfW; dy <= halfW; dy++) {
+for (let dx = -halfW; dx <= halfW; dx++) {
+const xL = px_l + dx; const yL = py_l + dy;
+const xR = xL - d_disp_l; const yR = yL;
 
-                        const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
-                        const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
+if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
 
-                        for(let m=0; m<3; m++) {
-                            for(let n=0; n<3; n++) { S[m][n] += rowL[m]*rowL[n] + rowR[m]*rowR[n]; }
-                        }
-                    }
-                }
+const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
+const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
+const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
+const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
 
-                const detS = S[0][0]*(S[1][1]*S[2][2] - S[1][2]*S[2][1]) - S[0][1]*(S[1][0]*S[2][2] - S[1][2]*S[2][0]) + S[0][2]*(S[1][0]*S[2][1] - S[1][1]*S[2][0]);
-                const S_inv = invertMatrix3x3(S);
-                
-                const trace = S[0][0] + S[1][1] + S[2][2];
-                const cond = Math.abs(detS) / (trace * trace * trace + 1e-12);
+const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
+const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
 
-                if (lvl === 0) {
-                    baseDetS = detS;
-                    baseTraceS = trace;
-                }
-                
+for(let m=0; m<3; m++) {
+for(let n=0; n<3; n++) { S[m][n] += rowL[m]*rowL[n] + rowR[m]*rowR[n]; }
+}
+}
+}
+
+const detS = S[0][0]*(S[1][1]*S[2][2] - S[1][2]*S[2][1]) - S[0][1]*(S[1][0]*S[2][2] - S[1][2]*S[2][0]) + S[0][2]*(S[1][0]*S[2][1] - S[1][1]*S[2][0]);
+const S_inv = invertMatrix3x3(S);
+
+const trace = S[0][0] + S[1][1] + S[2][2];
+const cond = Math.abs(detS) / (trace * trace * trace + 1e-12);
+
+if (lvl === 0) {
+baseDetS = detS;
+baseTraceS = trace;
+}
+
+                if (!S_inv || Math.abs(detS) < 1e-5) continue;
                 // 【修復核心】：加入 cond < 1e-4 提早攔截病態矩陣，防止反矩陣數值爆炸導致的 OutOfBounds 誤判
                 if (!S_inv || Math.abs(detS) < 1e-5 || cond < 1e-4) continue;
 
-                for (let iter = 0; iter < 10; iter++) {
-                    let Atb = [0, 0, 0], validPixels = 0;
+for (let iter = 0; iter < 10; iter++) {
+let Atb = [0, 0, 0], validPixels = 0;
 
-                    for (let dy = -halfW; dy <= halfW; dy++) {
-                        for (let dx = -halfW; dx <= halfW; dx++) {
-                            const xL = px_l + dx, yL = py_l + dy;
-                            const xR = xL - d_disp_l, yR = yL;
+for (let dy = -halfW; dy <= halfW; dy++) {
+for (let dx = -halfW; dx <= halfW; dx++) {
+const xL = px_l + dx, yL = py_l + dy;
+const xR = xL - d_disp_l, yR = yL;
 
-                            if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
+if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
 
-                            const X_p = (xL - cx_l) * Z / f_l - B/2;
-                            const Y_p = -(yL - cy_l) * Z / f_l;
+const X_p = (xL - cx_l) * Z / f_l - B/2;
+const Y_p = -(yL - cy_l) * Z / f_l;
 
-                            const xL_warp = cx_l + f_l * (X_p + U_est + B/2) / (Z + W_est);
-                            const yL_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
-                            const xR_warp = cx_l + f_l * (X_p + U_est - B/2) / (Z + W_est);
-                            const yR_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
+const xL_warp = cx_l + f_l * (X_p + U_est + B/2) / (Z + W_est);
+const yL_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
+const xR_warp = cx_l + f_l * (X_p + U_est - B/2) / (Z + W_est);
+const yR_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
 
-                            if (xL_warp < 0 || xL_warp >= cw-1 || yL_warp < 0 || yL_warp >= ch-1 || xR_warp < 0 || xR_warp >= cw-1 || yR_warp < 0 || yR_warp >= ch-1) continue;
+if (xL_warp < 0 || xL_warp >= cw-1 || yL_warp < 0 || yL_warp >= ch-1 || xR_warp < 0 || xR_warp >= cw-1 || yR_warp < 0 || yR_warp >= ch-1) continue;
 
-                            validPixels++;
+validPixels++;
 
-                            const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
-                            const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
-                            const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-                            const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
+const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
+const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
+const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
+const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
 
-                            const ILt = getPLevel(pyrLt1[lvl], xL_warp, yL_warp) - getPLevel(pyrLt[lvl], xL, yL);
-                            const IRt = getPLevel(pyrRt1[lvl], xR_warp, yR_warp) - getPLevel(pyrRt[lvl], xR, yR);
+const ILt = getPLevel(pyrLt1[lvl], xL_warp, yL_warp) - getPLevel(pyrLt[lvl], xL, yL);
+const IRt = getPLevel(pyrRt1[lvl], xR_warp, yR_warp) - getPLevel(pyrRt[lvl], xR, yR);
 
-                            const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
-                            const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
+const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
+const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
 
-                            Atb[0] += rowL[0]*(-ILt) + rowR[0]*(-IRt); Atb[1] += rowL[1]*(-ILt) + rowR[1]*(-IRt); Atb[2] += rowL[2]*(-ILt) + rowR[2]*(-IRt);
-                        }
-                    }
+Atb[0] += rowL[0]*(-ILt) + rowR[0]*(-IRt); Atb[1] += rowL[1]*(-ILt) + rowR[1]*(-IRt); Atb[2] += rowL[2]*(-ILt) + rowR[2]*(-IRt);
+}
+}
 
-                    if (validPixels < 5) {
-                        if (lvl === 0) isOutOfBounds = true;
-                        break;
-                    }
+if (validPixels < 5) {
+if (lvl === 0) isOutOfBounds = true;
+break;
+}
 
-                    const dU = S_inv[0][0]*Atb[0] + S_inv[0][1]*Atb[1] + S_inv[0][2]*Atb[2];
-                    const dV = S_inv[1][0]*Atb[0] + S_inv[1][1]*Atb[1] + S_inv[1][2]*Atb[2];
-                    const dW = S_inv[2][0]*Atb[0] + S_inv[2][1]*Atb[1] + S_inv[2][2]*Atb[2];
+const dU = S_inv[0][0]*Atb[0] + S_inv[0][1]*Atb[1] + S_inv[0][2]*Atb[2];
+const dV = S_inv[1][0]*Atb[0] + S_inv[1][1]*Atb[1] + S_inv[1][2]*Atb[2];
+const dW = S_inv[2][0]*Atb[0] + S_inv[2][1]*Atb[1] + S_inv[2][2]*Atb[2];
 
-                    U_est += dU; V_est += dV; W_est += dW;
-                    if (Math.abs(dU) + Math.abs(dV) + Math.abs(dW) < 1e-6) break;
-                }
-            }
-        }
+U_est += dU; V_est += dV; W_est += dW;
+if (Math.abs(dU) + Math.abs(dV) + Math.abs(dW) < 1e-6) break;
+}
+}
+}
 
-        const gt_U = p2.x - p1.x, gt_V = p2.y - p1.y, gt_W = p1.z - p2.z; 
-        const gt_mag = Math.sqrt(gt_U**2 + gt_V**2 + gt_W**2);
+const gt_U = p2.x - p1.x, gt_V = p2.y - p1.y, gt_W = p1.z - p2.z; 
+const gt_mag = Math.sqrt(gt_U**2 + gt_V**2 + gt_W**2);
 
-        const err_U = Math.abs(gt_U - U_est), err_V = Math.abs(gt_V - V_est), err_W = Math.abs(gt_W - W_est);
-        const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
+const err_U = Math.abs(gt_U - U_est), err_V = Math.abs(gt_V - V_est), err_W = Math.abs(gt_W - W_est);
+const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
+
+let err_pct = 0;
+if (gt_mag > 1e-4) {
+err_pct = (err_mag / gt_mag) * 100;
+} else {
+err_pct = err_mag > 1e-4 ? Infinity : 0;
+}
+
+        // ---------------------------------------------------------
+        // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
+        // ---------------------------------------------------------
         
-        let err_pct = 0;
-        if (gt_mag > 1e-4) {
-            err_pct = (err_mag / gt_mag) * 100;
-        } else {
-            err_pct = err_mag > 1e-4 ? Infinity : 0;
-        }
-
-        let failureMode = 'none';
-
-        const true_px_move = Math.sqrt(Math.pow(projData.Lt1.x - projData.Lt.x, 2) + Math.pow(projData.Lt1.y - projData.Lt.y, 2));
-        const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
-        const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
-
-        if (isOutOfBounds) {
-            failureMode = 'out_of_bounds';
-        } 
-        else if (baseTraceS < 1e-5 || condIndex < 1e-4) {
-            failureMode = 'aperture';
-        } 
-        else if (true_px_move > max_trackable_px) {
-            failureMode = 'large_disp';
-        } 
-        else {
-            const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
-            if (isFailed) {
-                failureMode = 'large_disp'; 
-            } else {
-                failureMode = 'success';
-            }
-        }
-
-        if (dryRun) return { failureMode };
-
-        updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
-    }
-
-    function calcRelativeError(gt, est) {
-        const err = Math.abs(gt - est);
-        if (Math.abs(gt) < 1e-4) {
-            return err < 1e-4 ? "0.0%" : "N/A";
-        }
-        const pct = (err / Math.abs(gt)) * 100;
-        return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
-    }
-
-    function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
-        document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
-        document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
-        document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
-        document.getElementById('stat_coord').innerText = `(${Math.round(px)}, ${Math.round(py)})`;
-        document.getElementById('stat_disp').innerText = formatNum(d_disp, 2) + ' px';
+        // ---------------------------------------------------------
+        // 【全新：數值化、嚴格互斥的 5 階層失敗判斷系統】
+        // ---------------------------------------------------------
         
-        const elTotalErr = document.getElementById('err_pct_total');
-        const errorExp = document.getElementById('error_explanation');
-        errorExp.style.display = 'none';
+let failureMode = 'none';
 
-        if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
-            ['U', 'V', 'W'].forEach(axis => {
-                document.getElementById('est_' + axis).innerText = "NaN";
-                document.getElementById('rel_' + axis).innerText = "失敗";
-            });
-            
-            elTotalErr.style.color = 'var(--danger-color)';
-            document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
-            
-            elTotalErr.innerText = "計算失敗";
-            
-            if (failureMode === 'aperture') {
-                errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
-            } else {
-                errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
-            }
-            errorExp.style.display = 'block';
+const true_px_move = Math.sqrt(Math.pow(projData.Lt1.x - projData.Lt.x, 2) + Math.pow(projData.Lt1.y - projData.Lt.y, 2));
+const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
+const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
 
-        } else {
-            document.getElementById('est_U').innerText = formatNum(U_est) + ' m';
-            document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
-            document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
-            
-            document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est);
-            document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
-            document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
+        // --- 開始階層式檢定 (嚴格遵守順序，條件互斥) ---
 
-            let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
+if (isOutOfBounds) {
+failureMode = 'out_of_bounds';
+} 
+else if (baseTraceS < 1e-5 || condIndex < 1e-4) {
+            // 【修正重點 1】孔徑問題必須優先判斷！
+            // 只要矩陣缺乏多方向特徵(奇異化)，連微小位移都無法解算，因此優先級大於大位移
+failureMode = 'aperture';
+} 
+else if (true_px_move > max_trackable_px) {
+            // 位移速度過快，超出了金字塔層次與運算窗口能「看」到的最大範圍
+failureMode = 'large_disp';
+} 
+else {
+            // 收斂結果檢驗
+const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
+if (isFailed) {
+failureMode = 'large_disp'; 
+} else {
+failureMode = 'success';
+}
+}
 
-            if (failureMode === 'large_disp') {
-                elTotalErr.innerText = "計算失敗";
-                elTotalErr.style.color = 'var(--danger-color)';
-                document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
-                errorExp.innerHTML = "<strong>⚠️ 移動距離過大或誤差超標 (Large Displacement)</strong><br>物體的位移量超出了目前設定的「計算窗口」與「金字塔層數」所能涵蓋的最大追蹤極限，或解析出的數值超過了你所設定的容許誤差閥值，導致預測被標記為失效。";
-                errorExp.style.display = 'block';
-            } else {
-                elTotalErr.innerText = pctStr + ' (成功)';
-                elTotalErr.style.color = 'var(--success-color)';
-                ['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
-                document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
-            }
-        }
-    }
+if (dryRun) return { failureMode };
 
-    window.setTransformMode = function(mode) {
-        if (!transform2) return;
-        transform2.setMode(mode); 
-        transform1.setMode(mode);
-        
-        transform2.setSpace('local');
-        transform1.setSpace('local');
-        
-        const isTranslate = mode === 'translate';
-        document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
-        document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
-    };
+updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
+}
 
-    window.updateObjectGeometry = function(dryRun = false) {
-        if (!object1 || !object2) return;
-        const type = document.getElementById('obj_geometry_type').value;
-        const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        
-        if(object1.geometry) object1.geometry.dispose();
-        if(object2.geometry) object2.geometry.dispose();
-        
-        let newGeo;
-        if (type === 'box') newGeo = new THREE.BoxGeometry(size * 2, size * 2, size * 2);
-        else if (type === 'cylinder') newGeo = new THREE.CylinderGeometry(size, size, size * 2, 32);
-        else if (type === 'torus') newGeo = new THREE.TorusGeometry(size * 0.7, size * 0.3, 16, 64);
-        else if (type === 'cone') newGeo = new THREE.ConeGeometry(size, size * 2, 32);
-        else if (type === 'octahedron') newGeo = new THREE.OctahedronGeometry(size);
-        else newGeo = new THREE.SphereGeometry(size, 32, 32);
-        
-        object1.geometry = newGeo;
-        object2.geometry = newGeo.clone();
-        
-        if (dryRun !== true) updateSystem();
-    };
+function calcRelativeError(gt, est) {
+const err = Math.abs(gt - est);
+if (Math.abs(gt) < 1e-4) {
+return err < 1e-4 ? "0.0%" : "N/A";
+}
+const pct = (err / Math.abs(gt)) * 100;
+return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
+}
 
-    function onSliderInput() {
-        if (!object1 || !object2) return;
-        lastLoadedFailure = null; 
-        
-        // ----------------------------------------------------
-        // 1. 取得當前 UI 的最新數值
-        // ----------------------------------------------------
-        const dx = parseFloat(document.getElementById('slider_X').value);
-        const dy = parseFloat(document.getElementById('slider_Y').value);
-        const dz = parseFloat(document.getElementById('slider_Z').value);
-        
-        const currentRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
-        const currentRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
-        const currentRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
+function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
+document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
+document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
+document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
+document.getElementById('stat_coord').innerText = `(${Math.round(px)}, ${Math.round(py)})`;
+document.getElementById('stat_disp').innerText = formatNum(d_disp, 2) + ' px';
 
-        // ----------------------------------------------------
-        // 2. 位移處理：對齊基準的區域座標軸 (保持不變)
-        // ----------------------------------------------------
-        const localMove = new THREE.Vector3(dx, dy, -dz);
-        localMove.applyQuaternion(baseQuat2); 
-        object2.position.copy(basePos2).add(localMove);
+const elTotalErr = document.getElementById('err_pct_total');
+const errorExp = document.getElementById('error_explanation');
+errorExp.style.display = 'none';
 
-        // ----------------------------------------------------
-        // 3. 旋轉處理：計算增量 (Delta)，並讀取當下視覺軸
-        // ----------------------------------------------------
-        const deltaX = currentRx - lastSliderRx;
-        const deltaY = currentRy - lastSliderRy;
-        const deltaZ = currentRz - lastSliderRz;
+if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
+['U', 'V', 'W'].forEach(axis => {
+document.getElementById('est_' + axis).innerText = "NaN";
+document.getElementById('rel_' + axis).innerText = "失敗";
+});
 
-        // 更新歷史紀錄
-        lastSliderRx = currentRx;
-        lastSliderRy = currentRy;
-        lastSliderRz = currentRz;
+elTotalErr.style.color = 'var(--danger-color)';
+document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
 
-        // 若 X 滑桿有變動，讀取「當下」的視覺 X 軸並旋轉
-        if (deltaX !== 0) {
-            const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion);
-            object2.rotateOnWorldAxis(axisX, deltaX);
-        }
-        
-        // 若 Y 滑桿有變動，讀取「當下」的視覺 Y 軸並旋轉
-        if (deltaY !== 0) {
-            const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion);
-            object2.rotateOnWorldAxis(axisY, deltaY);
-        }
-        
-        // 若 Z 滑桿有變動，讀取「當下」的視覺 Z 軸並旋轉
-        if (deltaZ !== 0) {
-            const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion);
-            object2.rotateOnWorldAxis(axisZ, deltaZ);
-        }
+elTotalErr.innerText = "計算失敗";
 
-        // 避免浮點數誤差隨時間累積，強制單位化
-        object2.quaternion.normalize();
+if (failureMode === 'aperture') {
+errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
+} else {
+errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
+}
+errorExp.style.display = 'block';
 
-        // ----------------------------------------------------
-        // 4. 更新 UI 文字顯示
-        // ----------------------------------------------------
-        document.getElementById('label_X').innerText = formatNum(dx) + ' m';
-        document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
-        document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
-        document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
-        document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
-        document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
-        
-        updateSystem();
-    }
+} else {
+document.getElementById('est_U').innerText = formatNum(U_est) + ' m';
+document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
+document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
 
-    window.nudgeAxis = function(axis, delta) {
-        const slider = document.getElementById('slider_' + axis);
-        if (!slider) return;
-        slider.value = Math.max(-2.0, Math.min(2.0, parseFloat(slider.value) + delta));
-        onSliderInput();
-    };
+document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est);
+document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
+document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
 
-    window.nudgeRotation = function(axis, delta) {
-        const slider = document.getElementById('slider_R' + axis.toLowerCase());
-        if (!slider) return;
-        slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
-        onSliderInput();
-    };
+let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
-    window.resetToT = function() {
-        if (!object1 || !object2) return;
-        lastLoadedFailure = null; 
-        
-        object2.position.copy(object1.position);
-        object2.quaternion.copy(object1.quaternion); // 完美複製 Quaternion
-        basePos2.copy(object1.position);
-        baseQuat2.copy(object1.quaternion);
-        
-        ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
-        ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
-        lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
-        updateSystem();
-    };
+if (failureMode === 'large_disp') {
+elTotalErr.innerText = "計算失敗";
+elTotalErr.style.color = 'var(--danger-color)';
+document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
+errorExp.innerHTML = "<strong>⚠️ 移動距離過大或誤差超標 (Large Displacement)</strong><br>物體的位移量超出了目前設定的「計算窗口」與「金字塔層數」所能涵蓋的最大追蹤極限，或解析出的數值超過了你所設定的容許誤差閥值，導致預測被標記為失效。";
+errorExp.style.display = 'block';
+} else {
+elTotalErr.innerText = pctStr + ' (成功)';
+elTotalErr.style.color = 'var(--success-color)';
+['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
+document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
+}
+}
+}
 
-    window.loadFailureCase = function(type) {
-        if (!object1 || !object2 || lastLoadedFailure === type) return; 
+window.setTransformMode = function(mode) {
+if (!transform2) return;
+transform2.setMode(mode); 
+transform1.setMode(mode);
 
-        const currentF = parseFloat(document.getElementById('param_f').value);
-        const currentB = parseFloat(document.getElementById('param_B').value);
-        const currentWin = parseInt(document.getElementById('param_win').value);
-        const currentPyr = parseInt(document.getElementById('param_pyr').value);
-        
-        const defaultPos = new THREE.Vector3(0, 0, -4.0);
-        const Z = Math.abs(defaultPos.z);
-        
-        const max_px_radius = Math.floor(currentWin / 2) * Math.pow(2, Math.max(0, currentPyr - 1));
-        const fov_w_m = (cx * Z) / currentF;               
-        const max_m_disp = Math.min((max_px_radius * Z) / currentF, fov_w_m * 0.8); 
-        const step = max_m_disp * 0.1; 
+transform2.setSpace('local');
+transform1.setSpace('local');
 
-        function searchFailure(isReset) {
-            let tempPos1 = defaultPos.clone();
-            let tempPos2 = defaultPos.clone();
-            let tempQuat = isReset ? new THREE.Quaternion() : baseQuat2.clone(); 
+const isTranslate = mode === 'translate';
+document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
+document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
+};
 
-            let originalShape = document.getElementById('obj_shape').value;
-            let originalGeom = document.getElementById('obj_geometry_type').value;
+window.updateObjectGeometry = function(dryRun = false) {
+if (!object1 || !object2) return;
+const type = document.getElementById('obj_geometry_type').value;
+const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
 
-            if (type === 'aperture') {
-                document.getElementById('obj_shape').value = 'vertical_grating';
-                document.getElementById('obj_geometry_type').value = 'box'; 
-            } else if (isReset) {
-                if (originalShape === 'vertical_grating') {
-                    document.getElementById('obj_shape').value = 'checkerboard'; 
-                }
-            }
-            updateObjectGeometry(true);
+if(object1.geometry) object1.geometry.dispose();
+if(object2.geometry) object2.geometry.dispose();
 
-            let found = false;
-            let attempt = 0;
-            let testX = 0;
-            let testY = 0;
+let newGeo;
+if (type === 'box') newGeo = new THREE.BoxGeometry(size * 2, size * 2, size * 2);
+else if (type === 'cylinder') newGeo = new THREE.CylinderGeometry(size, size, size * 2, 32);
+else if (type === 'torus') newGeo = new THREE.TorusGeometry(size * 0.7, size * 0.3, 16, 64);
+else if (type === 'cone') newGeo = new THREE.ConeGeometry(size, size * 2, 32);
+else if (type === 'octahedron') newGeo = new THREE.OctahedronGeometry(size);
+else newGeo = new THREE.SphereGeometry(size, 32, 32);
 
-            while (!found && attempt < 150) {
-                attempt++;
-                
-                if (type === 'aperture') {
-                    testY = 0.02;
-                    testX = 0;
-                    if (attempt > 1) break;
-                } 
-                else if (type === 'large_disp') {
-                    testX += step; 
-                    testY += step;
-                } 
-                else if (type === 'out_of_bounds') {
-                    testX += (fov_w_m * 0.15); 
-                } 
+object1.geometry = newGeo;
+object2.geometry = newGeo.clone();
 
-                let localMove = new THREE.Vector3(testX, testY, 0);
-                localMove.applyQuaternion(tempQuat);
-                tempPos2.copy(tempPos1).add(localMove);
-                
-                object1.position.copy(tempPos1);
-                object1.quaternion.copy(tempQuat);
-                object2.position.copy(tempPos2);
-                object2.quaternion.copy(tempQuat);
-                
-                updateProjData(object1.position, object2.position, currentF, currentB);
-                renderAll2DScenes();
-                
-                let result = calculateSceneFlow(object1.position, object2.position, currentF, currentB, true);
-                
-                if (result.failureMode === type) {
-                    found = true;
-                    return { success: true, finalQuat: tempQuat.clone(), finalPos2: tempPos2.clone(), dx: testX, dy: testY, isReset: isReset };
-                }
-            }
-            
-            // 搜尋失敗，還原 UI 供下一次 fallback 嘗試
-            document.getElementById('obj_shape').value = originalShape;
-            document.getElementById('obj_geometry_type').value = originalGeom;
-            updateObjectGeometry(true);
-            return { success: false };
-        }
+if (dryRun !== true) updateSystem();
+};
 
-        // --- 核心邏輯執行區 ---
-        
-        let searchResult = searchFailure(false);
+function onSliderInput() {
+if (!object1 || !object2) return;
+lastLoadedFailure = null; 
 
-        if (!searchResult.success) {
-            console.log("⚠️ 當前旋轉角度或參數無法觸發目標失敗，系統自動歸零重試...");
-            searchResult = searchFailure(true);
-        }
+// ----------------------------------------------------
+// 1. 取得當前 UI 的最新數值
+// ----------------------------------------------------
+const dx = parseFloat(document.getElementById('slider_X').value);
+const dy = parseFloat(document.getElementById('slider_Y').value);
+const dz = parseFloat(document.getElementById('slider_Z').value);
 
-        if (searchResult.success) {
-            lastLoadedFailure = type;
+const currentRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
+const currentRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
+const currentRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
 
-            // 【修正重點 2】強力鎖定：確保成功後 UI 絕對停留在對應的狀態
-            if (type === 'aperture') {
-                document.getElementById('obj_shape').value = 'vertical_grating';
-                document.getElementById('obj_geometry_type').value = 'box';
-            } else if (searchResult.isReset && document.getElementById('obj_shape').value === 'vertical_grating') {
-                document.getElementById('obj_shape').value = 'checkerboard';
-            }
-            updateObjectGeometry(true); // 強制套用一次幾何更新
+// ----------------------------------------------------
+// 2. 位移處理：對齊基準的區域座標軸 (保持不變)
+// ----------------------------------------------------
+const localMove = new THREE.Vector3(dx, dy, -dz);
+localMove.applyQuaternion(baseQuat2); 
+object2.position.copy(basePos2).add(localMove);
 
-            object1.position.copy(defaultPos);
-            object1.quaternion.copy(searchResult.finalQuat);
-            object2.position.copy(searchResult.finalPos2);
-            object2.quaternion.copy(searchResult.finalQuat);
+// ----------------------------------------------------
+// 3. 旋轉處理：計算增量 (Delta)，並讀取當下視覺軸
+// ----------------------------------------------------
+const deltaX = currentRx - lastSliderRx;
+const deltaY = currentRy - lastSliderRy;
+const deltaZ = currentRz - lastSliderRz;
 
-            basePos2.copy(defaultPos);
-            baseQuat2.copy(searchResult.finalQuat);
+// 更新歷史紀錄
+lastSliderRx = currentRx;
+lastSliderRy = currentRy;
+lastSliderRz = currentRz;
 
-            document.getElementById('slider_X').value = searchResult.dx;
-            document.getElementById('slider_Y').value = searchResult.dy;
-            document.getElementById('slider_Z').value = 0;
-            document.getElementById('label_X').innerText = formatNum(searchResult.dx) + " m";
-            document.getElementById('label_Y').innerText = formatNum(searchResult.dy) + " m";
-            document.getElementById('label_Z').innerText = "0.0000 m";
+// 若 X 滑桿有變動，讀取「當下」的視覺 X 軸並旋轉
+if (deltaX !== 0) {
+const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion);
+object2.rotateOnWorldAxis(axisX, deltaX);
+}
 
-            if (searchResult.isReset) {
-                ['Rx', 'Ry', 'Rz'].forEach(id => { 
-                    document.getElementById('slider_' + id).value = 0; 
-                    document.getElementById('label_' + id).innerText = "0.0°"; 
-                });
-                lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
-            }
+// 若 Y 滑桿有變動，讀取「當下」的視覺 Y 軸並旋轉
+if (deltaY !== 0) {
+const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion);
+object2.rotateOnWorldAxis(axisY, deltaY);
+}
 
-            updateSystem();
-        } else {
-            console.warn("❌ 無法在此參數環境下觸發指定的失敗範例。");
-            lastLoadedFailure = null; 
-            updateSystem(); 
-        }
-    };
+// 若 Z 滑桿有變動，讀取「當下」的視覺 Z 軸並旋轉
+if (deltaZ !== 0) {
+const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion);
+object2.rotateOnWorldAxis(axisZ, deltaZ);
+}
 
-    window.onload = () => {
-        canvasIds.forEach(id => {
-            const canvas = document.getElementById('canvas_' + id);
-            contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
-            imgBuffers[id] = new Float32Array(imgW * imgH);
-            imgDataCaches[id] = contexts[id].createImageData(imgW, imgH);
-        });
-        
-        document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
-            el.addEventListener('change', (e) => {
-                if (e.target.type === 'number') {
-                    let val = parseFloat(e.target.value);
-                    let min = parseFloat(e.target.min);
-                    let max = parseFloat(e.target.max);
-                    let step = parseFloat(e.target.step);
+// 避免浮點數誤差隨時間累積，強制單位化
+object2.quaternion.normalize();
 
-                    if (isNaN(val)) {
-                        val = !isNaN(min) ? min : 0;
-                    } else {
-                        if (!isNaN(step) && step > 0) {
-                            let base = !isNaN(min) ? min : 0;
-                            let steps = Math.round((val - base) / step);
-                            val = base + steps * step;
-                            let decimals = e.target.step.includes('.') ? e.target.step.split('.')[1].length : 0;
-                            val = parseFloat(val.toFixed(decimals));
-                        }
-                        if (!isNaN(min) && val < min) val = min;
-                        if (!isNaN(max) && val > max) val = max;
-                    }
-                    e.target.value = val;
-                }
-                
-                lastLoadedFailure = null; 
-                if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
-                    updateObjectGeometry();
-                } else {
-                    updateSystem();
-                }
-            });
-        });
+// ----------------------------------------------------
+// 4. 更新 UI 文字顯示
+// ----------------------------------------------------
+document.getElementById('label_X').innerText = formatNum(dx) + ' m';
+document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
+document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
+document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
+document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
+document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
 
-        ['X', 'Y', 'Z'].forEach(axis => document.getElementById('slider_' + axis).addEventListener('input', onSliderInput));
-        ['Rx', 'Ry', 'Rz'].forEach(id => document.getElementById('slider_' + id).addEventListener('input', onSliderInput));
-        
-        init3D();
-        initSliderFocus();
-        setTimeout(updateObjectGeometry, 50); 
-        setTimeout(updateSystem, 100); 
-        
-        // 修正：強化手機版 Resize 的重繪機制
-        window.addEventListener('resize', () => {
-            const resizeCanvas = (id, cam, ren) => {
-                const c = document.getElementById(id);
-                if (c && cam && ren) { 
-                    const w = c.clientWidth;
-                    const h = c.clientHeight;
-                    if (w === 0 || h === 0) return; // 避免為 0 導致渲染異常
-                    cam.aspect = w / h; 
-                    cam.updateProjectionMatrix(); 
-                    ren.setSize(w, h); 
-                }
-            };
-            resizeCanvas('3d_container_t', camera1, renderer1); 
-            resizeCanvas('3d_container_t1', camera2, renderer2);
-        });
+updateSystem();
+}
 
-        // 修正：強制觸發一次 Resize 確保初始排版無誤
-        setTimeout(() => { 
-            window.dispatchEvent(new Event('resize')); 
-        }, 300);
-    };
+window.nudgeAxis = function(axis, delta) {
+const slider = document.getElementById('slider_' + axis);
+if (!slider) return;
+slider.value = Math.max(-2.0, Math.min(2.0, parseFloat(slider.value) + delta));
+onSliderInput();
+};
+
+window.nudgeRotation = function(axis, delta) {
+const slider = document.getElementById('slider_R' + axis.toLowerCase());
+if (!slider) return;
+slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
+onSliderInput();
+};
+
+window.resetToT = function() {
+if (!object1 || !object2) return;
+lastLoadedFailure = null; 
+
+object2.position.copy(object1.position);
+object2.quaternion.copy(object1.quaternion); // 完美複製 Quaternion
+basePos2.copy(object1.position);
+baseQuat2.copy(object1.quaternion);
+
+['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
+['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
+lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+updateSystem();
+};
+
+window.loadFailureCase = function(type) {
+if (!object1 || !object2 || lastLoadedFailure === type) return; 
+
+const currentF = parseFloat(document.getElementById('param_f').value);
+const currentB = parseFloat(document.getElementById('param_B').value);
+const currentWin = parseInt(document.getElementById('param_win').value);
+const currentPyr = parseInt(document.getElementById('param_pyr').value);
+
+const defaultPos = new THREE.Vector3(0, 0, -4.0);
+const Z = Math.abs(defaultPos.z);
+
+const max_px_radius = Math.floor(currentWin / 2) * Math.pow(2, Math.max(0, currentPyr - 1));
+const fov_w_m = (cx * Z) / currentF;               
+const max_m_disp = Math.min((max_px_radius * Z) / currentF, fov_w_m * 0.8); 
+const step = max_m_disp * 0.1; 
+
+function searchFailure(isReset) {
+let tempPos1 = defaultPos.clone();
+let tempPos2 = defaultPos.clone();
+let tempQuat = isReset ? new THREE.Quaternion() : baseQuat2.clone(); 
+
+let originalShape = document.getElementById('obj_shape').value;
+let originalGeom = document.getElementById('obj_geometry_type').value;
+
+if (type === 'aperture') {
+document.getElementById('obj_shape').value = 'vertical_grating';
+document.getElementById('obj_geometry_type').value = 'box'; 
+} else if (isReset) {
+if (originalShape === 'vertical_grating') {
+document.getElementById('obj_shape').value = 'checkerboard'; 
+}
+}
+updateObjectGeometry(true);
+
+let found = false;
+let attempt = 0;
+let testX = 0;
+let testY = 0;
+
+while (!found && attempt < 150) {
+attempt++;
+
+if (type === 'aperture') {
+testY = 0.02;
+testX = 0;
+if (attempt > 1) break;
+} 
+else if (type === 'large_disp') {
+testX += step; 
+testY += step;
+} 
+else if (type === 'out_of_bounds') {
+testX += (fov_w_m * 0.15); 
+} 
+
+let localMove = new THREE.Vector3(testX, testY, 0);
+localMove.applyQuaternion(tempQuat);
+tempPos2.copy(tempPos1).add(localMove);
+
+object1.position.copy(tempPos1);
+object1.quaternion.copy(tempQuat);
+object2.position.copy(tempPos2);
+object2.quaternion.copy(tempQuat);
+
+updateProjData(object1.position, object2.position, currentF, currentB);
+renderAll2DScenes();
+
+let result = calculateSceneFlow(object1.position, object2.position, currentF, currentB, true);
+
+if (result.failureMode === type) {
+found = true;
+return { success: true, finalQuat: tempQuat.clone(), finalPos2: tempPos2.clone(), dx: testX, dy: testY, isReset: isReset };
+}
+}
+
+// 搜尋失敗，還原 UI 供下一次 fallback 嘗試
+document.getElementById('obj_shape').value = originalShape;
+document.getElementById('obj_geometry_type').value = originalGeom;
+updateObjectGeometry(true);
+return { success: false };
+}
+
+// --- 核心邏輯執行區 ---
+
+let searchResult = searchFailure(false);
+
+if (!searchResult.success) {
+console.log("⚠️ 當前旋轉角度或參數無法觸發目標失敗，系統自動歸零重試...");
+searchResult = searchFailure(true);
+}
+
+if (searchResult.success) {
+lastLoadedFailure = type;
+
+// 【修正重點 2】強力鎖定：確保成功後 UI 絕對停留在對應的狀態
+if (type === 'aperture') {
+document.getElementById('obj_shape').value = 'vertical_grating';
+document.getElementById('obj_geometry_type').value = 'box';
+} else if (searchResult.isReset && document.getElementById('obj_shape').value === 'vertical_grating') {
+document.getElementById('obj_shape').value = 'checkerboard';
+}
+updateObjectGeometry(true); // 強制套用一次幾何更新
+
+object1.position.copy(defaultPos);
+object1.quaternion.copy(searchResult.finalQuat);
+object2.position.copy(searchResult.finalPos2);
+object2.quaternion.copy(searchResult.finalQuat);
+
+basePos2.copy(defaultPos);
+baseQuat2.copy(searchResult.finalQuat);
+
+document.getElementById('slider_X').value = searchResult.dx;
+document.getElementById('slider_Y').value = searchResult.dy;
+document.getElementById('slider_Z').value = 0;
+document.getElementById('label_X').innerText = formatNum(searchResult.dx) + " m";
+document.getElementById('label_Y').innerText = formatNum(searchResult.dy) + " m";
+document.getElementById('label_Z').innerText = "0.0000 m";
+
+if (searchResult.isReset) {
+['Rx', 'Ry', 'Rz'].forEach(id => { 
+document.getElementById('slider_' + id).value = 0; 
+document.getElementById('label_' + id).innerText = "0.0°"; 
+});
+lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+}
+
+updateSystem();
+} else {
+console.warn("❌ 無法在此參數環境下觸發指定的失敗範例。");
+lastLoadedFailure = null; 
+updateSystem(); 
+}
+};
+
+window.onload = () => {
+canvasIds.forEach(id => {
+const canvas = document.getElementById('canvas_' + id);
+contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
+imgBuffers[id] = new Float32Array(imgW * imgH);
+imgDataCaches[id] = contexts[id].createImageData(imgW, imgH);
+});
+
+document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
+el.addEventListener('change', (e) => {
+if (e.target.type === 'number') {
+let val = parseFloat(e.target.value);
+let min = parseFloat(e.target.min);
+let max = parseFloat(e.target.max);
+let step = parseFloat(e.target.step);
+
+if (isNaN(val)) {
+val = !isNaN(min) ? min : 0;
+} else {
+if (!isNaN(step) && step > 0) {
+let base = !isNaN(min) ? min : 0;
+let steps = Math.round((val - base) / step);
+val = base + steps * step;
+let decimals = e.target.step.includes('.') ? e.target.step.split('.')[1].length : 0;
+val = parseFloat(val.toFixed(decimals));
+}
+if (!isNaN(min) && val < min) val = min;
+if (!isNaN(max) && val > max) val = max;
+}
+e.target.value = val;
+}
+
+lastLoadedFailure = null; 
+if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
+updateObjectGeometry();
+} else {
+updateSystem();
+}
+});
+});
+
+['X', 'Y', 'Z'].forEach(axis => document.getElementById('slider_' + axis).addEventListener('input', onSliderInput));
+['Rx', 'Ry', 'Rz'].forEach(id => document.getElementById('slider_' + id).addEventListener('input', onSliderInput));
+
+init3D();
+initSliderFocus();
+setTimeout(updateObjectGeometry, 50); 
+setTimeout(updateSystem, 100); 
+
+// 修正：強化手機版 Resize 的重繪機制
+window.addEventListener('resize', () => {
+const resizeCanvas = (id, cam, ren) => {
+const c = document.getElementById(id);
+if (c && cam && ren) { 
+const w = c.clientWidth;
+const h = c.clientHeight;
+if (w === 0 || h === 0) return; // 避免為 0 導致渲染異常
+cam.aspect = w / h; 
+cam.updateProjectionMatrix(); 
+ren.setSize(w, h); 
+}
+};
+resizeCanvas('3d_container_t', camera1, renderer1); 
+resizeCanvas('3d_container_t1', camera2, renderer2);
+});
+
+// 修正：強制觸發一次 Resize 確保初始排版無誤
+setTimeout(() => { 
+window.dispatchEvent(new Event('resize')); 
+}, 300);
+};
 </script>
 </body>
 </html>
