@@ -1316,7 +1316,7 @@
 
     window.loadFailureCase = function(type) {
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
-        
+
         // 取得當前的相機與系統參數
         const currentF = parseFloat(document.getElementById('param_f').value);
         const currentB = parseFloat(document.getElementById('param_B').value);
@@ -1333,21 +1333,27 @@
         const max_m_disp = Math.min((max_px_radius * Z) / currentF, fov_w_m * 0.8); 
         const step = max_m_disp * 0.1; 
 
-        // 建立背景搜尋機制，傳入 isReset 決定是否要強制歸零旋轉
+        // 建立背景搜尋機制 (使用單一執行緒特性的隱形運算)
         function searchFailure(isReset) {
             let tempPos1 = defaultPos.clone();
             let tempPos2 = defaultPos.clone();
-            // 如果 isReset 為 false，保留使用者當前的旋轉角度；否則強制歸零
+            // 決定是否保留使用者當前的旋轉角度，或是強制歸零
             let tempQuat = isReset ? new THREE.Quaternion() : baseQuat2.clone(); 
 
-            // 暫存原本的紋理，必要時替換以觸發特定問題
             let originalShape = document.getElementById('obj_shape').value;
+            let originalGeom = document.getElementById('obj_geometry_type').value;
+
+            // 孔徑問題的核心：需要平坦表面與單一方向紋理。
             if (type === 'aperture') {
                 document.getElementById('obj_shape').value = 'vertical_grating';
-            } else if (isReset && originalShape === 'vertical_grating') {
-                document.getElementById('obj_shape').value = 'checkerboard'; 
+                // 【關鍵修正】強制轉為正方體，消滅球體曲率造成的微小 Y 軸梯度
+                document.getElementById('obj_geometry_type').value = 'box'; 
+            } else if (isReset) {
+                // 若大位移/越界重試時卡在條紋，換成棋盤格確保特徵足夠
+                if (originalShape === 'vertical_grating') {
+                    document.getElementById('obj_shape').value = 'checkerboard'; 
+                }
             }
-            // 強制更新 3D 物體的幾何與紋理以供背景計算（dryRun = true 不更新主畫面 UI）
             updateObjectGeometry(true);
 
             let found = false;
@@ -1355,79 +1361,76 @@
             let testX = 0;
             let testY = 0;
 
-            // 在背景進行 while 迴圈窮舉搜尋
             while (!found && attempt < 150) {
                 attempt++;
                 
-                // 依照不同的失敗目標增加位移量
-                if (type === 'aperture') testY += Math.max(step, 0.01); 
-                else if (type === 'large_disp') { testX += step; testY += step; } 
-                else if (type === 'out_of_bounds') testX += (fov_w_m * 0.2); 
+                // 依據不同的目標，設定增量邏輯
+                if (type === 'aperture') {
+                    // 孔徑問題與距離無關，不需累加距離。給定一個固定小位移即可。
+                    testY = 0.02;
+                    testX = 0;
+                    // 若第一圈沒中 (通常是因為使用者手動旋轉了物體)，直接跳出，交給外部 isReset=true 處理
+                    if (attempt > 1) break;
+                } 
+                else if (type === 'large_disp') {
+                    testX += step; 
+                    testY += step;
+                } 
+                else if (type === 'out_of_bounds') {
+                    testX += (fov_w_m * 0.15); // 加大步伐快速移出視野
+                } 
 
-                // 【關鍵點】位移必須套用旋轉矩陣 (tempQuat)，模擬使用者真實拖拉滑桿的區域座標行為
+                // 套用旋轉矩陣，模擬使用者真實拖拉滑桿的區域座標行為
                 let localMove = new THREE.Vector3(testX, testY, 0);
                 localMove.applyQuaternion(tempQuat);
                 tempPos2.copy(tempPos1).add(localMove);
                 
-                // 將測試位置暫時套用到 3D 物件上
                 object1.position.copy(tempPos1);
                 object1.quaternion.copy(tempQuat);
                 object2.position.copy(tempPos2);
                 object2.quaternion.copy(tempQuat);
                 
-                // 在背景更新投影數據並繪製 2D 畫布 (使用者看不見此過程)
                 updateProjData(object1.position, object2.position, currentF, currentB);
                 renderAll2DScenes();
                 
-                // 乾跑光流演算法，取得失敗模式
                 let result = calculateSceneFlow(object1.position, object2.position, currentF, currentB, true);
                 
-                // 如果判斷結果與目標相同，宣告成功並跳出
                 if (result.failureMode === type) {
                     found = true;
-                    return { 
-                        success: true, 
-                        finalQuat: tempQuat.clone(), 
-                        finalPos2: tempPos2.clone(), 
-                        dx: testX, 
-                        dy: testY, 
-                        isReset: isReset 
-                    };
+                    return { success: true, finalQuat: tempQuat.clone(), finalPos2: tempPos2.clone(), dx: testX, dy: testY, isReset: isReset };
                 }
             }
             
-            // 如果搜尋失敗，還原紋理設定供下一次 fallback 嘗試
+            // 若搜尋失敗，還原 UI 與幾何設定供下一次 fallback 嘗試
             document.getElementById('obj_shape').value = originalShape;
+            document.getElementById('obj_geometry_type').value = originalGeom;
             updateObjectGeometry(true);
             return { success: false };
         }
 
         // --- 核心邏輯執行區 ---
-
+        
         // 1. 先用「當下的參數與旋轉角度」進行背景尋找
         let searchResult = searchFailure(false);
 
-        // 2. 只有在「找不到失敗範例時」，才允許將旋轉角度與參數歸零重新計算
+        // 2. 只有在「找不到」時，才將旋轉角度與參數歸零重新計算
         if (!searchResult.success) {
             console.log("⚠️ 當前旋轉角度或參數無法觸發目標失敗，系統自動歸零重試...");
             searchResult = searchFailure(true);
         }
 
-        // 3. 如果成功找到了，才將結果輸出到畫面與 UI 上
+        // 3. 輸出最終成功的結果到畫面上
         if (searchResult.success) {
             lastLoadedFailure = type;
 
-            // 更新 3D 物件的真實狀態
             object1.position.copy(defaultPos);
             object1.quaternion.copy(searchResult.finalQuat);
             object2.position.copy(searchResult.finalPos2);
             object2.quaternion.copy(searchResult.finalQuat);
 
-            // 更新基準點，對齊 defaultPos
             basePos2.copy(defaultPos);
             baseQuat2.copy(searchResult.finalQuat);
 
-            // 將試算成功的數值填入 X, Y 微調滑桿中 (Z軸沒動所以設為 0)
             document.getElementById('slider_X').value = searchResult.dx;
             document.getElementById('slider_Y').value = searchResult.dy;
             document.getElementById('slider_Z').value = 0;
@@ -1435,7 +1438,6 @@
             document.getElementById('label_Y').innerText = formatNum(searchResult.dy) + " m";
             document.getElementById('label_Z').innerText = "0.0000 m";
 
-            // 若經過了歸零重算，確保 UI 旋轉滑桿也歸零
             if (searchResult.isReset) {
                 ['Rx', 'Ry', 'Rz'].forEach(id => { 
                     document.getElementById('slider_' + id).value = 0; 
@@ -1444,12 +1446,12 @@
                 lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
             }
 
-            // 最終更新整個系統與 UI (這時瀏覽器才會一次把畫面畫出來)
+            // 最終更新整個系統 (這時瀏覽器才會一次把畫面畫出來)
             updateSystem();
         } else {
             console.warn("❌ 無法在此參數環境下觸發指定的失敗範例。");
-            lastLoadedFailure = null; // 解除鎖定，允許使用者再次點擊
-            updateSystem(); // 還原預設狀態避免畫面卡死
+            lastLoadedFailure = null; 
+            updateSystem(); 
         }
     };
 
