@@ -994,7 +994,7 @@
                 }
                 
                 // 【修復核心】：加入 cond < 1e-4 提早攔截病態矩陣，防止反矩陣數值爆炸導致的 OutOfBounds 誤判
-                if (!S_inv || Math.abs(detS) < 1e-5 || cond < 1e-4) continue;
+                if (!S_inv || Math.abs(detS) < 1e-5 || cond < 1e-2) continue;
 
                 for (let iter = 0; iter < 10; iter++) {
                     let Atb = [0, 0, 0], validPixels = 0;
@@ -1070,7 +1070,7 @@
         if (isOutOfBounds) {
             failureMode = 'out_of_bounds';
         } 
-        else if (baseTraceS < 1e-5 || condIndex < 1e-4) {
+        else if (baseTraceS < 1e-5 || condIndex < 1e-2) {
             failureMode = 'aperture';
         } 
         else if (true_px_move > max_trackable_px) {
@@ -1306,6 +1306,11 @@
             let tempPos1 = defaultPos.clone();
             let tempPos2 = defaultPos.clone();
             let tempQuat = isReset ? new THREE.Quaternion() : baseQuat2.clone(); 
+            if (type === 'aperture' || isReset) {
+                tempQuat = new THREE.Quaternion();
+            } else {
+                tempQuat = baseQuat2.clone(); 
+            }
 
             let originalShape = document.getElementById('obj_shape').value;
             let originalGeom = document.getElementById('obj_geometry_type').value;
