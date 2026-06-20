@@ -590,7 +590,7 @@
         const transform = new THREE.TransformControls(camera, renderer.domElement);
         
         // 【嚴格遵循需求】：永遠對齊世界座標系
-        transform.setSpace('world');
+        transform.setSpace('local');
         
         transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
         scene.add(transform);
@@ -1127,8 +1127,8 @@
         transform1.setMode(mode);
         
         // 強制無論切換到位移或旋轉，視覺圓環永遠對齊世界座標 (地板網格)
-        transform2.setSpace('world');
-        transform1.setSpace('world');
+        transform2.setSpace('local');
+        transform1.setSpace('local');
         
         const isTranslate = mode === 'translate';
         document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
@@ -1170,19 +1170,23 @@
         const dry = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
         const drz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
         
-        // 【1. 絕對對齊世界軸的位移】
-        object2.position.set(basePos2.x + dx, basePos2.y + dy, basePos2.z - dz);
+        // 【1. 對齊物體區域軸的位移 (Local Space Translation)】
+        const localMove = new THREE.Vector3(dx, dy, -dz);
+        // 依據物體目前的旋轉姿態，將區域位移轉換為世界方向的位移
+        localMove.applyQuaternion(baseQuat2); 
+        object2.position.copy(basePos2).add(localMove);
         
-        // 【2. 絕對對齊世界軸的旋轉 - 獨立軸向修正版】
-        // 原理：為三個軸向建立獨立的世界座標軸旋轉四元數（與物體自身姿態解耦）
+        // 【2. 對齊物體區域軸的旋轉 (Local Space Rotation)】
         const qX = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), drx);
         const qY = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dry);
         const qZ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), drz);
         
-        // 透過左乘（World-space / Extrinsic）順序組合：先 X、再 Y、後 Z 疊加到基準姿態上
-        // 這樣能保證每一個滑桿在畫面上對應的旋轉軸永遠固定，不會因為其他維度的數值而發生歪斜或方向逆轉
-        const qDelta = new THREE.Quaternion().multiplyQuaternions(qZ, qY).multiply(qX);
-        object2.quaternion.multiplyQuaternions(qDelta, baseQuat2);
+        // 組合這次的變動量
+        const qDelta = new THREE.Quaternion().multiplyQuaternions(qX, qY).multiply(qZ);
+        
+        // 透過右乘（Local-space / Intrinsic）套用至基準姿態上
+        // 這樣旋轉計算就會以物體當前的朝向為基準，而非世界座標
+        object2.quaternion.copy(baseQuat2).multiply(qDelta);
         
         // 更新 UI 文字顯示
         document.getElementById('label_X').innerText = formatNum(dx) + ' m';
