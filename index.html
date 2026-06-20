@@ -1123,7 +1123,13 @@
 
     window.setTransformMode = function(mode) {
         if (!transform2) return;
-        transform2.setMode(mode); transform1.setMode(mode);
+        transform2.setMode(mode); 
+        transform1.setMode(mode);
+        
+        // 強制無論切換到位移或旋轉，視覺圓環永遠對齊世界座標 (地板網格)
+        transform2.setSpace('world');
+        transform1.setSpace('world');
+        
         const isTranslate = mode === 'translate';
         document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
         document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
