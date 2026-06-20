@@ -1176,20 +1176,14 @@
         localMove.applyQuaternion(baseQuat2); 
         object2.position.copy(basePos2).add(localMove);
         
-        // 【2. 獨立對齊物體「基準區域軸」的旋轉】
-        // 取得物體在拖曳結束時（基準姿態）乾淨的 X, Y, Z 軸向（轉換為世界座標向量）
-        const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(baseQuat2);
-        const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(baseQuat2);
-        const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(baseQuat2);
-
-        // 分別建立繞著這三個「獨立且固定的基準軸」旋轉的變動量
-        const qX = new THREE.Quaternion().setFromAxisAngle(axisX, drx);
-        const qY = new THREE.Quaternion().setFromAxisAngle(axisY, dry);
-        const qZ = new THREE.Quaternion().setFromAxisAngle(axisZ, drz);
-
-        // 使用 premultiply (左乘) 將旋轉套用至基準姿態上
-        // 這樣就能保證 Y 和 Z 軸的旋轉絕對不會被 X 軸的數值干擾，三個滑桿完全獨立
-        object2.quaternion.copy(baseQuat2).premultiply(qX).premultiply(qY).premultiply(qZ);
+        // 【2. 標準區域旋轉 (Local Euler Angles)】
+        // 這是 3D 軟體中標準的歐拉角處理方式
+        // 採用 'YXZ' 順序 (Yaw-Pitch-Roll)：這能讓 Y軸當作水平轉盤，X軸作俯仰，Z軸作側傾，操作最自然
+        const euler = new THREE.Euler(drx, dry, drz, 'YXZ');
+        const qDelta = new THREE.Quaternion().setFromEuler(euler);
+        
+        // 透過右乘 (multiply) 套用到基準姿態上，確保是以物體當下的區域座標系為基準
+        object2.quaternion.copy(baseQuat2).multiply(qDelta);
         
         // 更新 UI 文字顯示
         document.getElementById('label_X').innerText = formatNum(dx) + ' m';
