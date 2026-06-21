@@ -151,55 +151,112 @@
             overscroll-behavior: contain; /* 阻斷滾動事件向外傳遞 */
         }
 
-        @media (max-width: 1024px) {
-            .workspace-grid { grid-template-columns: 1fr 1fr; }
-            .results-section { grid-template-columns: 1fr; }
-        }
-        
-        @media (max-width: 768px) {
-            body { padding: 8px; }
-            .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
-            header h1 { font-size: 16pt; margin-bottom: 15px; }
+        /* =========================================================
+   1. 平板橫向模式 (769px ~ 1024px) - 左側邊欄 + 右側主內容
+   ========================================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .container {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 0 24px; /* 僅左右間距 */
+        align-items: start;
+        padding: 20px;
+    }
 
-            #settings_drawer {
-                position: fixed; top: 0; right: -340px; width: 320px; height: 100%; height: 100dvh;
-                background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
-                transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px 10px 10px; margin: 0; border-radius: 0; border: none;
-            }
-            body.drawer-open #settings_drawer { right: 0; }
-            .fab-settings { display: flex; }
-            
-            .tab-header { margin-bottom: 10px; padding: 4px; }
-            .tab-btn { padding: 8px; font-size: 10pt; }
+    header {
+        grid-column: 1 / -1; /* 標題橫跨所有欄位 */
+    }
 
-            .control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 8px; grid-auto-flow: dense; }
-            .control-group.type-sel { grid-column: 1; }
-            .control-group.type-num { grid-column: 2; }
-            .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
-            .control-group input, .control-group select { padding: 6px; font-size: 9pt; }
+    #settings_drawer {
+        grid-column: 1;
+        position: sticky;
+        top: 20px;
+        margin-bottom: 0;
+        /* 避免設定面板過長導致無法滾動 */
+        max-height: calc(100vh - 40px); 
+        overflow-y: auto;
+    }
 
-            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
-            body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
-            
-            .dimmable { transition: opacity 0.2s; }
-            body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
-            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
-            
-            .axis-control.active-slider { 
-                opacity: 0.95 !important; 
-                /* 關鍵修復 2：移除 transform: scale(1.02); 避免點擊瞬間滑桿位置偏移而斷觸 */
-                z-index: 10; background: rgba(255, 255, 255, 0.95); 
-                border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
-            }
+    /* 右側實驗區域群組化 */
+    .viewport-3d-container, 
+    .workspace-grid, 
+    #special_cases_panel, 
+    .results-section {
+        grid-column: 2;
+    }
 
-            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
-            .failure-buttons { flex-direction: column; gap: 10px; }
-            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
-            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
-            .results-section { gap: 15px; }
-            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
-        }
+    /* 右側空間重整：3D 視窗上下排列，避免被擠壓 */
+    .viewport-3d-container { 
+        grid-template-columns: 1fr; 
+        gap: 20px;
+    }
+
+    /* 四眼攝影機視窗改為 2x2 網格 */
+    .workspace-grid { 
+        grid-template-columns: 1fr 1fr; 
+    }
+
+    /* 結果與資訊表格上下排列 */
+    .results-section { 
+        grid-template-columns: 1fr; 
+    }
+}
+
+/* =========================================================
+   2. 平板直向 / 大螢幕手機模式 (481px ~ 768px)
+   ========================================================= */
+@media (min-width: 481px) and (max-width: 768px) {
+    body { padding: 12px; }
+    .container { padding: 15px; }
+    
+    header h1 { font-size: 20pt; }
+
+    /* 保留抽屜設計，加大觸控區域 */
+    #settings_drawer {
+        position: fixed; top: 0; right: -380px; width: 360px; height: 100%; height: 100dvh;
+        background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.2); padding: 20px 15px; margin: 0; border-radius: 0; border: none;
+    }
+    body.drawer-open #settings_drawer { right: 0; }
+    .fab-settings { display: flex; width: 60px; height: 60px; font-size: 28px;}
+
+    /* 參數設定輸入框：改為大面積雙欄排列 */
+    .control-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 15px; 
+    }
+    .control-grid label { font-size: 10pt; }
+    .control-grid input, .control-grid select { padding: 10px; font-size: 10.5pt; }
+
+    /* 優化滑桿操作面板佈局 */
+    .axis-control {
+        grid-template-columns: 70px 40px 1fr 40px 90px;
+        gap: 8px;
+    }
+    .btn-nudge-small { padding: 10px 0; font-size: 12pt; }
+
+    /* 主視覺與工作區縮放 */
+    .viewport-3d-container { 
+        grid-template-columns: 1fr; 
+        gap: 20px; 
+    }
+    .canvas-3d { height: 320px; } /* 稍微縮小 3D 畫布高度 */
+
+    .workspace-grid { 
+        grid-template-columns: 1fr 1fr; 
+        gap: 15px; 
+    }
+
+    .results-section { 
+        grid-template-columns: 1fr; 
+        gap: 20px; 
+    }
+
+    /* 特殊情境按鈕在直向螢幕較擁擠，改為垂直排列 */
+    .failure-buttons { flex-direction: column; gap: 12px; }
+    .failure-buttons button { width: 100%; padding: 14px; font-size: 11pt; }
+}
 
         @media (max-width: 480px) {
             .axis-control { 
