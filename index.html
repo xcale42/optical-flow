@@ -132,10 +132,10 @@
             header h1 { font-size: 16pt; margin-bottom: 15px; }
 
             #settings_drawer {
-                position: fixed; top: 0; right: -340px; width: 320px; height: 100vh;
+                position: fixed; top: 0; right: -340px; width: 320px; height: 100%; height: 100dvh;
                 background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px; margin: 0; border-radius: 0; border: none;
+                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px 60px 10px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             .fab-settings { display: flex; }
@@ -171,18 +171,27 @@
 
         @media (max-width: 480px) {
             .axis-control { 
-                display: grid; grid-template-columns: 36px 1fr 36px; grid-template-rows: auto auto; gap: 6px 8px;
-                align-items: center; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 6px;
+                display: flex; flex-wrap: wrap; align-items: center;
+                background: #f8fafc; padding: 10px 12px; border-radius: 8px; 
+                border: 1px solid var(--border-color); margin-bottom: 8px;
                 width: 100%; box-sizing: border-box;
             }
-            .axis-label { grid-column: 1 / 3; grid-row: 1; width: auto; text-align: left; margin: 0; font-size: 9.5pt; }
-            .axis-val   { grid-column: 3 / 4; grid-row: 1; width: auto; text-align: right; margin: 0; font-size: 9.5pt; max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
             
-            .btn-nudge-small { font-size: 0; padding: 8px 0; border-radius: 6px; }
-            .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; width: 100%; }
+            /* 2. 利用 order 屬性重新排列顯示順序：標籤 -> 數值 -> 控制列 */
+            .axis-label { order: 1; flex: 0 0 auto; margin: 0 6px 0 0; text-align: left; font-size: 9.5pt; }
+            
+            /* 將數值靠左對齊，緊貼在標籤後方 */
+            .axis-val { order: 2; flex: 1 1 auto; margin: 0; text-align: left; font-size: 9.5pt; max-width: none; overflow: visible; color: var(--accent-color); font-weight: 700; }
+            
+            /* 3. 將加減按鈕與拉桿推到下一行，並佔滿寬度 */
+            .btn-nudge-small { font-size: 0; padding: 0; border-radius: 6px; height: 32px; display: flex; align-items: center; justify-content: center; }
+            
+            .btn-nudge-small.minus { order: 3; flex: 0 0 36px; margin-top: 10px; }
             .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
-            .axis-control input[type="range"] { grid-column: 2 / 3; grid-row: 2; width: 100%; margin: 0; align-self: center; }
-            .btn-nudge-small.plus { grid-column: 3 / 4; grid-row: 2; width: 100%; }
+            
+            .axis-control input[type="range"] { order: 4; flex: 1 1 0%; margin: 10px 12px 0 12px; }
+            
+            .btn-nudge-small.plus { order: 5; flex: 0 0 36px; margin-top: 10px; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
             
             .ft-mode-btn-container { flex-wrap: wrap; }
