@@ -142,12 +142,13 @@
             touch-action: auto;
             overscroll-behavior: contain;
         }
-        /*
+
         @media (max-width: 1024px) {
             body { padding: 8px; }
             .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
             header h1 { font-size: 16pt; margin-bottom: 15px; }
         
+            /* --- 側面板基礎設定 --- */
             #settings_drawer {
                 position: fixed; 
                 top: 0; 
@@ -162,42 +163,15 @@
                 padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
-            
             .fab-settings { display: flex; width: 55px; height: 55px; font-size: 24px; }
-        
             .tab-header { margin-bottom: 10px; padding: 4px; }
             .tab-btn { padding: 8px; font-size: 10pt; }
         
-            .control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 8px; grid-auto-flow: dense; }
-            .control-group.type-sel { grid-column: 1; }
-            .control-group.type-num { grid-column: 2; }
-            .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
-            .control-group input, .control-group select { padding: 6px; font-size: 9pt; }
+            /* --- ⚙️ 參數設定：改為與手機版相同的單欄堆疊 --- */
+            .control-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+            .control-group label { font-size: 9pt; margin-bottom: 4px; }
+            .control-group input, .control-group select { padding: 8px; font-size: 9.5pt; }
         
-            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
-            body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
-            
-            .dimmable { transition: opacity 0.2s; }
-            body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
-            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
-            
-            .axis-control.active-slider { 
-                opacity: 0.95 !important; 
-                z-index: 10; background: rgba(255, 255, 255, 0.95); 
-                border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
-            }
-        
-            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
-            .workspace-grid { grid-template-columns: 1fr 1fr; }
-            .results-section { grid-template-columns: 1fr; gap: 15px; }
-            
-            .failure-buttons { flex-direction: column; gap: 10px; }
-            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
-            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
-            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
-        }
-        */
-        @media (max-width: 1024px) {
             .axis-control { 
                 display: grid; 
                 grid-template-columns: 36px auto 1fr 36px; 
@@ -208,42 +182,40 @@
                 border: 1px solid var(--border-color); margin-bottom: 6px;
                 width: 100%; min-width: 100px; box-sizing: border-box;
             }
-            
-            .axis-label { 
-                grid-column: 1 / 3; grid-row: 1; 
-                text-align: left; margin: 0; font-size: 9.5pt; white-space: nowrap; 
-            }
-            .axis-val { 
-                grid-column: 3 / 5; grid-row: 1; 
-                text-align: left; margin: 0; font-size: 9.5pt; 
-                color: var(--accent-color); font-weight: 700; white-space: nowrap; 
-            }
-            
-            .btn-nudge-small { 
-                font-size: 0; padding: 0; border-radius: 6px; height: 32px; 
-                display: flex; align-items: center; justify-content: center; width: 100%;
-            }
-            
+            .axis-label { grid-column: 1 / 3; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; white-space: nowrap; }
+            .axis-val { grid-column: 3 / 5; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; color: var(--accent-color); font-weight: 700; white-space: nowrap; }
+            .btn-nudge-small { font-size: 0; padding: 0; border-radius: 6px; height: 32px; display: flex; align-items: center; justify-content: center; width: 100%; }
             .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; }
             .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
-            
-            .axis-control input[type="range"] { 
-                grid-column: 2 / 4; grid-row: 2; 
-                width: 100%; margin: 0; align-self: center; 
-            }
-            
+            .axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; width: 100%; margin: 0; align-self: center; }
             .btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
             
             .ft-mode-btn-container { flex-wrap: wrap; }
             #sel_transform_space { flex-basis: 100%; margin-top: 5px; }
+            .reset-btn-container { flex-direction: column; }
+            .reset-btn-container button { width: 100%; }
+            
+            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
+            body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
+            .dimmable { transition: opacity 0.2s; }
+            body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
+            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
+            .axis-control.active-slider { opacity: 0.95 !important; z-index: 10; background: rgba(255, 255, 255, 0.95); border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color); }
+        
+            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
+            .workspace-grid { grid-template-columns: 1fr 1fr; }
+            .results-section { grid-template-columns: 1fr; gap: 15px; }
+            .failure-buttons { flex-direction: column; gap: 10px; }
+            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
+            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
+            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
+        }
 
+        @media (max-width: 480px) {
             .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .block-card { padding: 8px; }
             .block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            
-            .reset-btn-container { flex-direction: column; }
-            .reset-btn-container button { width: 100%; }
 
             .compare-table { white-space: normal; }
             .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; white-space: normal; word-break: keep-all; line-height: 1.3;}
