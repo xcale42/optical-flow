@@ -1286,15 +1286,29 @@
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
         lastLoadedFailure = type;
 
+        // 1. 只將「位置」退回預設起點，但「保留」目前的旋轉角度
         const defaultPos = new THREE.Vector3(0, 0, -4.0);
-        const defaultQuat = new THREE.Quaternion();
 
-        object1.position.copy(defaultPos); object1.quaternion.copy(defaultQuat);
-        object2.position.copy(defaultPos); object2.quaternion.copy(defaultQuat);
-        basePos2.copy(defaultPos); baseQuat2.copy(defaultQuat);
-
-        resetSliders();
+        object1.position.copy(defaultPos); 
+        object2.position.copy(defaultPos); 
+        basePos2.copy(defaultPos); 
         
+        // 2. 確保 object2 的旋轉完全對齊 object1 (保留你原先的旋轉狀態)
+        object2.quaternion.copy(object1.quaternion);
+        baseQuat2.copy(object1.quaternion);
+
+        // 3. 僅重置位移 (X, Y, Z) 的 UI 與數值，放過角度 (Rx, Ry, Rz)
+        ['X', 'Y', 'Z'].forEach(axis => {
+            const slider = document.getElementById('slider_' + axis);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + axis);
+            if(lbl) lbl.innerText = "0.0000 m";
+        });
+        lastSliderVals.X = 0;
+        lastSliderVals.Y = 0;
+        lastSliderVals.Z = 0;
+        
+        // 重新讀取相機與視窗參數
         const f = parseFloat(document.getElementById('param_f').value);
         const Z = Math.abs(basePos2.z);
         const win = parseInt(document.getElementById('param_win').value);
@@ -1305,6 +1319,7 @@
         const fov_w_m = (cx * Z) / f;               
         const max_m_disp = Math.min((max_px_radius * Z) / f, fov_w_m * 0.8); 
 
+        // 若是孔徑問題，強制換成垂直條紋
         if (type === 'aperture') {
             document.getElementById('obj_shape').value = 'vertical_grating';
         }
@@ -1315,6 +1330,7 @@
         let found = false, attempt = 0, testX = 0, testY = 0;
         const step = max_m_disp * 0.1; 
 
+        // 尋找能觸發特定失效的位移量
         while (!found && attempt < 100) {
             attempt++;
             if (type === 'aperture') {
