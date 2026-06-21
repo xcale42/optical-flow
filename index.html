@@ -10,7 +10,8 @@
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
-            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
+            startup: { typeset: false } 
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -71,10 +72,7 @@
         .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-reset { background: #64748b; }
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
-        input[type="range"] { 
-            width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
-            touch-action: none; 
-        }
+        input[type="range"] { width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); touch-action: none; }
 
         .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
         .viewport-card { 
@@ -114,7 +112,7 @@
         .metric-list li:last-child { border-bottom: none; }
         .metric-list span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap;}
 
-        /* 兩個懸浮按鈕：右下角設定⚙️ / 左下角語言🌍 */
+        /* --- 兩個懸浮按鈕設計：左下角切換語言，右下角打開設定 --- */
         .fab-settings {
             display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%;
             background: var(--accent-color); color: white; align-items: center; justify-content: center;
@@ -131,17 +129,11 @@
         .fab-lang:active { transform: scale(0.95); }
 
         .drawer-overlay {
-            visibility: hidden; 
-            opacity: 0; 
-            pointer-events: none;
+            visibility: hidden; opacity: 0; pointer-events: none;
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); 
-            z-index: 999; 
-            -webkit-backdrop-filter: blur(2px);
-            backdrop-filter: blur(2px); 
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            background: rgba(0, 0, 0, 0.6); z-index: 999; 
+            -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); 
+            transition: opacity 0.3s ease, visibility 0.3s ease; cursor: pointer; -webkit-tap-highlight-color: transparent;
         }
 
         body.drawer-open .drawer-overlay { visibility: visible; opacity: 1; pointer-events: auto; }
@@ -160,7 +152,7 @@
                 box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
-            .fab-settings { display: flex; width: 55px; height: 55px; font-size: 24px; }
+            .fab-settings { display: flex; }
             .tab-header { margin-bottom: 10px; padding: 4px; }
             .tab-btn { padding: 8px; font-size: 10pt; }
         
@@ -229,9 +221,9 @@
 <body>
 
 <div class="drawer-overlay" id="drawer_overlay" onclick="toggleDrawer()"></div>
-<button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
 
-<button class="fab-lang" id="fab_lang" onclick="toggleLanguage()" title="切換語言 / Switch Language">🌍</button>
+<button class="fab-lang" id="fab_lang" onclick="toggleLanguage()" title="Switch Language">🌍</button>
+<button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
 
 <div class="container">
     <header>
@@ -478,12 +470,14 @@
 
 <script>
     // ==========================================
-    // 0. 國際化多語言設定 (i18n Dictionary)
+    // 0. 國際化多語言設定與 MathJax 控制列隊
     // ==========================================
     let I18N = {}; 
     let currentLang = localStorage.getItem('i18n_lang') || 'zh';
+    
+    // 建立一個安全的 Promise 佇列，防止 MathJax 重疊執行當機
+    let mathJaxQueue = Promise.resolve();
 
-    // 點擊 🌍 按鈕時觸發
     function toggleLanguage() {
         const newLang = currentLang === 'zh' ? 'en' : 'zh';
         setLanguage(newLang);
@@ -503,6 +497,7 @@
 
             const dict = I18N[lang];
             
+            // 替換所有需要翻譯的節點
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dict[key]) {
@@ -518,12 +513,10 @@
                 });
             }
 
-            // ⚠️ 關鍵修正：呼叫 MathJax 前必須先 Clear 快取，否則它會略過已經替換過 innerHTML 的節點
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetClear();
-                window.MathJax.typesetPromise().catch((err) => console.log(err.message));
-            }
+            // 安全呼叫 MathJax 重新渲染
+            triggerMathJax();
 
+            // 確保錯誤 UI 文字同步切換
             if (window.lastResultsCache) {
                 updateResultsUI(
                     window.lastResultsCache.px, window.lastResultsCache.py, window.lastResultsCache.d_disp,
@@ -534,6 +527,19 @@
             }
         } catch (error) {
             console.error('語言包切換失敗:', error);
+        }
+    }
+
+    // 將 MathJax 呼叫打包，保證依序執行不會衝突
+    function triggerMathJax() {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            mathJaxQueue = mathJaxQueue.then(() => {
+                window.MathJax.typesetClear();
+                return window.MathJax.typesetPromise();
+            }).catch(err => console.error('MathJax 渲染失敗:', err));
+        } else {
+            // 如果腳本還沒載入好，等一下再試
+            setTimeout(triggerMathJax, 100);
         }
     }
 
@@ -1501,7 +1507,7 @@
     // 9. 程式進入點 (Application Entry)
     // ==========================================
     window.onload = () => {
-        // 優先載入外部語言包
+        // 優先載入外部語言包並啟動系統
         setLanguage(currentLang).then(() => {
             
             CANVAS_IDS.forEach(id => {
