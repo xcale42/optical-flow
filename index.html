@@ -152,72 +152,57 @@
         }
 
         @media (max-width: 1024px) {
-            body { padding: 12px; }
-            .container { padding: 20px; border-radius: 12px; width: 100%; overflow-x: hidden; }
-            header h1 { font-size: 20pt; margin-bottom: 20px; }
+            body { padding: 8px; }
+            .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
+            header h1 { font-size: 16pt; margin-bottom: 15px; }
         
-            /* 1. 啟用抽屜面板，平板尺寸給予較寬的 400px */
+            /* 📌 統一的抽屜面板設計 (寬度固定 320px，與原手機版相同) */
             #settings_drawer {
-                position: fixed; top: 0; right: -420px; width: 400px; height: 100%; height: 100dvh;
+                position: fixed; top: 0; right: -340px; width: 320px; height: 100%; height: 100dvh;
                 background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -4px 0 20px rgba(0,0,0,0.2); padding: 20px; margin: 0; border-radius: 0; border: none;
+                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px 10px 10px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             
-            /* 2. 顯示設定用的懸浮按鈕 */
-            .fab-settings { display: flex; width: 60px; height: 60px; font-size: 26px; }
-            
-            /* 3. 內容區塊改為單欄或雙欄，填滿剩餘空間 */
-            .viewport-3d-container { grid-template-columns: 1fr; gap: 20px; }
-            .workspace-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
-            .results-section { grid-template-columns: 1fr; gap: 20px; }
-            
-            /* 4. 參數選單與按鈕適應性調整 */
-            .control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; grid-auto-flow: dense; }
+            /* 統一的懸浮設定按鈕 */
+            .fab-settings { display: flex; width: 55px; height: 55px; font-size: 24px; }
+        
+            /* 📌 面板內部元素尺寸統一 */
+            .tab-header { margin-bottom: 10px; padding: 4px; }
+            .tab-btn { padding: 8px; font-size: 10pt; }
+        
+            .control-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 8px; grid-auto-flow: dense; }
             .control-group.type-sel { grid-column: 1; }
             .control-group.type-num { grid-column: 2; }
-            
-            .failure-buttons { flex-direction: column; gap: 12px; }
-            .failure-buttons button { width: 100%; padding: 14px; font-size: 11pt; min-width: unset; }
+            .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
+            .control-group input, .control-group select { padding: 6px; font-size: 9pt; }
         
-            /* 5. 確保滑桿防斷觸與聚焦模式正常運作 */
+            /* 滑桿防斷觸與全螢幕聚焦模式 */
             body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
             body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
+            
             .dimmable { transition: opacity 0.2s; }
             body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
             body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
+            
             .axis-control.active-slider { 
                 opacity: 0.95 !important; 
                 z-index: 10; background: rgba(255, 255, 255, 0.95); 
                 border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
             }
-        }
         
-        /* =========================================================
-           大型手機 / 小平板尺寸 (Max 768px) - 微調寬度與間距
-           ========================================================= */
-        @media (max-width: 768px) {
-            header h1 { font-size: 16pt; margin-bottom: 15px; }
-            .container { padding: 12px; }
-        
-            /* 縮小抽屜面板寬度，避免佔用全部手機畫面 */
-            #settings_drawer {
-                right: -360px; width: 340px; 
-                padding: 15px 12px;
-            }
-            .fab-settings { width: 55px; height: 55px; font-size: 24px; }
-        
-            .tab-header { margin-bottom: 10px; padding: 4px; }
-            .tab-btn { padding: 8px; font-size: 10pt; }
-        
-            .control-grid { gap: 10px 8px; }
-            .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
-            .control-group input, .control-group select { padding: 8px; font-size: 9pt; }
-        
-            .failure-buttons button { padding: 12px; font-size: 10pt; }
+            /* 📌 主畫面區塊的自適應佈局 (維持平板也能好好觀看 3D 與 2D 畫面) */
+            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
+            /* 確保 2D 投影畫面在平板上能保持 2x2 網格，避免單欄過度拉長 */
+            .workspace-grid { grid-template-columns: 1fr 1fr; }
+            .results-section { grid-template-columns: 1fr; gap: 15px; }
+            
+            /* 錯誤測試按鈕與數據表格 */
+            .failure-buttons { flex-direction: column; gap: 10px; }
+            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
             .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
-            .panel:not(#settings_drawer) { padding: 15px; }
+            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
         }
 
         @media (max-width: 480px) {
