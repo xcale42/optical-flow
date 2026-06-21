@@ -72,7 +72,6 @@
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
         input[type="range"] { 
             width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
-            /* 關鍵修復 1：禁止瀏覽器在此元素上觸發頁面捲動，把滑動判定 100% 留給滑桿 */
             touch-action: none; 
         }
 
@@ -120,73 +119,52 @@
         }
         .fab-settings:active { transform: scale(0.95); }
         .drawer-overlay {
-            /* 1. 捨棄 display: none，改用 visibility 與 opacity 來支援完美轉場 */
             visibility: hidden; 
             opacity: 0; 
             pointer-events: none;
-            
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); 
             z-index: 999; 
-            
-            /* 2. 補上 -webkit- 前綴，確保所有 iPhone/Safari 版本都能強制渲染模糊 */
             -webkit-backdrop-filter: blur(2px);
             backdrop-filter: blur(2px); 
-            
             transition: opacity 0.3s ease, visibility 0.3s ease;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 3. 當面板開啟時，平滑顯示遮罩並啟動模糊與點擊功能 */
         body.drawer-open .drawer-overlay { 
             visibility: visible; 
             opacity: 1; 
             pointer-events: auto; 
         }
 
-        /* 2. 確保側邊欄內部依然可以滑動，但滑到底時不會連動背景 */
         body.drawer-open #settings_drawer {
-            touch-action: auto; /* 恢復側邊欄內的滑動能力 */
-            overscroll-behavior: contain; /* 阻斷滾動事件向外傳遞 */
+            touch-action: auto;
+            overscroll-behavior: contain;
         }
-
+        /*
         @media (max-width: 1024px) {
             body { padding: 8px; }
             .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
             header h1 { font-size: 16pt; margin-bottom: 15px; }
         
-            /* 📌 統一的抽屜面板設計 (寬度固定 320px，與原手機版相同) */
             #settings_drawer {
                 position: fixed; 
                 top: 0; 
                 right: -100%; 
-                
-                /* 💡 1. 核心機制：寬度根據內部元件（如原本的 5 欄滑桿）自動撐開 */
-                width: fit-content; 
-                
-                /* 💡 2. 極限防護：最大不超過螢幕寬度的 92%，確保一定留有左側暗灰空間可點擊關閉 */
-                max-width: 92vw; 
-                
-                /* 💡 3. 最低限度：就算內容很少，也維持一個基本的視覺寬度 */
-                min-width: 320px; 
-                
+                width: 360px;
+                max-width: 90vw; 
                 height: 100%; height: 100dvh;
                 background: var(--panel-bg); z-index: 1000; 
-                
-                /* 💡 4. 允許水平滾動：當手機螢幕極窄、觸發 92vw 極限時，讓面板內部可以左右滑動，而不會直接切斷數值 */
-                overflow-y: auto; overflow-x: auto; 
-                
+                overflow-y: auto; overflow-x: hidden; 
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
                 box-shadow: -2px 0 15px rgba(0,0,0,0.2); 
                 padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             
-            /* 統一的懸浮設定按鈕 */
             .fab-settings { display: flex; width: 55px; height: 55px; font-size: 24px; }
         
-            /* 📌 面板內部元素尺寸統一 */
             .tab-header { margin-bottom: 10px; padding: 4px; }
             .tab-btn { padding: 8px; font-size: 10pt; }
         
@@ -196,7 +174,6 @@
             .control-group label { font-size: 8.5pt; margin-bottom: 4px; }
             .control-group input, .control-group select { padding: 6px; font-size: 9pt; }
         
-            /* 滑桿防斷觸與全螢幕聚焦模式 */
             body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
             body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
             
@@ -210,33 +187,28 @@
                 border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
             }
         
-            /* 📌 主畫面區塊的自適應佈局 (維持平板也能好好觀看 3D 與 2D 畫面) */
             .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
-            /* 確保 2D 投影畫面在平板上能保持 2x2 網格，避免單欄過度拉長 */
             .workspace-grid { grid-template-columns: 1fr 1fr; }
             .results-section { grid-template-columns: 1fr; gap: 15px; }
             
-            /* 錯誤測試按鈕與數據表格 */
             .failure-buttons { flex-direction: column; gap: 10px; }
             .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
             .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
             .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
         }
-
-        @media (max-width: 480px) {
+        */
+        @media (max-width: 1024px) {
             .axis-control { 
                 display: grid; 
-                /* 精準的 4 欄分割：36px(按鈕) | auto(讓標籤延伸) | 1fr(讓滑桿延伸) | 36px(按鈕) */
                 grid-template-columns: 36px auto 1fr 36px; 
                 grid-template-rows: auto auto; 
-                gap: 4px 8px; /* 垂直間距 4px，水平間距 8px */
+                gap: 4px 8px;
                 align-items: center; 
                 background: #f8fafc; padding: 6px 10px; border-radius: 8px; 
                 border: 1px solid var(--border-color); margin-bottom: 6px;
                 width: 100%; min-width: 100px; box-sizing: border-box;
             }
             
-            /* 2. 第一行：標籤與數值 (利用 Grid 欄位跨越完美貼齊) */
             .axis-label { 
                 grid-column: 1 / 3; grid-row: 1; 
                 text-align: left; margin: 0; font-size: 9.5pt; white-space: nowrap; 
@@ -247,7 +219,6 @@
                 color: var(--accent-color); font-weight: 700; white-space: nowrap; 
             }
             
-            /* 3. 第二行：減號、滑桿、加號 */
             .btn-nudge-small { 
                 font-size: 0; padding: 0; border-radius: 6px; height: 32px; 
                 display: flex; align-items: center; justify-content: center; width: 100%;
@@ -290,7 +261,7 @@
 
 <div class="container">
     <header>
-        <h1>3D Scene Flow 金字塔光流實驗室</h1>
+        <h1>光流法實驗室</h1>
     </header>
 
     <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
@@ -532,60 +503,71 @@
 </div>
 
 <script>
-    const ENABLE_DEBUG = false;
-    const ENABLE_INFO = false;
-    const ENABLE_WARN = false;
+    // ==========================================
+    // 1. 系統常數與基礎設定 (System Constants)
+    // ==========================================
+    const SYS_CONST = {
+        IMG_W: 240,
+        IMG_H: 200,
+        CX: 120, 
+        CY: 100, 
+        DEFAULT_Z: -4.0,
+        MIN_Z: -0.2,
+        TEX_SCALE: 250,
+        RAY_STEPS: 24,
+        CLOSE_THRESH_MULT: 1.8,
+        COLORS: {
+            CAM_L: 0x3b82f6,
+            CAM_R: 0x10b981,
+            BG: 0x1a1a1a,
+            AXIS_WORLD_X: 0x00d8ff,
+            AXIS_WORLD_Y: 0xff00d8,
+            AXIS_WORLD_Z: 0xff9900,
+            AXIS_LOCAL_X: 0xff0000,
+            AXIS_LOCAL_Y: 0x00ff00,
+            AXIS_LOCAL_Z: 0x0000ff
+        },
+        ENABLE_LOGS: false
+    };
 
-    if (!ENABLE_DEBUG) console.debug = function() {};
-    if (!ENABLE_INFO) console.info = function() {};
-    if (!ENABLE_WARN) console.warn = function() {};
-
-    let lastLoadedFailure = null;
-
-    // 將拉桿數值獨立記錄，改採增量 (Delta) 計算以修正混用時的座標偏差
-    let lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
-
-    function resetSliders() {
-        ['X', 'Y', 'Z'].forEach(axis => {
-            const slider = document.getElementById('slider_' + axis);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + axis);
-            if(lbl) lbl.innerText = "0.0000 m";
-        });
-        ['Rx', 'Ry', 'Rz'].forEach(id => {
-            const slider = document.getElementById('slider_' + id);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + id);
-            if(lbl) lbl.innerText = "0.0°";
-        });
-        lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
+    if (!SYS_CONST.ENABLE_LOGS) {
+        console.debug = function() {};
+        console.info = function() {};
+        console.warn = function() {};
     }
 
-    const imgW = 240, imgH = 200;
-    const cx = imgW / 2, cy = imgH / 2;
-    const canvasIds = ['Lt', 'Rt', 'Lt1', 'Rt1'];
-    
+    const { IMG_W, IMG_H, CX, CY, DEFAULT_Z, TEX_SCALE, RAY_STEPS, CLOSE_THRESH_MULT, COLORS } = SYS_CONST;
+    const CANVAS_IDS = ['Lt', 'Rt', 'Lt1', 'Rt1'];
+
+    // ==========================================
+    // 2. 全域狀態變數 (Global State Variables)
+    // ==========================================
+    let lastLoadedFailure = null;
+    let lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
+    let currentRayF = -1;
+    let rayDirCache = new Float32Array(IMG_W * IMG_H * 3);
+    let transformMaterials = null; 
+
     const contexts = {};
     const imgBuffers = {};
     const imgDataCaches = {}; 
-    
-    let currentRayF = -1;
-    let rayDirCache = new Float32Array(imgW * imgH * 3);
-
-    let projData = {
-        Lt: {x: cx, y: cy, scale: 1}, Rt: {x: cx, y: cy, scale: 1},
-        Lt1: {x: cx, y: cy, scale: 1}, Rt1: {x: cx, y: cy, scale: 1}
+    const projData = {
+        Lt: {x: CX, y: CY, scale: 1}, Rt: {x: CX, y: CY, scale: 1},
+        Lt1: {x: CX, y: CY, scale: 1}, Rt1: {x: CX, y: CY, scale: 1}
     };
 
     let scene1, camera1, renderer1, controls1, transform1, object1;
     let scene2, camera2, renderer2, controls2, transform2, object2;
     
-    let basePos2 = new THREE.Vector3(0, 0, -4.0);
+    let basePos2 = new THREE.Vector3(0, 0, DEFAULT_Z);
     let baseQuat2 = new THREE.Quaternion();
 
     const rayTarget = new THREE.Vector3();
     const invQuaternion = new THREE.Quaternion();
 
+    // ==========================================
+    // 3. 工具與輔助函式 (Utility Functions)
+    // ==========================================
     function formatNum(val, decimals = 4) {
         let s = val.toFixed(decimals);
         return parseFloat(s) === 0 ? (0).toFixed(decimals) : s;
@@ -596,6 +578,46 @@
         return parseFloat(s) === 0 ? "0.0°" : s + "°";
     }
 
+    function invertMatrix3x3(m) {
+        const det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+        if (Math.abs(det) < 1e-12) return null;
+        return [
+            [(m[1][1] * m[2][2] - m[2][1] * m[1][2]) / det, (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
+            [(m[1][2] * m[2][0] - m[1][0] * m[2][2]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, (m[1][0] * m[0][2] - m[0][0] * m[1][2]) / det],
+            [(m[1][0] * m[2][1] - m[2][0] * m[1][1]) / det, (m[2][0] * m[0][1] - m[0][0] * m[2][1]) / det, (m[0][0] * m[1][1] - m[1][0] * m[0][1]) / det]
+        ];
+    }
+
+    function downsample(buf, w, h) {
+        const nw = Math.floor(w/2), nh = Math.floor(h/2);
+        const nbuf = new Float32Array(nw * nh);
+        for(let y = 0; y < nh; y++) {
+            for(let x = 0; x < nw; x++) {
+                const i00 = (y*2)*w + (x*2);
+                nbuf[y*nw + x] = (buf[i00] + buf[i00+1] + buf[i00+w] + buf[i00+w+1]) * 0.25;
+            }
+        }
+        return { buf: nbuf, w: nw, h: nh };
+    }
+
+    function getPLevel(pyrObj, x, y) {
+        const {buf, w, h} = pyrObj;
+        if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
+        const x0 = Math.floor(x), y0 = Math.floor(y);
+        const dx = x - x0, dy = y - y0;
+        return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
+    }
+
+    function calcRelativeError(gt, est) {
+        const err = Math.abs(gt - est);
+        if (Math.abs(gt) < 1e-4) return err < 1e-4 ? "0.0%" : "N/A";
+        const pct = (err / Math.abs(gt)) * 100;
+        return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
+    }
+
+    // ==========================================
+    // 4. UI 互動與事件綁定 (UI Interactions)
+    // ==========================================
     window.switchTab = function(tabId) {
         document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
         document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
@@ -628,51 +650,36 @@
         });
     }
 
-    window.toggleLock3D_t = function() {
-        const isLocked = document.getElementById('lock_3d_t').checked;
-        if(controls1 && transform1) {
-            controls1.enabled = !isLocked;
-            transform1.enabled = !isLocked; transform1.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
-    };
-
-    window.toggleLock3D_t1 = function() {
-        const isLocked = document.getElementById('lock_3d_t1').checked;
-        if(controls2 && transform2) {
-            controls2.enabled = !isLocked;
-            transform2.enabled = !isLocked; transform2.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
-    };
-
-    function getRayCache(f) {
-        if (currentRayF === f) return rayDirCache;
-        currentRayF = f;
-        let idx = 0;
-        for (let y = 0; y < imgH; y++) {
-            for (let x = 0; x < imgW; x++) {
-                const rdx = x - cx, rdy = -(y - cy), rdz = -f;
-                const rlen = Math.sqrt(rdx*rdx + rdy*rdy + rdz*rdz);
-                rayDirCache[idx++] = rdx / rlen;
-                rayDirCache[idx++] = rdy / rlen;
-                rayDirCache[idx++] = rdz / rlen;
-            }
-        }
-        return rayDirCache;
+    function resetSliders() {
+        ['X', 'Y', 'Z'].forEach(axis => {
+            const slider = document.getElementById('slider_' + axis);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + axis);
+            if(lbl) lbl.innerText = "0.0000 m";
+        });
+        ['Rx', 'Ry', 'Rz'].forEach(id => {
+            const slider = document.getElementById('slider_' + id);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + id);
+            if(lbl) lbl.innerText = "0.0°";
+        });
+        lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
     }
 
+    // ==========================================
+    // 5. Three.js 3D 場景建構與控制 (3D Scene Setup)
+    // ==========================================
     function setupScene(containerId) {
         const container = document.getElementById(containerId);
         const width = container.clientWidth || 400;
         const height = container.clientHeight || 350;
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x1a1a1a);
+        scene.background = new THREE.Color(COLORS.BG);
         
         const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
         camera.position.set(0, 1.5, 3);
-        camera.lookAt(0, 0, -4);
+        camera.lookAt(0, 0, DEFAULT_Z);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
@@ -687,9 +694,9 @@
         camGeo.translate(0, -0.5, 0); 
         camGeo.rotateX(Math.PI / 2);  
         
-        const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x3b82f6}));
+        const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: COLORS.CAM_L}));
         camL.name = 'camL';
-        const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: 0x10b981}));
+        const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: COLORS.CAM_R}));
         camR.name = 'camR';
         scene.add(camL); scene.add(camR);
 
@@ -700,9 +707,8 @@
 
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.target.set(0, 0, -4);
+        controls.target.set(0, 0, DEFAULT_Z);
         
-        // 統一使用原生的 TransformControls，不需要額外的 helper
         const transform = new THREE.TransformControls(camera, renderer.domElement);
         transform.setSpace('local');
         transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
@@ -721,9 +727,9 @@
         const s2 = setupScene('3d_container_t1');
         scene2 = s2.scene; camera2 = s2.camera; renderer2 = s2.renderer; controls2 = s2.controls; transform2 = s2.transform; object2 = s2.object;
 
-        object1.position.set(0, 0, -4.0);
-        object2.position.set(0, 0, -4.0);
-        basePos2.set(0, 0, -4.0);
+        object1.position.set(0, 0, DEFAULT_Z);
+        object2.position.set(0, 0, DEFAULT_Z);
+        basePos2.set(0, 0, DEFAULT_Z);
         baseQuat2.identity(); 
 
         const curSpace = document.getElementById('sel_transform_space').value;
@@ -782,30 +788,112 @@
         }
     }
 
-    function updateProjData(p1, p2, f, B) {
-        const Z1 = -p1.z; const Z2 = -p2.z;
-        projData.Lt.x = cx + f * (p1.x - (-B/2)) / Z1; projData.Lt.y = cy - f * p1.y / Z1;
-        projData.Rt.x = cx + f * (p1.x - (B/2)) / Z1;  projData.Rt.y = cy - f * p1.y / Z1;
-        projData.Lt1.x = cx + f * (p2.x - (-B/2)) / Z2; projData.Lt1.y = cy - f * p2.y / Z2;
-        projData.Rt1.x = cx + f * (p2.x - (B/2)) / Z2;  projData.Rt1.y = cy - f * p2.y / Z2;
-        projData.Lt.scale = projData.Rt.scale = 2.0 / Z1;
-        projData.Lt1.scale = projData.Rt1.scale = 2.0 / Z2;
+    window.toggleLock3D_t = function() {
+        const isLocked = document.getElementById('lock_3d_t').checked;
+        if(controls1 && transform1) {
+            controls1.enabled = !isLocked;
+            transform1.enabled = !isLocked; transform1.visible = !isLocked;
+        }
+        document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
+    };
+
+    window.toggleLock3D_t1 = function() {
+        const isLocked = document.getElementById('lock_3d_t1').checked;
+        if(controls2 && transform2) {
+            controls2.enabled = !isLocked;
+            transform2.enabled = !isLocked; transform2.visible = !isLocked;
+        }
+        document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
+    };
+
+    window.setTransformMode = function(mode) {
+        if (!transform2 || !transform1) return;
+        transform2.setMode(mode); 
+        transform1.setMode(mode);
+        const isTranslate = mode === 'translate';
+        document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
+        document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
+    };
+
+    window.setTransformSpace = function(space) {
+        if (transform1) transform1.setSpace(space);
+        if (transform2) transform2.setSpace(space);
+
+        if (!transformMaterials && transform1 && transform2) {
+            transformMaterials = { X: [], Y: [], Z: [] };
+            const matSet = new Set();
+            const extract = (transform) => {
+                transform.traverse((child) => {
+                    if (child.material && child.material.color && !matSet.has(child.material)) {
+                        matSet.add(child.material);
+                        const hex = child.material.color.getHex();
+                        if (hex === 0xff0000) transformMaterials.X.push(child.material);
+                        if (hex === 0x00ff00) transformMaterials.Y.push(child.material);
+                        if (hex === 0x0000ff) transformMaterials.Z.push(child.material);
+                    }
+                });
+            };
+            extract(transform1);
+            extract(transform2);
+        }
+
+        if (transformMaterials) {
+            const isWorld = space === 'world';
+            transformMaterials.X.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_X : COLORS.AXIS_LOCAL_X)); 
+            transformMaterials.Y.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_Y : COLORS.AXIS_LOCAL_Y)); 
+            transformMaterials.Z.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_Z : COLORS.AXIS_LOCAL_Z)); 
+        }
+    };
+
+    window.updateObjectGeometry = function(dryRun = false) {
+        if (!object1 || !object2) return;
+        const type = document.getElementById('obj_geometry_type').value;
+        const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
+        
+        if(object1.geometry) object1.geometry.dispose();
+        if(object2.geometry) object2.geometry.dispose();
+        
+        let newGeo;
+        if (type === 'box') newGeo = new THREE.BoxGeometry(size * 2, size * 2, size * 2);
+        else if (type === 'cylinder') newGeo = new THREE.CylinderGeometry(size, size, size * 2, 32);
+        else if (type === 'torus') newGeo = new THREE.TorusGeometry(size * 0.7, size * 0.3, 16, 64);
+        else if (type === 'cone') newGeo = new THREE.ConeGeometry(size, size * 2, 32);
+        else if (type === 'octahedron') newGeo = new THREE.OctahedronGeometry(size);
+        else newGeo = new THREE.SphereGeometry(size, 32, 32);
+        
+        object1.geometry = newGeo;
+        object2.geometry = newGeo.clone();
+        
+        if (dryRun !== true) updateSystem();
+    };
+
+    // ==========================================
+    // 6. 光學投影與物理計算 (Projection & Math)
+    // ==========================================
+    function getRayCache(f) {
+        if (currentRayF === f) return rayDirCache;
+        currentRayF = f;
+        let idx = 0;
+        for (let y = 0; y < IMG_H; y++) {
+            for (let x = 0; x < IMG_W; x++) {
+                const rdx = x - CX, rdy = -(y - CY), rdz = -f;
+                const rlen = Math.sqrt(rdx*rdx + rdy*rdy + rdz*rdz);
+                rayDirCache[idx++] = rdx / rlen;
+                rayDirCache[idx++] = rdy / rlen;
+                rayDirCache[idx++] = rdz / rlen;
+            }
+        }
+        return rayDirCache;
     }
 
-    function updateSystem() {
-        if (!object1 || !object2) return;
-        if(object1.position.z > -0.2) object1.position.z = -0.2;
-        if(object2.position.z > -0.2) object2.position.z = -0.2;
-
-        if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
-
-        const f = parseFloat(document.getElementById('param_f').value);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const p1 = object1.position; const p2 = object2.position;
-        
-        updateProjData(p1, p2, f, B);
-        renderAll2DScenes();
-        calculateSceneFlow(p1, p2, f, B, false);
+    function updateProjData(p1, p2, f, B) {
+        const Z1 = -p1.z; const Z2 = -p2.z;
+        projData.Lt.x = CX + f * (p1.x - (-B/2)) / Z1; projData.Lt.y = CY - f * p1.y / Z1;
+        projData.Rt.x = CX + f * (p1.x - (B/2)) / Z1;  projData.Rt.y = CY - f * p1.y / Z1;
+        projData.Lt1.x = CX + f * (p2.x - (-B/2)) / Z2; projData.Lt1.y = CY - f * p2.y / Z2;
+        projData.Rt1.x = CX + f * (p2.x - (B/2)) / Z2;  projData.Rt1.y = CY - f * p2.y / Z2;
+        projData.Lt.scale = projData.Rt.scale = 2.0 / Z1;
+        projData.Lt1.scale = projData.Rt1.scale = 2.0 / Z2;
     }
 
     function renderAll2DScenes() {
@@ -817,7 +905,7 @@
         const B = parseFloat(document.getElementById('param_B').value);
         const rayDirs = getRayCache(f);
 
-        canvasIds.forEach(key => {
+        CANVAS_IDS.forEach(key => {
             const ctx = contexts[key];
             const buffer = imgBuffers[key];
             let camX = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
@@ -828,11 +916,11 @@
             invQuaternion.copy(obj.quaternion).invert();
             const vx = Cx - Ox, vy = Cy - Oy, vz = Cz - Oz;
             const distToCenter = Math.sqrt(vx*vx + vy*vy + vz*vz);
-            const closeThreshold = (R * 1.8) * (R * 1.8);
+            const closeThreshold = (R * CLOSE_THRESH_MULT) * (R * CLOSE_THRESH_MULT);
 
-            for (let y = 0; y < imgH; y++) {
-                for (let x = 0; x < imgW; x++) {
-                    const idx = y * imgW + x;
+            for (let y = 0; y < IMG_H; y++) {
+                for (let x = 0; x < IMG_W; x++) {
+                    const idx = y * IMG_W + x;
                     const rIdx = idx * 3;
                     const Dx = rayDirs[rIdx], Dy = rayDirs[rIdx+1], Dz = rayDirs[rIdx+2];
                     const proj = vx*Dx + vy*Dy + vz*Dz;
@@ -844,10 +932,10 @@
                     let hitPx = 0, hitPy = 0; 
                     
                     if (closenessSq <= closeThreshold && proj > 0) {
-                        let t = distToCenter - R * 1.8; if (t < 0) t = 0;
-                        const maxT = distToCenter + R * 1.8;
+                        let t = distToCenter - R * CLOSE_THRESH_MULT; if (t < 0) t = 0;
+                        const maxT = distToCenter + R * CLOSE_THRESH_MULT;
                         
-                        for (let step = 0; step < 24; step++) {
+                        for (let step = 0; step < RAY_STEPS; step++) {
                             const Px = Ox + t * Dx, Py = Oy + t * Dy, Pz = Oz + t * Dz;
                             lx_raw = Px - Cx; ly_raw = Py - Cy; lz_raw = Pz - Cz;
                             
@@ -888,9 +976,9 @@
                                 texX = theta * R; texY = phi * R * 0.3;
                             } else if (geomType === 'sphere') { texX = Math.atan2(lx, lz) * R; texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R; } 
                             else { texX = lx; texY = ly; }
-                            texX *= 250; texY *= 250;
+                            texX *= TEX_SCALE; texY *= TEX_SCALE;
                         } else {
-                            texX = hitPx * 250; texY = hitPy * 250;
+                            texX = hitPx * TEX_SCALE; texY = hitPy * TEX_SCALE;
                         }
 
                         let pattern = 128;
@@ -924,36 +1012,9 @@
         });
     }
 
-    function downsample(buf, w, h) {
-        const nw = Math.floor(w/2), nh = Math.floor(h/2);
-        const nbuf = new Float32Array(nw * nh);
-        for(let y = 0; y < nh; y++) {
-            for(let x = 0; x < nw; x++) {
-                const i00 = (y*2)*w + (x*2);
-                nbuf[y*nw + x] = (buf[i00] + buf[i00+1] + buf[i00+w] + buf[i00+w+1]) * 0.25;
-            }
-        }
-        return { buf: nbuf, w: nw, h: nh };
-    }
-
-    function getPLevel(pyrObj, x, y) {
-        const {buf, w, h} = pyrObj;
-        if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
-        const x0 = Math.floor(x), y0 = Math.floor(y);
-        const dx = x - x0, dy = y - y0;
-        return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
-    }
-
-    function invertMatrix3x3(m) {
-        const det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-        if (Math.abs(det) < 1e-12) return null;
-        return [
-            [(m[1][1] * m[2][2] - m[2][1] * m[1][2]) / det, (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
-            [(m[1][2] * m[2][0] - m[1][0] * m[2][2]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, (m[1][0] * m[0][2] - m[0][0] * m[1][2]) / det],
-            [(m[1][0] * m[2][1] - m[2][0] * m[1][1]) / det, (m[2][0] * m[0][1] - m[0][0] * m[2][1]) / det, (m[0][0] * m[1][1] - m[1][0] * m[0][1]) / det]
-        ];
-    }
-
+    // ==========================================
+    // 7. 光流計算核心 (Optical Flow Engine)
+    // ==========================================
     function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
         let totalLevels = parseInt(document.getElementById('param_pyr').value);
         if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
@@ -971,10 +1032,10 @@
             document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m";
         }
 
-        const pyrLt = [{buf: imgBuffers.Lt, w: imgW, h: imgH}];
-        const pyrRt = [{buf: imgBuffers.Rt, w: imgW, h: imgH}];
-        const pyrLt1 = [{buf: imgBuffers.Lt1, w: imgW, h: imgH}];
-        const pyrRt1 = [{buf: imgBuffers.Rt1, w: imgW, h: imgH}];
+        const pyrLt = [{buf: imgBuffers.Lt, w: IMG_W, h: IMG_H}];
+        const pyrRt = [{buf: imgBuffers.Rt, w: IMG_W, h: IMG_H}];
+        const pyrLt1 = [{buf: imgBuffers.Lt1, w: IMG_W, h: IMG_H}];
+        const pyrRt1 = [{buf: imgBuffers.Rt1, w: IMG_W, h: IMG_H}];
 
         for(let i = 1; i < totalLevels; i++) {
             pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h));
@@ -990,10 +1051,10 @@
         const obj_px_radius = (f * R_size) / Z;
         const bounds_margin = -obj_px_radius * 0.5; 
 
-        if (px < bounds_margin || px >= imgW - bounds_margin || 
-            py < bounds_margin || py >= imgH - bounds_margin ||
-            projData.Lt1.x < bounds_margin || projData.Lt1.x >= imgW - bounds_margin || 
-            projData.Lt1.y < bounds_margin || projData.Lt1.y >= imgH - bounds_margin) {
+        if (px < bounds_margin || px >= IMG_W - bounds_margin || 
+            py < bounds_margin || py >= IMG_H - bounds_margin ||
+            projData.Lt1.x < bounds_margin || projData.Lt1.x >= IMG_W - bounds_margin || 
+            projData.Lt1.y < bounds_margin || projData.Lt1.y >= IMG_H - bounds_margin) {
             isOutOfBounds = true;
         }
 
@@ -1004,7 +1065,7 @@
             for (let lvl = totalLevels - 1; lvl >= 0; lvl--) {
                 const scale = 1 / Math.pow(2, lvl);
                 const cw = pyrLt[lvl].w, ch = pyrLt[lvl].h;
-                const f_l = f * scale, cx_l = cx * scale, cy_l = cy * scale;
+                const f_l = f * scale, cx_l = CX * scale, cy_l = CY * scale;
                 const px_l = px * scale, py_l = py * scale, d_disp_l = d_disp * scale;
 
                 let S = [[0,0,0], [0,0,0], [0,0,0]];
@@ -1131,15 +1192,9 @@
         updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
     }
 
-    function calcRelativeError(gt, est) {
-        const err = Math.abs(gt - est);
-        if (Math.abs(gt) < 1e-4) {
-            return err < 1e-4 ? "0.0%" : "N/A";
-        }
-        const pct = (err / Math.abs(gt)) * 100;
-        return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
-    }
-
+    // ==========================================
+    // 8. 實驗模組與面板操作 (Experiments & Panels)
+    // ==========================================
     function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
         document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
         document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
@@ -1191,75 +1246,6 @@
         }
     }
 
-    window.setTransformMode = function(mode) {
-        if (!transform2 || !transform1) return;
-        transform2.setMode(mode); 
-        transform1.setMode(mode);
-        const isTranslate = mode === 'translate';
-        document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
-        document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
-    };
-
-    let transformMaterials = null; // 用來快取座標軸的材質
-
-    window.setTransformSpace = function(space) {
-        // 1. 切換原生組件的座標系統 (此設定會確保 World 模式永遠對齊 3D 空間座標)
-        if (transform1) transform1.setSpace(space);
-        if (transform2) transform2.setSpace(space);
-
-        // 2. 第一次執行時，提取並分類 TransformControls 預設的 X, Y, Z 材質
-        if (!transformMaterials && transform1 && transform2) {
-            transformMaterials = { X: [], Y: [], Z: [] };
-            const matSet = new Set();
-            const extract = (transform) => {
-                transform.traverse((child) => {
-                    if (child.material && child.material.color && !matSet.has(child.material)) {
-                        matSet.add(child.material);
-                        const hex = child.material.color.getHex();
-                        // 依照 Three.js 預設的 RGB 識別軸向
-                        if (hex === 0xff0000) transformMaterials.X.push(child.material);
-                        if (hex === 0x00ff00) transformMaterials.Y.push(child.material);
-                        if (hex === 0x0000ff) transformMaterials.Z.push(child.material);
-                    }
-                });
-            };
-            extract(transform1);
-            extract(transform2);
-        }
-
-        // 3. 動態替換材質顏色 (視覺上達成「切換並隱藏另一組座標軸」的效果)
-        if (transformMaterials) {
-            const isWorld = space === 'world';
-            // 世界座標使用另一組識別色：青綠色 (Cyan)、洋紅色 (Magenta)、橘黃色 (Orange)
-            // 區域座標則恢復預設：紅 (Red)、綠 (Green)、藍 (Blue)
-            transformMaterials.X.forEach(mat => mat.color.setHex(isWorld ? 0x00d8ff : 0xff0000)); 
-            transformMaterials.Y.forEach(mat => mat.color.setHex(isWorld ? 0xff00d8 : 0x00ff00)); 
-            transformMaterials.Z.forEach(mat => mat.color.setHex(isWorld ? 0xff9900 : 0x0000ff)); 
-        }
-    };
-
-    window.updateObjectGeometry = function(dryRun = false) {
-        if (!object1 || !object2) return;
-        const type = document.getElementById('obj_geometry_type').value;
-        const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        
-        if(object1.geometry) object1.geometry.dispose();
-        if(object2.geometry) object2.geometry.dispose();
-        
-        let newGeo;
-        if (type === 'box') newGeo = new THREE.BoxGeometry(size * 2, size * 2, size * 2);
-        else if (type === 'cylinder') newGeo = new THREE.CylinderGeometry(size, size, size * 2, 32);
-        else if (type === 'torus') newGeo = new THREE.TorusGeometry(size * 0.7, size * 0.3, 16, 64);
-        else if (type === 'cone') newGeo = new THREE.ConeGeometry(size, size * 2, 32);
-        else if (type === 'octahedron') newGeo = new THREE.OctahedronGeometry(size);
-        else newGeo = new THREE.SphereGeometry(size, 32, 32);
-        
-        object1.geometry = newGeo;
-        object2.geometry = newGeo.clone();
-        
-        if (dryRun !== true) updateSystem();
-    };
-
     function onSliderInput() {
         if (!object1 || !object2) return;
         lastLoadedFailure = null; 
@@ -1273,7 +1259,6 @@
         const curRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
         const curRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
 
-        // 計算自上一次操作以來的變化量 (Delta)
         const deltaX = curX - lastSliderVals.X;
         const deltaY = curY - lastSliderVals.Y;
         const deltaZ = curZ - lastSliderVals.Z;
@@ -1281,21 +1266,18 @@
         const deltaRy = curRy - lastSliderVals.Ry;
         const deltaRz = curRz - lastSliderVals.Rz;
 
-        // 1. 先套用角度變化量 (相對於當下真實的坐標軸)
         if (deltaRx !== 0) { const axisX = space === 'local' ? new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(1, 0, 0); object2.rotateOnWorldAxis(axisX, deltaRx); }
         if (deltaRy !== 0) { const axisY = space === 'local' ? new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 1, 0); object2.rotateOnWorldAxis(axisY, deltaRy); }
         if (deltaRz !== 0) { const axisZ = space === 'local' ? new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 0, 1); object2.rotateOnWorldAxis(axisZ, deltaRz); }
 
         object2.quaternion.normalize();
 
-        // 2. 再套用位移變化量 (相對於已經轉好角度的全新坐標軸)
         const moveVec = new THREE.Vector3(deltaX, deltaY, -deltaZ);
         if (space === 'local') {
             moveVec.applyQuaternion(object2.quaternion); 
         }
         object2.position.add(moveVec);
 
-        // 3. 記錄當下狀態，供下次 Delta 運算及 3D 視窗使用
         lastSliderVals = { X: curX, Y: curY, Z: curZ, Rx: curRx, Ry: curRy, Rz: curRz };
         basePos2.copy(object2.position);
         baseQuat2.copy(object2.quaternion);
@@ -1308,6 +1290,22 @@
         document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
         
         updateSystem();
+    }
+
+    function updateSystem() {
+        if (!object1 || !object2) return;
+        if(object1.position.z > SYS_CONST.MIN_Z) object1.position.z = SYS_CONST.MIN_Z;
+        if(object2.position.z > SYS_CONST.MIN_Z) object2.position.z = SYS_CONST.MIN_Z;
+
+        if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
+
+        const f = parseFloat(document.getElementById('param_f').value);
+        const B = parseFloat(document.getElementById('param_B').value);
+        const p1 = object1.position; const p2 = object2.position;
+        
+        updateProjData(p1, p2, f, B);
+        renderAll2DScenes();
+        calculateSceneFlow(p1, p2, f, B, false);
     }
 
     window.nudgeAxis = function(axis, delta) {
@@ -1341,13 +1339,11 @@
         if (!object1 || !object2) return;
         lastLoadedFailure = null;
 
-        // 將兩者的旋轉回歸到無旋轉的初始狀態（Identity）
         const idQuat = new THREE.Quaternion();
         object1.quaternion.copy(idQuat);
         object2.quaternion.copy(idQuat);
         baseQuat2.copy(idQuat);
         
-        // 僅清除角度拉桿的 UI 與內部數值，保留使用者的 XYZ 平移設定
         ['Rx', 'Ry', 'Rz'].forEach(id => {
             const slider = document.getElementById('slider_' + id);
             if(slider) slider.value = 0;
@@ -1365,9 +1361,8 @@
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
         lastLoadedFailure = type;
 
-        const defaultPos = new THREE.Vector3(0, 0, -4.0);
+        const defaultPos = new THREE.Vector3(0, 0, DEFAULT_Z);
 
-        // 預設先只歸零「位置」，保留使用者的「旋轉狀態」
         object1.position.copy(defaultPos); 
         object2.position.copy(defaultPos); 
         basePos2.copy(defaultPos); 
@@ -1375,7 +1370,6 @@
         object2.quaternion.copy(object1.quaternion);
         baseQuat2.copy(object1.quaternion);
 
-        // 僅重置位移 UI
         ['X', 'Y', 'Z'].forEach(axis => {
             const slider = document.getElementById('slider_' + axis);
             if(slider) slider.value = 0;
@@ -1393,7 +1387,7 @@
         const B = parseFloat(document.getElementById('param_B').value);
         
         const max_px_radius = Math.floor(win / 2) * Math.pow(2, Math.max(0, pyr - 1));
-        const fov_w_m = (cx * Z) / f;               
+        const fov_w_m = (CX * Z) / f;               
         const max_m_disp = Math.min((max_px_radius * Z) / f, fov_w_m * 0.8); 
 
         if (type === 'aperture') {
@@ -1406,7 +1400,6 @@
         let testX = 0, testY = 0;
         const step = max_m_disp * 0.1; 
 
-        // 1. 將尋找邏輯封裝成內部函數，方便依條件重複呼叫
         const tryFindFailure = (maxAttempts) => {
             let isFound = false;
             let currentAttempt = 0;
@@ -1414,7 +1407,6 @@
                 currentAttempt++;
                 
                 if (type === 'aperture') { 
-                    // 為了觸發孔徑問題，我們製造沿著條紋方向的微小位移
                     testY += 0.01; 
                 } 
                 else if (type === 'large_disp') { 
@@ -1431,7 +1423,6 @@
                 updateProjData(object1.position, object2.position, f, B);
                 renderAll2DScenes();
                 
-                // 藉由演算法的真實判斷來決定是否找到
                 if (calculateSceneFlow(object1.position, object2.position, f, B, true).failureMode === type) {
                     isFound = true;
                 }
@@ -1439,19 +1430,15 @@
             return isFound;
         };
 
-        // 2. 第一次嘗試：保留使用者當前的旋轉去尋找
         let found = tryFindFailure(50);
 
-        // 3. 防呆機制：如果是孔徑問題，且因為旋轉導致破壞了特徵而找不到
         if (type === 'aperture' && !found) {
             
-            // 強制將旋轉歸零 (回到無旋轉的初始狀態)
             const idQuat = new THREE.Quaternion();
             object1.quaternion.copy(idQuat);
             object2.quaternion.copy(idQuat);
             baseQuat2.copy(idQuat);
 
-            // 更新角度拉桿 UI
             ['Rx', 'Ry', 'Rz'].forEach(id => {
                 const slider = document.getElementById('slider_' + id);
                 if(slider) slider.value = 0;
@@ -1462,7 +1449,6 @@
             lastSliderVals.Ry = 0;
             lastSliderVals.Rz = 0;
 
-            // 重置位移數據並再找一次，這次保證一定能觸發
             testX = 0; testY = 0;
             found = tryFindFailure(50);
         }
@@ -1470,12 +1456,15 @@
         updateSystem(); 
     };
 
+    // ==========================================
+    // 9. 程式進入點 (Application Entry)
+    // ==========================================
     window.onload = () => {
-        canvasIds.forEach(id => {
+        CANVAS_IDS.forEach(id => {
             const canvas = document.getElementById('canvas_' + id);
             contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
-            imgBuffers[id] = new Float32Array(imgW * imgH);
-            imgDataCaches[id] = contexts[id].createImageData(imgW, imgH);
+            imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
+            imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
         });
         
         document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
