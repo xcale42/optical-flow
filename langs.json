@@ -1,5 +1,7 @@
 [
-    { "code": "zh", "name": "🇹🇼 中文" },
+    { "code": "zh", "name": "🇹🇼 繁體中文" },
     { "code": "en", "name": "🇺🇸 English" },
-    { "code": "ja", "name": "🇯🇵 日本語" }
+    { "code": "ja", "name": "🇯🇵 日本語" },
+    { "code": "es", "name": "🇪🇸 Español" },
+    { "code": "cn", "name": "🇨🇳 简体中文" }
 ]
