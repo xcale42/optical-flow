@@ -119,7 +119,16 @@
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); transition: opacity 0.3s;
         }
-        body.drawer-open .drawer-overlay { display: block; }
+        body.drawer-open {
+            overflow: hidden;
+            touch-action: none; /* 防止 iOS 上的橡皮筋彈跳與下拉更新 */
+        }
+
+        /* 2. 確保側邊欄內部依然可以滑動，但滑到底時不會連動背景 */
+        body.drawer-open #settings_drawer {
+            touch-action: auto; /* 恢復側邊欄內的滑動能力 */
+            overscroll-behavior: contain; /* 阻斷滾動事件向外傳遞 */
+        }
 
         @media (max-width: 1024px) {
             .workspace-grid { grid-template-columns: 1fr 1fr; }
@@ -371,7 +380,7 @@
             
             <div class="reset-btn-container dimmable" style="display: flex; gap: 8px; margin-top: 4px;">
                 <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="flex: 1;">全部歸零 (對齊時間 $t$)</button>
-                <button class="btn btn-nudge" onclick="resetRotationOnly()" style="flex: 1; background: #8b5cf6;">僅角度歸零</button>
+                <button class="btn btn-nudge btn-reset" onclick="resetRotationOnly()" style="flex: 1;">僅角度歸零</button>
             </div>
         </div>
     </div>
