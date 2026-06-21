@@ -1286,18 +1286,17 @@
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
         lastLoadedFailure = type;
 
-        // 1. 只將「位置」退回預設起點，但「保留」目前的旋轉角度
         const defaultPos = new THREE.Vector3(0, 0, -4.0);
 
+        // 預設先只歸零「位置」，保留使用者的「旋轉狀態」
         object1.position.copy(defaultPos); 
         object2.position.copy(defaultPos); 
         basePos2.copy(defaultPos); 
         
-        // 2. 確保 object2 的旋轉完全對齊 object1 (保留你原先的旋轉狀態)
         object2.quaternion.copy(object1.quaternion);
         baseQuat2.copy(object1.quaternion);
 
-        // 3. 僅重置位移 (X, Y, Z) 的 UI 與數值，放過角度 (Rx, Ry, Rz)
+        // 僅重置位移 UI
         ['X', 'Y', 'Z'].forEach(axis => {
             const slider = document.getElementById('slider_' + axis);
             if(slider) slider.value = 0;
@@ -1308,7 +1307,6 @@
         lastSliderVals.Y = 0;
         lastSliderVals.Z = 0;
         
-        // 重新讀取相機與視窗參數
         const f = parseFloat(document.getElementById('param_f').value);
         const Z = Math.abs(basePos2.z);
         const win = parseInt(document.getElementById('param_win').value);
@@ -1319,7 +1317,6 @@
         const fov_w_m = (cx * Z) / f;               
         const max_m_disp = Math.min((max_px_radius * Z) / f, fov_w_m * 0.8); 
 
-        // 若是孔徑問題，強制換成垂直條紋
         if (type === 'aperture') {
             document.getElementById('obj_shape').value = 'vertical_grating';
         }
@@ -1327,27 +1324,68 @@
         updateObjectGeometry(true);
 
         let origBasePos2 = basePos2.clone();
-        let found = false, attempt = 0, testX = 0, testY = 0;
+        let testX = 0, testY = 0;
         const step = max_m_disp * 0.1; 
 
-        // 尋找能觸發特定失效的位移量
-        while (!found && attempt < 100) {
-            attempt++;
-            if (type === 'aperture') {
-                testY = 0.05; 
-                found = true; 
-            } 
-            else if (type === 'large_disp') { testX += step; testY += step; } 
-            else if (type === 'out_of_bounds') testX += (fov_w_m * 0.2); 
+        // 1. 將尋找邏輯封裝成內部函數，方便依條件重複呼叫
+        const tryFindFailure = (maxAttempts) => {
+            let isFound = false;
+            let currentAttempt = 0;
+            while (!isFound && currentAttempt < maxAttempts) {
+                currentAttempt++;
+                
+                if (type === 'aperture') { 
+                    // 為了觸發孔徑問題，我們製造沿著條紋方向的微小位移
+                    testY += 0.01; 
+                } 
+                else if (type === 'large_disp') { 
+                    testX += step; testY += step; 
+                } 
+                else if (type === 'out_of_bounds') { 
+                    testX += (fov_w_m * 0.2); 
+                }
 
-            basePos2.copy(origBasePos2);
-            basePos2.x += testX; basePos2.y += testY;
-            object2.position.copy(basePos2);
+                basePos2.copy(origBasePos2);
+                basePos2.x += testX; basePos2.y += testY;
+                object2.position.copy(basePos2);
+                
+                updateProjData(object1.position, object2.position, f, B);
+                renderAll2DScenes();
+                
+                // 藉由演算法的真實判斷來決定是否找到
+                if (calculateSceneFlow(object1.position, object2.position, f, B, true).failureMode === type) {
+                    isFound = true;
+                }
+            }
+            return isFound;
+        };
+
+        // 2. 第一次嘗試：保留使用者當前的旋轉去尋找
+        let found = tryFindFailure(50);
+
+        // 3. 防呆機制：如果是孔徑問題，且因為旋轉導致破壞了特徵而找不到
+        if (type === 'aperture' && !found) {
             
-            updateProjData(object1.position, object2.position, f, B);
-            renderAll2DScenes();
-            
-            if (calculateSceneFlow(object1.position, object2.position, f, B, true).failureMode === type) found = true;
+            // 強制將旋轉歸零 (回到無旋轉的初始狀態)
+            const idQuat = new THREE.Quaternion();
+            object1.quaternion.copy(idQuat);
+            object2.quaternion.copy(idQuat);
+            baseQuat2.copy(idQuat);
+
+            // 更新角度拉桿 UI
+            ['Rx', 'Ry', 'Rz'].forEach(id => {
+                const slider = document.getElementById('slider_' + id);
+                if(slider) slider.value = 0;
+                const lbl = document.getElementById('label_' + id);
+                if(lbl) lbl.innerText = "0.0°";
+            });
+            lastSliderVals.Rx = 0;
+            lastSliderVals.Ry = 0;
+            lastSliderVals.Rz = 0;
+
+            // 重置位移數據並再找一次，這次保證一定能觸發
+            testX = 0; testY = 0;
+            found = tryFindFailure(50);
         }
         
         updateSystem(); 
