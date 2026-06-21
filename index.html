@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>3D Scene Flow 金字塔光流實驗室</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -30,8 +30,17 @@
             --border-color: #e2e8f0;
             --canvas-bg: #1a1a1a;
         }
-        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; overflow-x: hidden; }
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            color: #334155;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; max-width: 100%; }
+        
         .container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
         header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
@@ -52,9 +61,9 @@
 
         .axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; transition: opacity 0.3s, transform 0.2s; }
         .axis-label { font-weight: 600; font-size: 10pt; color: var(--primary-color); white-space: nowrap; }
-        .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; }
+        .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; font-variant-numeric: tabular-nums; }
         
-        .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block; }
+        .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block; white-space: nowrap; }
         .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); filter: brightness(0.95); }
         .btn-nudge-small { background: var(--accent-color); padding: 8px 0; font-size: 9pt; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
@@ -84,19 +93,21 @@
         canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
         
         .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
-        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+        .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; }
         .compare-table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 10pt; text-align: center; background: white; white-space: nowrap;}
         .compare-table th, .compare-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
         .compare-table th { background: #f8fafc; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 600; }
         .compare-table tr:last-child td { border-bottom: none; }
+        .val-gt, .val-est, .val-rel { font-variant-numeric: tabular-nums; }
         .val-gt { color: var(--accent-color); font-weight: bold; }
         .val-est { color: var(--success-color); font-weight: bold; }
         .val-rel { font-weight: bold; }
         .row-summary { background-color: #f1f5f9; }
 
         .metric-list { list-style: none; padding: 0; margin: 0; font-size: 11pt; }
-        .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
+        .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); gap: 10px;}
         .metric-list li:last-child { border-bottom: none; }
+        .metric-list span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap;}
 
         .fab-settings {
             display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%;
@@ -117,7 +128,7 @@
         
         @media (max-width: 768px) {
             body { padding: 8px; }
-            .container { padding: 12px; border-radius: 10px; }
+            .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
             header h1 { font-size: 16pt; margin-bottom: 15px; }
 
             #settings_drawer {
@@ -146,8 +157,8 @@
             body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
             
             .axis-control.active-slider { 
-                opacity: 0.75 !important; transform: scale(1.03); z-index: 10; background: rgba(255, 255, 255, 0.85); 
-                border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2); border: 1px solid var(--accent-color);
+                opacity: 0.95 !important; transform: scale(1.02); z-index: 10; background: rgba(255, 255, 255, 0.95); 
+                border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
             }
 
             .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
@@ -155,25 +166,41 @@
             .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
             .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
             .results-section { gap: 15px; }
-            .panel:not(#settings_drawer) { padding: 15px; }
+            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
         }
 
         @media (max-width: 480px) {
             .axis-control { 
-                display: grid; grid-template-columns: 42px auto 1fr 42px; gap: 6px 8px;
-                align-items: center; background: #f8fafc; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 6px;
+                display: grid; grid-template-columns: 36px 1fr 36px; grid-template-rows: auto auto; gap: 6px 8px;
+                align-items: center; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 6px;
+                width: 100%; box-sizing: border-box;
             }
             .axis-label { grid-column: 1 / 3; grid-row: 1; width: auto; text-align: left; margin: 0; font-size: 9.5pt; }
-            .axis-val   { grid-column: 3 / 5; grid-row: 1; width: auto; text-align: right; margin: 0; font-size: 9.5pt; }
-            .btn-nudge-small { font-size: 0; padding: 6px 0; border-radius: 6px; }
+            .axis-val   { grid-column: 3 / 4; grid-row: 1; width: auto; text-align: right; margin: 0; font-size: 9.5pt; max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+            
+            .btn-nudge-small { font-size: 0; padding: 8px 0; border-radius: 6px; }
             .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; width: 100%; }
             .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
-            .axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; width: 100%; margin: 0; align-self: center; }
-            .btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; width: 100%; }
+            .axis-control input[type="range"] { grid-column: 2 / 3; grid-row: 2; width: 100%; margin: 0; align-self: center; }
+            .btn-nudge-small.plus { grid-column: 3 / 4; grid-row: 2; width: 100%; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
+            
+            .ft-mode-btn-container { flex-wrap: wrap; }
+            #sel_transform_space { flex-basis: 100%; margin-top: 5px; }
+
             .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .block-card { padding: 8px; }
             .block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            
+            .reset-btn-container { flex-direction: column; }
+            .reset-btn-container button { width: 100%; }
+
+            .compare-table { white-space: normal; }
+            .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; white-space: normal; word-break: keep-all; line-height: 1.3;}
+            .compare-table th { font-size: 8pt; }
+            .val-gt, .val-est, .val-rel { font-size: 8.5pt; }
+            .row-summary td { font-size: 9pt; }
+            #err_pct_total { font-size: 11pt !important; }
         }
     </style>
 </head>
@@ -259,31 +286,35 @@
 
         <div id="tab_finetune" class="tab-content" style="display: none;">
             <div class="ft-mode-btn-container dimmable" style="margin-bottom: 20px; display: flex; gap: 8px;">
-                <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')">位移模式</button>
-                <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉模式</button>
+                <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')">位移</button>
+                <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉</button>
+                <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); border: none; font-weight: bold; cursor: pointer; text-align: center; padding: 0 10px;" onchange="setTransformSpace(this.value)">
+                    <option value="local">📌 區域座標 (Local)</option>
+                    <option value="world">🌍 世界座標 (World)</option>
+                </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
                     <div class="axis-control">
                         <span class="axis-label">X 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001m</button>
+                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_X" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001m</button>
+                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001</button>
                         <span id="label_X" class="axis-val">0.0000 m</span>
                     </div>
                     <div class="axis-control">
                         <span class="axis-label">Y 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001m</button>
+                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_Y" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001m</button>
+                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001</button>
                         <span id="label_Y" class="axis-val">0.0000 m</span>
                     </div>
                     <div class="axis-control">
                         <span class="axis-label">Z 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001m</button>
+                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_Z" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001m</button>
+                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001</button>
                         <span id="label_Z" class="axis-val">0.0000 m</span>
                     </div>
                 </div>
@@ -312,7 +343,11 @@
                     </div>
                 </div>
             </div>
-            <button class="btn btn-nudge btn-reset dimmable" onclick="resetToT()" style="width: 100%; margin-top: 4px;">手動微調歸零 (對齊時間t位置)</button>
+            
+            <div class="reset-btn-container dimmable" style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="flex: 1;">全部歸零 (對齊時間 $t$)</button>
+                <button class="btn btn-nudge" onclick="resetRotationOnly()" style="flex: 1; background: #8b5cf6;">僅角度歸零</button>
+            </div>
         </div>
     </div>
 
@@ -398,7 +433,7 @@
                     </tr>
                     <tr class="row-summary">
                         <td colspan="3" style="text-align: right; font-weight: bold;">總向量誤差百分比：</td>
-                        <td id="err_pct_total" style="font-weight: bold; font-size: 12pt;">0.0%</td>
+                        <td id="err_pct_total" style="font-weight: bold; font-size: 12pt; font-variant-numeric: tabular-nums;">0.0%</td>
                     </tr>
                 </table>
             </div>
@@ -427,7 +462,25 @@
     if (!ENABLE_WARN) console.warn = function() {};
 
     let lastLoadedFailure = null;
-    let lastSliderRx = 0, lastSliderRy = 0, lastSliderRz = 0;
+
+    // 將拉桿數值獨立記錄，改採增量 (Delta) 計算以修正混用時的座標偏差
+    let lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
+
+    function resetSliders() {
+        ['X', 'Y', 'Z'].forEach(axis => {
+            const slider = document.getElementById('slider_' + axis);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + axis);
+            if(lbl) lbl.innerText = "0.0000 m";
+        });
+        ['Rx', 'Ry', 'Rz'].forEach(id => {
+            const slider = document.getElementById('slider_' + id);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + id);
+            if(lbl) lbl.innerText = "0.0°";
+        });
+        lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
+    }
 
     const imgW = 240, imgH = 200;
     const cx = imgW / 2, cy = imgH / 2;
@@ -465,7 +518,6 @@
     }
 
     window.switchTab = function(tabId) {
-        console.info('[INFO] 頁籤切換至:', tabId);
         document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
         document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
         document.getElementById('btn_tab_params').classList.toggle('active', tabId === 'params');
@@ -473,17 +525,14 @@
     };
 
     window.toggleDrawer = function() {
-        console.info('[INFO] 切換手機版抽屜選單狀態');
         document.body.classList.toggle('drawer-open');
     }
 
     function initSliderFocus() {
-        console.debug('[DEBUG] 註冊 Slider 焦點事件');
         document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
             const wrap = slider.closest('.axis-control');
             const activate = () => {
                 if(window.innerWidth <= 768) {
-                    console.debug('[DEBUG] 觸發 Slider 焦點啟動');
                     document.body.classList.add('slider-focus-mode');
                     wrap.classList.add('active-slider');
                 }
@@ -502,7 +551,6 @@
 
     window.toggleLock3D_t = function() {
         const isLocked = document.getElementById('lock_3d_t').checked;
-        console.warn('[WARN] 變更時間 T 視圖鎖定狀態:', isLocked);
         if(controls1 && transform1) {
             controls1.enabled = !isLocked;
             transform1.enabled = !isLocked; transform1.visible = !isLocked;
@@ -512,7 +560,6 @@
 
     window.toggleLock3D_t1 = function() {
         const isLocked = document.getElementById('lock_3d_t1').checked;
-        console.warn('[WARN] 變更時間 T+1 視圖鎖定狀態:', isLocked);
         if(controls2 && transform2) {
             controls2.enabled = !isLocked;
             transform2.enabled = !isLocked; transform2.visible = !isLocked;
@@ -522,7 +569,6 @@
 
     function getRayCache(f) {
         if (currentRayF === f) return rayDirCache;
-        console.debug('[DEBUG] 更新 Ray Cache, f =', f);
         currentRayF = f;
         let idx = 0;
         for (let y = 0; y < imgH; y++) {
@@ -538,7 +584,6 @@
     }
 
     function setupScene(containerId) {
-        console.info('[INFO] 建立 3D 場景:', containerId);
         const container = document.getElementById(containerId);
         const width = container.clientWidth || 400;
         const height = container.clientHeight || 350;
@@ -578,6 +623,7 @@
         controls.enableDamping = true;
         controls.target.set(0, 0, -4);
         
+        // 統一使用原生的 TransformControls，不需要額外的 helper
         const transform = new THREE.TransformControls(camera, renderer.domElement);
         transform.setSpace('local');
         transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
@@ -590,7 +636,6 @@
     }
 
     function init3D() {
-        console.info('[INFO] 開始綁定 3D 引擎與控制器');
         const s1 = setupScene('3d_container_t');
         scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
         
@@ -602,18 +647,17 @@
         basePos2.set(0, 0, -4.0);
         baseQuat2.identity(); 
 
+        const curSpace = document.getElementById('sel_transform_space').value;
+        window.setTransformSpace(curSpace);
+
         transform1.addEventListener('change', () => {
             if (transform1.dragging) {
                 lastLoadedFailure = null; 
                 if (transform1.getMode() === 'rotate') {
                     object2.quaternion.copy(object1.quaternion);
                     baseQuat2.copy(object1.quaternion);
-                    ['Rx', 'Ry', 'Rz'].forEach(id => {
-                        document.getElementById('slider_' + id).value = 0;
-                        document.getElementById('label_' + id).innerText = "0.0°";
-                    });
-                    lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
                 }
+                resetSliders();
             }
             updateSystem();
         });
@@ -627,15 +671,7 @@
                 basePos2.copy(object2.position);
                 baseQuat2.copy(object2.quaternion);
                 
-                ['X', 'Y', 'Z'].forEach(axis => {
-                    document.getElementById('slider_' + axis).value = 0;
-                    document.getElementById('label_' + axis).innerText = "0.0000 m";
-                });
-                ['Rx', 'Ry', 'Rz'].forEach(id => {
-                    document.getElementById('slider_' + id).value = 0;
-                    document.getElementById('label_' + id).innerText = "0.0°";
-                });
-                lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+                resetSliders();
             }
             updateSystem();
         });
@@ -678,7 +714,6 @@
     }
 
     function updateSystem() {
-        console.info('[INFO] 觸發系統更新 (updateSystem)');
         if (!object1 || !object2) return;
         if(object1.position.z > -0.2) object1.position.z = -0.2;
         if(object2.position.z > -0.2) object2.position.z = -0.2;
@@ -695,7 +730,6 @@
     }
 
     function renderAll2DScenes() {
-        console.debug('[DEBUG] 重新渲染 2D 投影圖');
         const shape = document.getElementById('obj_shape').value;
         const geomType = document.getElementById('obj_geometry_type').value;
         const texMode = document.getElementById('param_tex_mode').value;
@@ -842,7 +876,6 @@
     }
 
     function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
-        console.info('[INFO] 開始執行光流演算法, dryRun:', dryRun);
         let totalLevels = parseInt(document.getElementById('param_pyr').value);
         if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
         const win = parseInt(document.getElementById('param_win').value);
@@ -1000,21 +1033,16 @@
         const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
 
         if (isOutOfBounds) {
-            console.error('[ERROR] 發生錯誤: 目標移出視野 (out_of_bounds)');
             failureMode = 'out_of_bounds';
         } else if (true_px_move > max_trackable_px) {
-            console.error('[ERROR] 發生錯誤: 大位移失效 (large_disp)');
             failureMode = 'large_disp';
         } else if (baseTraceS < 1e-5 || condIndex < 2e-3) {
-            console.error('[ERROR] 發生錯誤: 孔徑問題 (aperture)');
             failureMode = 'aperture';
         } else {
             const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
             if (isFailed) {
-                console.error('[ERROR] 發生錯誤: 誤差超標，視為大位移失效 (large_disp)');
                 failureMode = 'large_disp'; 
             } else {
-                console.info('[INFO] 光流計算成功');
                 failureMode = 'success';
             }
         }
@@ -1085,19 +1113,53 @@
     }
 
     window.setTransformMode = function(mode) {
-        console.info('[INFO] 控制模式切換:', mode);
-        if (!transform2) return;
+        if (!transform2 || !transform1) return;
         transform2.setMode(mode); 
         transform1.setMode(mode);
-        transform2.setSpace('local');
-        transform1.setSpace('local');
         const isTranslate = mode === 'translate';
         document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
         document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
     };
 
+    let transformMaterials = null; // 用來快取座標軸的材質
+
+    window.setTransformSpace = function(space) {
+        // 1. 切換原生組件的座標系統 (此設定會確保 World 模式永遠對齊 3D 空間座標)
+        if (transform1) transform1.setSpace(space);
+        if (transform2) transform2.setSpace(space);
+
+        // 2. 第一次執行時，提取並分類 TransformControls 預設的 X, Y, Z 材質
+        if (!transformMaterials && transform1 && transform2) {
+            transformMaterials = { X: [], Y: [], Z: [] };
+            const matSet = new Set();
+            const extract = (transform) => {
+                transform.traverse((child) => {
+                    if (child.material && child.material.color && !matSet.has(child.material)) {
+                        matSet.add(child.material);
+                        const hex = child.material.color.getHex();
+                        // 依照 Three.js 預設的 RGB 識別軸向
+                        if (hex === 0xff0000) transformMaterials.X.push(child.material);
+                        if (hex === 0x00ff00) transformMaterials.Y.push(child.material);
+                        if (hex === 0x0000ff) transformMaterials.Z.push(child.material);
+                    }
+                });
+            };
+            extract(transform1);
+            extract(transform2);
+        }
+
+        // 3. 動態替換材質顏色 (視覺上達成「切換並隱藏另一組座標軸」的效果)
+        if (transformMaterials) {
+            const isWorld = space === 'world';
+            // 世界座標使用另一組識別色：青綠色 (Cyan)、洋紅色 (Magenta)、橘黃色 (Orange)
+            // 區域座標則恢復預設：紅 (Red)、綠 (Green)、藍 (Blue)
+            transformMaterials.X.forEach(mat => mat.color.setHex(isWorld ? 0x00d8ff : 0xff0000)); 
+            transformMaterials.Y.forEach(mat => mat.color.setHex(isWorld ? 0xff00d8 : 0x00ff00)); 
+            transformMaterials.Z.forEach(mat => mat.color.setHex(isWorld ? 0xff9900 : 0x0000ff)); 
+        }
+    };
+
     window.updateObjectGeometry = function(dryRun = false) {
-        console.info('[INFO] 更新 3D 物體形狀');
         if (!object1 || !object2) return;
         const type = document.getElementById('obj_geometry_type').value;
         const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
@@ -1120,38 +1182,48 @@
     };
 
     function onSliderInput() {
-        console.debug('[DEBUG] 使用者拖曳 Slider');
         if (!object1 || !object2) return;
         lastLoadedFailure = null; 
         
-        const dx = parseFloat(document.getElementById('slider_X').value);
-        const dy = parseFloat(document.getElementById('slider_Y').value);
-        const dz = parseFloat(document.getElementById('slider_Z').value);
-        const currentRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
-        const currentRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
-        const currentRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
+        const space = document.getElementById('sel_transform_space').value;
+        
+        const curX = parseFloat(document.getElementById('slider_X').value);
+        const curY = parseFloat(document.getElementById('slider_Y').value);
+        const curZ = parseFloat(document.getElementById('slider_Z').value);
+        const curRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
+        const curRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
+        const curRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
 
-        const localMove = new THREE.Vector3(dx, dy, -dz);
-        localMove.applyQuaternion(baseQuat2); 
-        object2.position.copy(basePos2).add(localMove);
+        // 計算自上一次操作以來的變化量 (Delta)
+        const deltaX = curX - lastSliderVals.X;
+        const deltaY = curY - lastSliderVals.Y;
+        const deltaZ = curZ - lastSliderVals.Z;
+        const deltaRx = curRx - lastSliderVals.Rx;
+        const deltaRy = curRy - lastSliderVals.Ry;
+        const deltaRz = curRz - lastSliderVals.Rz;
 
-        const deltaX = currentRx - lastSliderRx;
-        const deltaY = currentRy - lastSliderRy;
-        const deltaZ = currentRz - lastSliderRz;
-
-        lastSliderRx = currentRx;
-        lastSliderRy = currentRy;
-        lastSliderRz = currentRz;
-
-        if (deltaX !== 0) { const axisX = new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion); object2.rotateOnWorldAxis(axisX, deltaX); }
-        if (deltaY !== 0) { const axisY = new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion); object2.rotateOnWorldAxis(axisY, deltaY); }
-        if (deltaZ !== 0) { const axisZ = new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion); object2.rotateOnWorldAxis(axisZ, deltaZ); }
+        // 1. 先套用角度變化量 (相對於當下真實的坐標軸)
+        if (deltaRx !== 0) { const axisX = space === 'local' ? new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(1, 0, 0); object2.rotateOnWorldAxis(axisX, deltaRx); }
+        if (deltaRy !== 0) { const axisY = space === 'local' ? new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 1, 0); object2.rotateOnWorldAxis(axisY, deltaRy); }
+        if (deltaRz !== 0) { const axisZ = space === 'local' ? new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 0, 1); object2.rotateOnWorldAxis(axisZ, deltaRz); }
 
         object2.quaternion.normalize();
 
-        document.getElementById('label_X').innerText = formatNum(dx) + ' m';
-        document.getElementById('label_Y').innerText = formatNum(dy) + ' m';
-        document.getElementById('label_Z').innerText = formatNum(dz) + ' m';
+        // 2. 再套用位移變化量 (相對於已經轉好角度的全新坐標軸)
+        const moveVec = new THREE.Vector3(deltaX, deltaY, -deltaZ);
+        if (space === 'local') {
+            moveVec.applyQuaternion(object2.quaternion); 
+        }
+        object2.position.add(moveVec);
+
+        // 3. 記錄當下狀態，供下次 Delta 運算及 3D 視窗使用
+        lastSliderVals = { X: curX, Y: curY, Z: curZ, Rx: curRx, Ry: curRy, Rz: curRz };
+        basePos2.copy(object2.position);
+        baseQuat2.copy(object2.quaternion);
+
+        document.getElementById('label_X').innerText = formatNum(curX) + ' m';
+        document.getElementById('label_Y').innerText = formatNum(curY) + ' m';
+        document.getElementById('label_Z').innerText = formatNum(curZ) + ' m';
         document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
         document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
         document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
@@ -1160,7 +1232,6 @@
     }
 
     window.nudgeAxis = function(axis, delta) {
-        console.info('[INFO] 觸發軸向微調:', axis, delta);
         const slider = document.getElementById('slider_' + axis);
         if (!slider) return;
         slider.value = Math.max(-2.0, Math.min(2.0, parseFloat(slider.value) + delta));
@@ -1168,7 +1239,6 @@
     };
 
     window.nudgeRotation = function(axis, delta) {
-        console.info('[INFO] 觸發旋轉微調:', axis, delta);
         const slider = document.getElementById('slider_R' + axis.toLowerCase());
         if (!slider) return;
         slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
@@ -1176,7 +1246,6 @@
     };
 
     window.resetToT = function() {
-        console.warn('[WARN] 觸發參數歸零');
         if (!object1 || !object2) return;
         lastLoadedFailure = null; 
         
@@ -1185,14 +1254,35 @@
         basePos2.copy(object1.position);
         baseQuat2.copy(object1.quaternion);
         
-        ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
-        ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
-        lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+        resetSliders();
+        updateSystem();
+    };
+
+    window.resetRotationOnly = function() {
+        if (!object1 || !object2) return;
+        lastLoadedFailure = null;
+
+        // 將兩者的旋轉回歸到無旋轉的初始狀態（Identity）
+        const idQuat = new THREE.Quaternion();
+        object1.quaternion.copy(idQuat);
+        object2.quaternion.copy(idQuat);
+        baseQuat2.copy(idQuat);
+        
+        // 僅清除角度拉桿的 UI 與內部數值，保留使用者的 XYZ 平移設定
+        ['Rx', 'Ry', 'Rz'].forEach(id => {
+            const slider = document.getElementById('slider_' + id);
+            if(slider) slider.value = 0;
+            const lbl = document.getElementById('label_' + id);
+            if(lbl) lbl.innerText = "0.0°";
+        });
+        lastSliderVals.Rx = 0;
+        lastSliderVals.Ry = 0;
+        lastSliderVals.Rz = 0;
+
         updateSystem();
     };
 
     window.loadFailureCase = function(type) {
-        console.error('[FATAL] 載入極端失敗情境:', type);
         if (!object1 || !object2 || lastLoadedFailure === type) return; 
         lastLoadedFailure = type;
 
@@ -1203,9 +1293,7 @@
         object2.position.copy(defaultPos); object2.quaternion.copy(defaultQuat);
         basePos2.copy(defaultPos); baseQuat2.copy(defaultQuat);
 
-        ['X', 'Y', 'Z'].forEach(axis => { document.getElementById('slider_' + axis).value = 0; document.getElementById('label_' + axis).innerText = "0.0000 m"; });
-        ['Rx', 'Ry', 'Rz'].forEach(id => { document.getElementById('slider_' + id).value = 0; document.getElementById('label_' + id).innerText = "0.0°"; });
-        lastSliderRx = 0; lastSliderRy = 0; lastSliderRz = 0;
+        resetSliders();
         
         const f = parseFloat(document.getElementById('param_f').value);
         const Z = Math.abs(basePos2.z);
@@ -1219,7 +1307,6 @@
 
         if (type === 'aperture') {
             document.getElementById('obj_shape').value = 'vertical_grating';
-            console.warn('[WARN] 因應孔徑問題，強制切換紋理為垂直條紋');
         }
 
         updateObjectGeometry(true);
@@ -1251,7 +1338,6 @@
     };
 
     window.onload = () => {
-        console.info('[INFO] 系統初始化開始');
         canvasIds.forEach(id => {
             const canvas = document.getElementById('canvas_' + id);
             contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
@@ -1261,7 +1347,6 @@
         
         document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
             el.addEventListener('change', (e) => {
-                console.info('[INFO] 參數異動:', e.target.id, '->', e.target.value);
                 if (e.target.type === 'number') {
                     let val = parseFloat(e.target.value);
                     let min = parseFloat(e.target.min);
@@ -1302,7 +1387,6 @@
         setTimeout(updateSystem, 100); 
         
         window.addEventListener('resize', () => {
-            console.debug('[DEBUG] 觸發視窗尺寸變更重新渲染');
             const resizeCanvas = (id, cam, ren) => {
                 const c = document.getElementById(id);
                 if (c && cam && ren) { 
@@ -1321,7 +1405,6 @@
         setTimeout(() => { 
             window.dispatchEvent(new Event('resize')); 
         }, 300);
-        console.info('[INFO] 系統初始化完成');
     };
 </script>
 </body>
