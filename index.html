@@ -267,14 +267,8 @@
 
 <div class="lang-fab-wrapper">
     <button class="fab-lang" id="fab_lang" onclick="toggleDesktopLangMenu()" title="切換語言 / Switch Language">🌍</button>
-    <select id="mobile_lang_select" class="lang-select-native" onchange="setLanguage(this.value)">
-        <option value="zh">🇹🇼 中文</option>
-        <option value="en">🇺🇸 English</option>
-    </select>
-    <div id="desktop_lang_menu" class="lang-popup-menu">
-        <div class="lang-option" data-lang="zh" onclick="setLanguage('zh')">🇹🇼 中文</div>
-        <div class="lang-option" data-lang="en" onclick="setLanguage('en')">🇺🇸 English</div>
-    </div>
+    <select id="mobile_lang_select" class="lang-select-native" onchange="setLanguage(this.value)"></select>
+    <div id="desktop_lang_menu" class="lang-popup-menu"></div>
 </div>
 
 <button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
@@ -530,6 +524,54 @@
     let currentLang = localStorage.getItem('i18n_lang') || 'zh';
     
     let mathJaxQueue = Promise.resolve();
+
+    async function initLanguageMenu() {
+        try {
+            // 1. 抓取語言清單
+            const response = await fetch('./langs.json');
+            if (!response.ok) throw new Error('找不到 langs.json');
+            const langs = await response.json();
+    
+            // 2. 取得 DOM 容器
+            const mobileSelect = document.getElementById('mobile_lang_select');
+            const desktopMenu = document.getElementById('desktop_lang_menu');
+            
+            // 3. 清空現有內容 (以防萬一)
+            mobileSelect.innerHTML = '';
+            desktopMenu.innerHTML = '';
+    
+            // 4. 動態生成選項
+            langs.forEach(lang => {
+                // 生成手機版 <option>
+                const opt = document.createElement('option');
+                opt.value = lang.code;
+                opt.textContent = lang.name;
+                mobileSelect.appendChild(opt);
+    
+                // 生成桌面版 <div class="lang-option">
+                const div = document.createElement('div');
+                div.className = 'lang-option';
+                div.setAttribute('data-lang', lang.code);
+                div.textContent = lang.name;
+                div.onclick = () => setLanguage(lang.code);
+                desktopMenu.appendChild(div);
+            });
+    
+            // 5. 確保如果 localStorage 的語言不在清單中，退回預設的第一個語言
+            const availableCodes = langs.map(l => l.code);
+            if (!availableCodes.includes(currentLang)) {
+                currentLang = availableCodes[0];
+            }
+    
+            // 6. 套用語言
+            await setLanguage(currentLang);
+    
+        } catch (error) {
+            console.error('無法初始化語言選單:', error);
+            // 發生錯誤的 fallback：強制載入中文
+            await setLanguage('zh'); 
+        }
+    }
 
     // 點擊空白處關閉桌面版選單
     window.addEventListener('click', (e) => {
@@ -1579,7 +1621,7 @@
     // ==========================================
     window.onload = () => {
         // 優先載入外部語言包並啟動系統
-        setLanguage(currentLang).then(() => {
+        initLanguageMenu().then(() => {
             
             CANVAS_IDS.forEach(id => {
                 const canvas = document.getElementById('canvas_' + id);
