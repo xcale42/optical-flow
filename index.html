@@ -88,7 +88,7 @@
         .viewport-card h4 { 
             margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
             position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
-            border-radius: 11px 11px 0 0;
+            border-radius: 11px 11px 0 0; /* 修復背景方角的灰色溢出問題 */
         }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
         .canvas-3d canvas { touch-action: none; outline: none; width: 100% !important; height: 100% !important; display: block; }
@@ -477,62 +477,62 @@
     // ==========================================
     // 0. 國際化多語言設定 (i18n Dictionary)
     // ==========================================
-    let I18N = {}; // 改為空物件，等待外部載入
+    let I18N = {}; // 用於儲存從外部檔案讀取進來的語言包
     let currentLang = localStorage.getItem('i18n_lang') || 'zh';
 
-    // 新增：非同步載入語言包
-    async function loadLanguagePack() {
+    // 非同步載入指定語言的 JSON 檔案
+    async function setLanguage(lang) {
         try {
-            // 從相對路徑讀取 i18n.json
-            const response = await fetch('./i18n.json');
-            if (!response.ok) throw new Error('無法讀取語言檔');
-            I18N = await response.json();
-            
-            // 讀取成功後，套用目前的語言設定
-            setLanguage(currentLang);
-        } catch (error) {
-            console.error('語言包載入失敗:', error);
-            // 這裡可以選擇加上預設的回退機制或錯誤提示
-        }
-    }
-
-    function setLanguage(lang) {
-        if (!I18N[lang]) return; // 確保語言包已經載入
-
-        currentLang = lang;
-        localStorage.setItem('i18n_lang', lang);
-        document.getElementById('lang_select').value = lang;
-        document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
-
-        const dict = I18N[lang];
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) {
-                el.innerHTML = dict[key];
+            // 如果記憶體中還沒有該語言，則透過 fetch 去讀取
+            if (!I18N[lang]) {
+                const response = await fetch(`./${lang}.json`);
+                if (!response.ok) throw new Error(`無法讀取語言檔: ${lang}.json`);
+                I18N[lang] = await response.json();
             }
-        });
 
-        const pyrSelect = document.getElementById('param_pyr');
-        if(pyrSelect) {
-            Array.from(pyrSelect.options).forEach(opt => {
-                const val = opt.value;
-                opt.text = lang === 'zh' ? `${val}層` : `${val} Level${val > 1 ? 's' : ''}`;
+            currentLang = lang;
+            localStorage.setItem('i18n_lang', lang);
+            document.getElementById('lang_select').value = lang;
+            document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+
+            const dict = I18N[lang];
+            
+            // 替換畫面上有 data-i18n 屬性的文字
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerHTML = dict[key];
+                }
             });
-        }
 
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            window.MathJax.typesetPromise().catch((err) => console.log(err.message));
-        }
+            // 處理下拉選單內含有數字的動態文字 (金字塔層數)
+            const pyrSelect = document.getElementById('param_pyr');
+            if(pyrSelect) {
+                Array.from(pyrSelect.options).forEach(opt => {
+                    const val = opt.value;
+                    opt.text = lang === 'zh' ? `${val}層` : `${val} Level${val > 1 ? 's' : ''}`;
+                });
+            }
 
-        if (window.lastResultsCache) {
-            updateResultsUI(
-                lastResultsCache.px, lastResultsCache.py, lastResultsCache.d_disp,
-                lastResultsCache.gt_U, lastResultsCache.gt_V, lastResultsCache.gt_W,
-                lastResultsCache.U_est, lastResultsCache.V_est, lastResultsCache.W_est,
-                lastResultsCache.err_pct, lastResultsCache.failureMode
-            );
+            // 重新觸發 MathJax 渲染 LaTeX 數學公式
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise().catch((err) => console.log(err.message));
+            }
+
+            // 如果已有運算結果快取，重新以新語言輸出 UI 狀態
+            if (window.lastResultsCache) {
+                updateResultsUI(
+                    window.lastResultsCache.px, window.lastResultsCache.py, window.lastResultsCache.d_disp,
+                    window.lastResultsCache.gt_U, window.lastResultsCache.gt_V, window.lastResultsCache.gt_W,
+                    window.lastResultsCache.U_est, window.lastResultsCache.V_est, window.lastResultsCache.W_est,
+                    window.lastResultsCache.err_pct, window.lastResultsCache.failureMode
+                );
+            }
+        } catch (error) {
+            console.error('語言包切換失敗:', error);
         }
     }
+
 
     // ==========================================
     // 1. 系統常數與基礎設定 (System Constants)
@@ -1230,7 +1230,9 @@
     // 8. 實驗模組與面板操作 (Experiments & Panels)
     // ==========================================
     function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
-        const dict = I18N[currentLang];
+        // 防止尚未取得語言包前就發生錯誤
+        const dict = I18N[currentLang] || {}; 
+        
         document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
         document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
         document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
@@ -1244,16 +1246,16 @@
         if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
             ['U', 'V', 'W'].forEach(axis => {
                 document.getElementById('est_' + axis).innerText = "NaN";
-                document.getElementById('rel_' + axis).innerText = dict.err_fail_short;
+                document.getElementById('rel_' + axis).innerText = dict.err_fail_short || "失敗";
             });
             elTotalErr.style.color = 'var(--danger-color)';
             document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
-            elTotalErr.innerText = dict.err_calc_fail;
+            elTotalErr.innerText = dict.err_calc_fail || "計算失敗";
             
             if (failureMode === 'aperture') {
-                errorExp.innerHTML = dict.err_aper_desc;
+                errorExp.innerHTML = dict.err_aper_desc || "孔徑問題";
             } else {
-                errorExp.innerHTML = dict.err_out_desc;
+                errorExp.innerHTML = dict.err_out_desc || "移出視野";
             }
             errorExp.style.display = 'block';
         } else {
@@ -1267,13 +1269,13 @@
             let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
             if (failureMode === 'large_disp') {
-                elTotalErr.innerText = dict.err_calc_fail;
+                elTotalErr.innerText = dict.err_calc_fail || "計算失敗";
                 elTotalErr.style.color = 'var(--danger-color)';
                 document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
-                errorExp.innerHTML = dict.err_disp_desc;
+                errorExp.innerHTML = dict.err_disp_desc || "大位移失效";
                 errorExp.style.display = 'block';
             } else {
-                elTotalErr.innerText = pctStr + ' ' + dict.err_success;
+                elTotalErr.innerText = pctStr + ' ' + (dict.err_success || "(成功)");
                 elTotalErr.style.color = 'var(--success-color)';
                 ['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
                 document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
@@ -1495,8 +1497,8 @@
     // 9. 程式進入點 (Application Entry)
     // ==========================================
     window.onload = () => {
-        // 初始化語言
-        loadLanguagePack().then(() => {
+        // 優先載入外部語言包
+        setLanguage(currentLang).then(() => {
             
             CANVAS_IDS.forEach(id => {
                 const canvas = document.getElementById('canvas_' + id);
@@ -1504,68 +1506,70 @@
                 imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
                 imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
             });
-        
-        document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
-            if (el.id === 'lang_select') return; // 忽略語言切換器
-            el.addEventListener('change', (e) => {
-                if (e.target.type === 'number') {
-                    let val = parseFloat(e.target.value);
-                    let min = parseFloat(e.target.min);
-                    let max = parseFloat(e.target.max);
-                    let step = parseFloat(e.target.step);
+            
+            document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
+                if (el.id === 'lang_select') return;
+                el.addEventListener('change', (e) => {
+                    if (e.target.type === 'number') {
+                        let val = parseFloat(e.target.value);
+                        let min = parseFloat(e.target.min);
+                        let max = parseFloat(e.target.max);
+                        let step = parseFloat(e.target.step);
 
-                    if (isNaN(val)) {
-                        val = !isNaN(min) ? min : 0;
-                    } else {
-                        if (!isNaN(step) && step > 0) {
-                            let base = !isNaN(min) ? min : 0;
-                            let steps = Math.round((val - base) / step);
-                            val = base + steps * step;
-                            let decimals = e.target.step.includes('.') ? e.target.step.split('.')[1].length : 0;
-                            val = parseFloat(val.toFixed(decimals));
+                        if (isNaN(val)) {
+                            val = !isNaN(min) ? min : 0;
+                        } else {
+                            if (!isNaN(step) && step > 0) {
+                                let base = !isNaN(min) ? min : 0;
+                                let steps = Math.round((val - base) / step);
+                                val = base + steps * step;
+                                let decimals = e.target.step.includes('.') ? e.target.step.split('.')[1].length : 0;
+                                val = parseFloat(val.toFixed(decimals));
+                            }
+                            if (!isNaN(min) && val < min) val = min;
+                            if (!isNaN(max) && val > max) val = max;
                         }
-                        if (!isNaN(min) && val < min) val = min;
-                        if (!isNaN(max) && val > max) val = max;
+                        e.target.value = val;
                     }
-                    e.target.value = val;
-                }
-                
-                lastLoadedFailure = null; 
-                if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
-                    updateObjectGeometry();
-                } else {
-                    updateSystem();
-                }
+                    
+                    lastLoadedFailure = null; 
+                    if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
+                        updateObjectGeometry();
+                    } else {
+                        updateSystem();
+                    }
+                });
             });
-        });
 
-        ['X', 'Y', 'Z'].forEach(axis => document.getElementById('slider_' + axis).addEventListener('input', onSliderInput));
-        ['Rx', 'Ry', 'Rz'].forEach(id => document.getElementById('slider_' + id).addEventListener('input', onSliderInput));
-        
-        init3D();
-        initSliderFocus();
-        setTimeout(updateObjectGeometry, 50); 
-        setTimeout(updateSystem, 100); 
-        
-        window.addEventListener('resize', () => {
-            const resizeCanvas = (id, cam, ren) => {
-                const c = document.getElementById(id);
-                if (c && cam && ren) { 
-                    const w = c.clientWidth;
-                    const h = c.clientHeight;
-                    if (w === 0 || h === 0) return; 
-                    cam.aspect = w / h; 
-                    cam.updateProjectionMatrix(); 
-                    ren.setSize(w, h); 
-                }
-            };
-            resizeCanvas('3d_container_t', camera1, renderer1); 
-            resizeCanvas('3d_container_t1', camera2, renderer2);
-        });
+            ['X', 'Y', 'Z'].forEach(axis => document.getElementById('slider_' + axis).addEventListener('input', onSliderInput));
+            ['Rx', 'Ry', 'Rz'].forEach(id => document.getElementById('slider_' + id).addEventListener('input', onSliderInput));
+            
+            init3D();
+            initSliderFocus();
+            setTimeout(updateObjectGeometry, 50); 
+            setTimeout(updateSystem, 100); 
+            
+            window.addEventListener('resize', () => {
+                const resizeCanvas = (id, cam, ren) => {
+                    const c = document.getElementById(id);
+                    if (c && cam && ren) { 
+                        const w = c.clientWidth;
+                        const h = c.clientHeight;
+                        if (w === 0 || h === 0) return; 
+                        cam.aspect = w / h; 
+                        cam.updateProjectionMatrix(); 
+                        ren.setSize(w, h); 
+                    }
+                };
+                resizeCanvas('3d_container_t', camera1, renderer1); 
+                resizeCanvas('3d_container_t1', camera2, renderer2);
+            });
 
-        setTimeout(() => { 
-            window.dispatchEvent(new Event('resize')); 
-        }, 300);
+            setTimeout(() => { 
+                window.dispatchEvent(new Event('resize')); 
+            }, 300);
+            
+        });
     };
 </script>
 </body>
