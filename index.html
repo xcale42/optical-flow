@@ -158,10 +158,23 @@
         
             /* 📌 統一的抽屜面板設計 (寬度固定 320px，與原手機版相同) */
             #settings_drawer {
-                position: fixed; top: 0; right: -340px; width: 320px; height: 100%; height: 100dvh;
-                background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden;
+                position: fixed; 
+                top: 0; 
+                /* 1. 隱藏時退到畫面外 100% 的距離，這樣無論面板多寬都能完美隱藏 */
+                right: -100%; 
+                
+                /* 2. 動態寬度限制：給予充足的 350px 空間，但在極窄手機上最多只佔螢幕的 92vw，確保不破版 */
+                width: min(350px, 92vw); 
+                
+                height: 100%; height: 100dvh;
+                background: var(--panel-bg); z-index: 1000; 
+                
+                /* 3. 確保就算內部真的有極端長度的單字，也會自動隱藏卷軸，不撐破外框 */
+                overflow-y: auto; overflow-x: hidden;
+                
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 10px 10px 10px; margin: 0; border-radius: 0; border: none;
+                box-shadow: -2px 0 15px rgba(0,0,0,0.2); 
+                padding: 15px 12px 10px 12px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             
