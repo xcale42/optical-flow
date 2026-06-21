@@ -170,6 +170,7 @@
         }
 
         @media (max-width: 480px) {
+            /* 1. 將座標軸控制列改為 Flexbox 佈局 */
             .axis-control { 
                 display: flex; flex-wrap: wrap; align-items: center;
                 background: #f8fafc; padding: 10px 12px; border-radius: 8px; 
@@ -177,21 +178,22 @@
                 width: 100%; box-sizing: border-box;
             }
             
-            /* 2. 利用 order 屬性重新排列顯示順序：標籤 -> 數值 -> 控制列 */
+            /* 2. 第一行：標籤與數值 */
             .axis-label { order: 1; flex: 0 0 auto; margin: 0 6px 0 0; text-align: left; font-size: 9.5pt; }
+            .axis-val { order: 2; flex: 1 1 auto; margin: 0; text-align: left; font-size: 9.5pt; color: var(--accent-color); font-weight: 700; }
             
-            /* 將數值靠左對齊，緊貼在標籤後方 */
-            .axis-val { order: 2; flex: 1 1 auto; margin: 0; text-align: left; font-size: 9.5pt; max-width: none; overflow: visible; color: var(--accent-color); font-weight: 700; }
+            /* 🚀 強制換行魔法：插入一個看不見且佔滿 100% 寬度的元素 */
+            .axis-control::after { content: ""; flex-basis: 100%; order: 3; height: 0; }
             
-            /* 3. 將加減按鈕與拉桿推到下一行，並佔滿寬度 */
+            /* 3. 第二行：加減按鈕與拉桿 */
             .btn-nudge-small { font-size: 0; padding: 0; border-radius: 6px; height: 32px; display: flex; align-items: center; justify-content: center; }
             
-            .btn-nudge-small.minus { order: 3; flex: 0 0 36px; margin-top: 10px; }
+            .btn-nudge-small.minus { order: 4; flex: 0 0 36px; margin-top: 10px; }
             .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
             
-            .axis-control input[type="range"] { order: 4; flex: 1 1 0%; margin: 10px 12px 0 12px; }
+            .axis-control input[type="range"] { order: 5; flex: 1 1 0%; margin: 10px 12px 0 12px; }
             
-            .btn-nudge-small.plus { order: 5; flex: 0 0 36px; margin-top: 10px; }
+            .btn-nudge-small.plus { order: 6; flex: 0 0 36px; margin-top: 10px; }
             .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
             
             .ft-mode-btn-container { flex-wrap: wrap; }
