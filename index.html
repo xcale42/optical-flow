@@ -46,10 +46,6 @@
         header { position: relative; text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         header h1 { margin: 0; color: var(--primary-color); font-size: 24pt; font-weight: 700; letter-spacing: -0.5px; }
         
-        /* 語言切換選單樣式 */
-        .lang-select { position: absolute; right: 0; top: 50%; transform: translateY(-50%); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 10pt; font-weight: 600; cursor: pointer; background: var(--bg-color); color: var(--primary-color); outline: none; transition: border-color 0.2s;}
-        .lang-select:focus { border-color: var(--accent-color); }
-        
         .panel { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--panel-bg); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .panel h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; font-size: 14pt; }
         
@@ -88,7 +84,7 @@
         .viewport-card h4 { 
             margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
             position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
-            border-radius: 11px 11px 0 0; /* 修復背景方角的灰色溢出問題 */
+            border-radius: 11px 11px 0 0;
         }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
         .canvas-3d canvas { touch-action: none; outline: none; width: 100% !important; height: 100% !important; display: block; }
@@ -118,12 +114,22 @@
         .metric-list li:last-child { border-bottom: none; }
         .metric-list span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap;}
 
+        /* 兩個懸浮按鈕：右下角設定⚙️ / 左下角語言🌍 */
         .fab-settings {
             display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%;
             background: var(--accent-color); color: white; align-items: center; justify-content: center;
             font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s;
         }
         .fab-settings:active { transform: scale(0.95); }
+
+        .fab-lang {
+            position: fixed; bottom: 20px; left: 20px; width: 55px; height: 55px; border-radius: 50%;
+            background: var(--panel-bg); color: var(--primary-color); display: flex; align-items: center; justify-content: center;
+            font-size: 26px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 1001; cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .fab-lang:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        .fab-lang:active { transform: scale(0.95); }
+
         .drawer-overlay {
             visibility: hidden; 
             opacity: 0; 
@@ -146,7 +152,6 @@
             .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
             header { flex-direction: column; gap: 10px; padding-bottom: 20px;}
             header h1 { font-size: 16pt; margin-bottom: 0; padding-right: 0;}
-            .lang-select { position: static; transform: none; display: inline-block; margin-top: 10px; }
         
             #settings_drawer {
                 position: fixed; top: 0; right: -100%; width: 360px; max-width: 90vw; height: 100%; height: 100dvh;
@@ -226,13 +231,11 @@
 <div class="drawer-overlay" id="drawer_overlay" onclick="toggleDrawer()"></div>
 <button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
 
+<button class="fab-lang" id="fab_lang" onclick="toggleLanguage()" title="切換語言 / Switch Language">🌍</button>
+
 <div class="container">
     <header>
         <h1 data-i18n="title">3D Scene Flow 金字塔光流實驗室</h1>
-        <select id="lang_select" onchange="setLanguage(this.value)" class="lang-select">
-            <option value="zh">🇹🇼 中文</option>
-            <option value="en">🇺🇸 English</option>
-        </select>
     </header>
 
     <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
@@ -477,13 +480,17 @@
     // ==========================================
     // 0. 國際化多語言設定 (i18n Dictionary)
     // ==========================================
-    let I18N = {}; // 用於儲存從外部檔案讀取進來的語言包
+    let I18N = {}; 
     let currentLang = localStorage.getItem('i18n_lang') || 'zh';
 
-    // 非同步載入指定語言的 JSON 檔案
+    // 點擊 🌍 按鈕時觸發
+    function toggleLanguage() {
+        const newLang = currentLang === 'zh' ? 'en' : 'zh';
+        setLanguage(newLang);
+    }
+
     async function setLanguage(lang) {
         try {
-            // 如果記憶體中還沒有該語言，則透過 fetch 去讀取
             if (!I18N[lang]) {
                 const response = await fetch(`./${lang}.json`);
                 if (!response.ok) throw new Error(`無法讀取語言檔: ${lang}.json`);
@@ -492,12 +499,10 @@
 
             currentLang = lang;
             localStorage.setItem('i18n_lang', lang);
-            document.getElementById('lang_select').value = lang;
             document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
 
             const dict = I18N[lang];
             
-            // 替換畫面上有 data-i18n 屬性的文字
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dict[key]) {
@@ -505,7 +510,6 @@
                 }
             });
 
-            // 處理下拉選單內含有數字的動態文字 (金字塔層數)
             const pyrSelect = document.getElementById('param_pyr');
             if(pyrSelect) {
                 Array.from(pyrSelect.options).forEach(opt => {
@@ -514,12 +518,12 @@
                 });
             }
 
-            // 重新觸發 MathJax 渲染 LaTeX 數學公式
+            // ⚠️ 關鍵修正：呼叫 MathJax 前必須先 Clear 快取，否則它會略過已經替換過 innerHTML 的節點
             if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetClear();
                 window.MathJax.typesetPromise().catch((err) => console.log(err.message));
             }
 
-            // 如果已有運算結果快取，重新以新語言輸出 UI 狀態
             if (window.lastResultsCache) {
                 updateResultsUI(
                     window.lastResultsCache.px, window.lastResultsCache.py, window.lastResultsCache.d_disp,
@@ -1508,7 +1512,6 @@
             });
             
             document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
-                if (el.id === 'lang_select') return;
                 el.addEventListener('change', (e) => {
                     if (e.target.type === 'number') {
                         let val = parseFloat(e.target.value);
