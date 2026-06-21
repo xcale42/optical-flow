@@ -213,10 +213,19 @@
         }
 
         @media (max-width: 480px) {
-            .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-            .block-card { padding: 8px; }
-            .block-card h4 { font-size: 9pt; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
+            body { padding: 2px; }
+            .container { padding: 8px; border-radius: 8px; }
+            header { margin-bottom: 12px; padding-bottom: 8px; }
+            header h1 { font-size: 14pt; }
+            .panel:not(#settings_drawer) { padding: 10px; margin-bottom: 15px; }
+            
+            .canvas-3d { height: 42vh; min-height: 280px; margin-top: 34px; }
+            .viewport-card h4 { padding: 6px 10px; font-size: 10pt; }
+            
+            .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 15px; }
+            .block-card { padding: 4px; border-radius: 8px; }
+            .block-card h4 { font-size: 8.5pt; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            
             .compare-table { white-space: normal; }
             .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; white-space: normal; word-break: keep-all; line-height: 1.3;}
             .compare-table th { font-size: 8pt; }
