@@ -43,8 +43,13 @@
         
         .container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
-        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
+        header { position: relative; text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         header h1 { margin: 0; color: var(--primary-color); font-size: 24pt; font-weight: 700; letter-spacing: -0.5px; }
+        
+        /* 語言切換選單樣式 */
+        .lang-select { position: absolute; right: 0; top: 50%; transform: translateY(-50%); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 10pt; font-weight: 600; cursor: pointer; background: var(--bg-color); color: var(--primary-color); outline: none; transition: border-color 0.2s;}
+        .lang-select:focus { border-color: var(--accent-color); }
+        
         .panel { border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--panel-bg); margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
         .panel h3 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; font-size: 14pt; }
         
@@ -82,7 +87,8 @@
         }
         .viewport-card h4 { 
             margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
-            position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; border-radius: 11px 11px 0 0;
+            position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+            border-radius: 11px 11px 0 0;
         }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
         .canvas-3d canvas { touch-action: none; outline: none; width: 100% !important; height: 100% !important; display: block; }
@@ -132,55 +138,35 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body.drawer-open .drawer-overlay { 
-            visibility: visible; 
-            opacity: 1; 
-            pointer-events: auto; 
-        }
-
-        body.drawer-open #settings_drawer {
-            touch-action: auto;
-            overscroll-behavior: contain;
-        }
+        body.drawer-open .drawer-overlay { visibility: visible; opacity: 1; pointer-events: auto; }
+        body.drawer-open #settings_drawer { touch-action: auto; overscroll-behavior: contain; }
 
         @media (max-width: 1024px) {
             body { padding: 8px; }
             .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
-            header h1 { font-size: 16pt; margin-bottom: 15px; }
+            header { flex-direction: column; gap: 10px; padding-bottom: 20px;}
+            header h1 { font-size: 16pt; margin-bottom: 0; padding-right: 0;}
+            .lang-select { position: static; transform: none; display: inline-block; margin-top: 10px; }
         
-            /* --- 側面板基礎設定 --- */
             #settings_drawer {
-                position: fixed; 
-                top: 0; 
-                right: -100%; 
-                width: 360px;
-                max-width: 90vw; 
-                height: 100%; height: 100dvh;
-                background: var(--panel-bg); z-index: 1000; 
-                overflow-y: auto; overflow-x: hidden; 
+                position: fixed; top: 0; right: -100%; width: 360px; max-width: 90vw; height: 100%; height: 100dvh;
+                background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden; 
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); 
-                padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
+                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             .fab-settings { display: flex; width: 55px; height: 55px; font-size: 24px; }
             .tab-header { margin-bottom: 10px; padding: 4px; }
             .tab-btn { padding: 8px; font-size: 10pt; }
         
-            /* --- ⚙️ 參數設定：改為與手機版相同的單欄堆疊 --- */
             .control-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
             .control-group label { font-size: 9pt; margin-bottom: 4px; }
             .control-group input, .control-group select { padding: 8px; font-size: 9.5pt; }
         
             .axis-control { 
-                display: grid; 
-                grid-template-columns: 36px auto 1fr 36px; 
-                grid-template-rows: auto auto; 
-                gap: 4px 8px;
-                align-items: center; 
-                background: #f8fafc; padding: 6px 10px; border-radius: 8px; 
-                border: 1px solid var(--border-color); margin-bottom: 6px;
-                width: 100%; min-width: 100px; box-sizing: border-box;
+                display: grid; grid-template-columns: 36px auto 1fr 36px; grid-template-rows: auto auto; gap: 4px 8px;
+                align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 8px; 
+                border: 1px solid var(--border-color); margin-bottom: 6px; width: 100%; min-width: 100px; box-sizing: border-box;
             }
             .axis-label { grid-column: 1 / 3; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; white-space: nowrap; }
             .axis-val { grid-column: 3 / 5; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; color: var(--accent-color); font-weight: 700; white-space: nowrap; }
@@ -195,7 +181,7 @@
             #sel_transform_space { flex-basis: 100%; margin-top: 5px; }
             .reset-btn-container { flex-direction: column; }
             .reset-btn-container button { width: 100%; }
-            
+
             body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
             body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
             .dimmable { transition: opacity 0.2s; }
@@ -218,14 +204,14 @@
             header { margin-bottom: 12px; padding-bottom: 8px; }
             header h1 { font-size: 14pt; }
             .panel:not(#settings_drawer) { padding: 10px; margin-bottom: 15px; }
-            
+
             .canvas-3d { height: 42vh; min-height: 280px; margin-top: 34px; }
             .viewport-card h4 { padding: 6px 10px; font-size: 10pt; }
-            
+
             .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 15px; }
             .block-card { padding: 4px; border-radius: 8px; }
             .block-card h4 { font-size: 8.5pt; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            
+
             .compare-table { white-space: normal; }
             .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; white-space: normal; word-break: keep-all; line-height: 1.3;}
             .compare-table th { font-size: 8pt; }
@@ -242,63 +228,67 @@
 
 <div class="container">
     <header>
-        <h1>光流法實驗室</h1>
+        <h1 data-i18n="title">3D Scene Flow 金字塔光流實驗室</h1>
+        <select id="lang_select" onchange="setLanguage(this.value)" class="lang-select">
+            <option value="zh">🇹🇼 中文</option>
+            <option value="en">🇺🇸 English</option>
+        </select>
     </header>
 
     <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
         <div class="tab-header dimmable">
-            <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')">⚙️ 參數設定</button>
-            <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')">🎛️ 微調控制</button>
+            <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')" data-i18n="tab_params">⚙️ 參數設定</button>
+            <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')" data-i18n="tab_finetune">🎛️ 微調控制</button>
         </div>
 
         <div id="tab_params" class="tab-content dimmable">
             <div class="control-grid">
                 <div class="control-group type-sel">
-                    <label>紋理選擇</label>
+                    <label data-i18n="tex_type">紋理選擇</label>
                     <select id="obj_shape">
                         <option value="checkerboard">Checkerboard</option>
-                        <option value="noise">隨機白雜訊</option>
-                        <option value="gabor" selected>Gabor斑塊</option>
-                        <option value="vertical_grating">垂直條紋</option>
-                        <option value="rings">同心圓環</option>
+                        <option value="noise" data-i18n="opt_noise">隨機白雜訊</option>
+                        <option value="gabor" selected data-i18n="opt_gabor">Gabor斑塊</option>
+                        <option value="vertical_grating" data-i18n="opt_vert">垂直條紋</option>
+                        <option value="rings" data-i18n="opt_rings">同心圓環</option>
                     </select>
                 </div>
                 <div class="control-group type-sel">
-                    <label>幾何形狀</label>
+                    <label data-i18n="geo_type">幾何形狀</label>
                     <select id="obj_geometry_type">
-                        <option value="sphere" selected>球體</option>
-                        <option value="box">正方體</option>
-                        <option value="cylinder">圓柱體</option>
-                        <option value="torus">圓環體</option>
-                        <option value="cone">圓錐體</option>
-                        <option value="octahedron">正八面體</option>
+                        <option value="sphere" selected data-i18n="opt_sphere">球體</option>
+                        <option value="box" data-i18n="opt_box">正方體</option>
+                        <option value="cylinder" data-i18n="opt_cyl">圓柱體</option>
+                        <option value="torus" data-i18n="opt_torus">圓環體</option>
+                        <option value="cone" data-i18n="opt_cone">圓錐體</option>
+                        <option value="octahedron" data-i18n="opt_octa">正八面體</option>
                     </select>
                 </div>
                 <div class="control-group type-sel">
-                    <label>貼圖時機</label>
+                    <label data-i18n="tex_mode">貼圖時機</label>
                     <select id="param_tex_mode">
-                        <option value="local" selected>先貼 (跟隨物體)</option>
-                        <option value="global">後貼 (全域空間)</option>
+                        <option value="local" selected data-i18n="opt_local">先貼 (跟隨物體)</option>
+                        <option value="global" data-i18n="opt_global">後貼 (全域空間)</option>
                     </select>
                 </div>
                 <div class="control-group type-num">
-                    <label>大小 (m)</label>
+                    <label data-i18n="obj_size">大小 (m)</label>
                     <input type="number" id="param_obj_size" value="0.200" min="0.050" max="0.500" step="0.001">
                 </div>
                 <div class="control-group type-num">
-                    <label>相機焦距 $f$ (px)</label>
+                    <label data-i18n="cam_f">相機焦距 $f$ (px)</label>
                     <input type="number" id="param_f" value="400" min="100" max="1000" step="10">
                 </div>
                 <div class="control-group type-num">
-                    <label>基線距離 $B$ (m)</label>
+                    <label data-i18n="cam_b">基線距離 $B$ (m)</label>
                     <input type="number" id="param_B" value="0.30" min="0.05" max="1.00" step="0.01">
                 </div>
                 <div class="control-group type-num">
-                    <label>計算窗口 (px)</label>
+                    <label data-i18n="calc_win">計算窗口 (px)</label>
                     <input type="number" id="param_win" value="15" min="3" max="51" step="2">
                 </div>
                 <div class="control-group type-sel">
-                    <label>金字塔層數</label>
+                    <label data-i18n="pyr_lvl">金字塔層數</label>
                     <select id="param_pyr">
                         <option value="1">1層</option>
                         <option value="2">2層</option>
@@ -309,7 +299,7 @@
                     </select>
                 </div>
                 <div class="control-group type-num">
-                    <label>容許誤差閥值(%)</label>
+                    <label data-i18n="err_thresh">容許誤差閥值(%)</label>
                     <input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1">
                 </div>
             </div>
@@ -317,32 +307,32 @@
 
         <div id="tab_finetune" class="tab-content" style="display: none;">
             <div class="ft-mode-btn-container dimmable" style="margin-bottom: 20px; display: flex; gap: 8px;">
-                <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')">位移</button>
-                <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')">旋轉</button>
+                <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')" data-i18n="btn_trans">位移</button>
+                <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')" data-i18n="btn_rot">旋轉</button>
                 <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); border: none; font-weight: bold; cursor: pointer; text-align: center; padding: 0 10px;" onchange="setTransformSpace(this.value)">
-                    <option value="local">📌 區域座標 (Local)</option>
-                    <option value="world">🌍 世界座標 (World)</option>
+                    <option value="local" data-i18n="opt_space_local">📌 區域座標 (Local)</option>
+                    <option value="world" data-i18n="opt_space_world">🌍 世界座標 (World)</option>
                 </select>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px;">
                 <div>
                     <div class="axis-control">
-                        <span class="axis-label">X 位移:</span>
+                        <span class="axis-label" data-i18n="ax_x_trans">X 位移:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_X" min="-2.0" max="2.0" step="0.0001" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001</button>
                         <span id="label_X" class="axis-val">0.0000 m</span>
                     </div>
                     <div class="axis-control">
-                        <span class="axis-label">Y 位移:</span>
+                        <span class="axis-label" data-i18n="ax_y_trans">Y 位移:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_Y" min="-2.0" max="2.0" step="0.0001" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001</button>
                         <span id="label_Y" class="axis-val">0.0000 m</span>
                     </div>
                     <div class="axis-control">
-                        <span class="axis-label">Z 位移:</span>
+                        <span class="axis-label" data-i18n="ax_z_trans">Z 位移:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001</button>
                         <input type="range" id="slider_Z" min="-2.0" max="2.0" step="0.0001" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001</button>
@@ -352,21 +342,21 @@
 
                 <div>
                     <div class="axis-control">
-                        <span class="axis-label">X 旋轉:</span>
+                        <span class="axis-label" data-i18n="ax_x_rot">X 旋轉:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeRotation('X', -0.1)">-0.1°</button>
                         <input type="range" id="slider_Rx" min="-180" max="180" step="0.1" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeRotation('X', 0.1)">+0.1°</button>
                         <span id="label_Rx" class="axis-val">0.0°</span>
                     </div>
                     <div class="axis-control">
-                        <span class="axis-label">Y 旋轉:</span>
+                        <span class="axis-label" data-i18n="ax_y_rot">Y 旋轉:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Y', -0.1)">-0.1°</button>
                         <input type="range" id="slider_Ry" min="-180" max="180" step="0.1" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Y', 0.1)">+0.1°</button>
                         <span id="label_Ry" class="axis-val">0.0°</span>
                     </div>
                     <div class="axis-control">
-                        <span class="axis-label">Z 旋轉:</span>
+                        <span class="axis-label" data-i18n="ax_z_rot">Z 旋轉:</span>
                         <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Z', -0.1)">-0.1°</button>
                         <input type="range" id="slider_Rz" min="-180" max="180" step="0.1" value="0">
                         <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Z', 0.1)">+0.1°</button>
@@ -376,8 +366,8 @@
             </div>
             
             <div class="reset-btn-container dimmable" style="display: flex; gap: 8px; margin-top: 4px;">
-                <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="flex: 1;">全部歸零 (對齊時間 $t$)</button>
-                <button class="btn btn-nudge btn-reset" onclick="resetRotationOnly()" style="flex: 1;">僅角度歸零</button>
+                <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="flex: 1;" data-i18n="btn_reset_all">全部歸零 (對齊時間 $t$)</button>
+                <button class="btn btn-nudge btn-reset" onclick="resetRotationOnly()" style="flex: 1;" data-i18n="btn_reset_rot">僅角度歸零</button>
             </div>
         </div>
     </div>
@@ -385,20 +375,20 @@
     <div class="viewport-3d-container">
         <div class="viewport-card">
             <h4>
-                <span>時間 $t$ 真實 3D 空間</span>
+                <span data-i18n="view_t">時間 $t$ 真實 3D 空間</span>
                 <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
                     <input type="checkbox" id="lock_3d_t" onchange="toggleLock3D_t()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    🔒 防誤觸
+                    <span data-i18n="lock_cam">🔒 防誤觸</span>
                 </label>
             </h4>
             <div id="3d_container_t" class="canvas-3d"></div>
         </div>
         <div class="viewport-card">
             <h4>
-                <span>時間 $t+\Delta t$ 真實 3D 空間</span>
+                <span data-i18n="view_t1">時間 $t+\Delta t$ 真實 3D 空間</span>
                 <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
                     <input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D_t1()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    🔒 防誤觸
+                    <span data-i18n="lock_cam">🔒 防誤觸</span>
                 </label>
             </h4>
             <div id="3d_container_t1" class="canvas-3d"></div>
@@ -407,63 +397,63 @@
 
     <div class="workspace-grid">
         <div class="block-card">
-            <h4>$t$ (左眼 $I_L$)</h4>
+            <h4 data-i18n="proj_lt">$t$ (左眼 $I_L$)</h4>
             <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
-            <h4>$t$ (右眼 $I_R$)</h4>
+            <h4 data-i18n="proj_rt">$t$ (右眼 $I_R$)</h4>
             <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
-            <h4>$t+\Delta t$ (左眼 $I_L$)</h4>
+            <h4 data-i18n="proj_lt1">$t+\Delta t$ (左眼 $I_L$)</h4>
             <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
         </div>
         <div class="block-card">
-            <h4>$t+\Delta t$ (右眼 $I_R$)</h4>
+            <h4 data-i18n="proj_rt1">$t+\Delta t$ (右眼 $I_R$)</h4>
             <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
         </div>
     </div>
 
     <div class="panel" id="special_cases_panel">
-        <h3 style="margin-bottom: 15px;">特殊情境實驗</h3>
+        <h3 style="margin-bottom: 15px;" data-i18n="fail_title">特殊情境實驗</h3>
         <div class="failure-buttons">
-            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')">⚠️ 觸發：孔徑問題 (Aperture Problem)</button>
-            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')">⚠️ 觸發：大位移失效 (Large Displacement)</button>
-            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')">⚠️ 觸發：移出視野 (Out of Bounds)</button>
+            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題 (Aperture Problem)</button>
+            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效 (Large Displacement)</button>
+            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野 (Out of Bounds)</button>
         </div>
     </div>
 
     <div class="results-section">
         <div class="panel" style="margin-bottom: 0;">
-            <h3>速度場驗證：真實 vs. 估算</h3>
+            <h3 data-i18n="res_title">速度場驗證：真實 vs. 估算</h3>
             <div class="table-wrapper">
                 <table class="compare-table">
                     <tr>
-                        <th>維度</th>
-                        <th>真實運動 $\Delta$</th>
-                        <th>方程解算 $\mathbf{V}$</th>
-                        <th>相對誤差</th>
+                        <th data-i18n="res_th_dim">維度</th>
+                        <th data-i18n="res_th_gt">真實運動 $\Delta$</th>
+                        <th data-i18n="res_th_est">方程解算 $\mathbf{V}$</th>
+                        <th data-i18n="res_th_err">相對誤差</th>
                     </tr>
                     <tr>
-                        <td>$U$ (橫向)</td>
+                        <td data-i18n="res_u">$U$ (橫向)</td>
                         <td class="val-gt" id="gt_U">0.0000 m</td>
                         <td class="val-est" id="est_U">0.0000 m</td>
                         <td class="val-rel" id="rel_U">0.0%</td>
                     </tr>
                     <tr>
-                        <td>$V$ (垂直)</td>
+                        <td data-i18n="res_v">$V$ (垂直)</td>
                         <td class="val-gt" id="gt_V">0.0000 m</td>
                         <td class="val-est" id="est_V">0.0000 m</td>
                         <td class="val-rel" id="rel_V">0.0%</td>
                     </tr>
                     <tr>
-                        <td>$W$ (深度)</td>
+                        <td data-i18n="res_w">$W$ (深度)</td>
                         <td class="val-gt" id="gt_W">0.0000 m</td>
                         <td class="val-est" id="est_W">0.0000 m</td>
                         <td class="val-rel" id="rel_W">0.0%</td>
                     </tr>
                     <tr class="row-summary">
-                        <td colspan="3" style="text-align: right; font-weight: bold;">總向量誤差百分比：</td>
+                        <td colspan="3" style="text-align: right; font-weight: bold;" data-i18n="res_total">總向量誤差百分比：</td>
                         <td id="err_pct_total" style="font-weight: bold; font-size: 12pt; font-variant-numeric: tabular-nums;">0.0%</td>
                     </tr>
                 </table>
@@ -472,18 +462,78 @@
         </div>
 
         <div class="panel" style="margin-bottom: 0;">
-            <h3>投影相機幾何資訊</h3>
+            <h3 data-i18n="res_geom">投影相機幾何資訊</h3>
             <ul class="metric-list">
-                <li><span>中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold; font-family:monospace;">0, 0</span></li>
-                <li><span>立體視差 $d$:</span><span id="stat_disp" style="font-weight:bold; font-family:monospace;">0.00 px</span></li>
-                <li><span>目標距離 $Z$:</span><span id="stat_depth" style="font-weight:bold; font-family:monospace;">0.000 m</span></li>
-                <li><span>空間解析度關係:</span><span style="color:var(--accent-color); font-weight:bold; font-family:monospace;">1 px = <span id="stat_px_to_m">0.00500</span> m</span></li>
+                <li><span data-i18n="res_coord">中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold; font-family:monospace;">0, 0</span></li>
+                <li><span data-i18n="res_disp">立體視差 $d$:</span><span id="stat_disp" style="font-weight:bold; font-family:monospace;">0.00 px</span></li>
+                <li><span data-i18n="res_dist">目標距離 $Z$:</span><span id="stat_depth" style="font-weight:bold; font-family:monospace;">0.000 m</span></li>
+                <li><span data-i18n="res_px">空間解析度關係:</span><span style="color:var(--accent-color); font-weight:bold; font-family:monospace;">1 px = <span id="stat_px_to_m">0.00500</span> m</span></li>
             </ul>
         </div>
     </div>
 </div>
 
 <script>
+    // ==========================================
+    // 0. 國際化多語言設定 (i18n Dictionary)
+    // ==========================================
+    let I18N = {}; // 改為空物件，等待外部載入
+    let currentLang = localStorage.getItem('i18n_lang') || 'zh';
+
+    // 新增：非同步載入語言包
+    async function loadLanguagePack() {
+        try {
+            // 從相對路徑讀取 i18n.json
+            const response = await fetch('./i18n.json');
+            if (!response.ok) throw new Error('無法讀取語言檔');
+            I18N = await response.json();
+            
+            // 讀取成功後，套用目前的語言設定
+            setLanguage(currentLang);
+        } catch (error) {
+            console.error('語言包載入失敗:', error);
+            // 這裡可以選擇加上預設的回退機制或錯誤提示
+        }
+    }
+
+    function setLanguage(lang) {
+        if (!I18N[lang]) return; // 確保語言包已經載入
+
+        currentLang = lang;
+        localStorage.setItem('i18n_lang', lang);
+        document.getElementById('lang_select').value = lang;
+        document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+
+        const dict = I18N[lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) {
+                el.innerHTML = dict[key];
+            }
+        });
+
+        const pyrSelect = document.getElementById('param_pyr');
+        if(pyrSelect) {
+            Array.from(pyrSelect.options).forEach(opt => {
+                const val = opt.value;
+                opt.text = lang === 'zh' ? `${val}層` : `${val} Level${val > 1 ? 's' : ''}`;
+            });
+        }
+
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise().catch((err) => console.log(err.message));
+        }
+
+        if (window.lastResultsCache) {
+            updateResultsUI(
+                lastResultsCache.px, lastResultsCache.py, lastResultsCache.d_disp,
+                lastResultsCache.gt_U, lastResultsCache.gt_V, lastResultsCache.gt_W,
+                lastResultsCache.U_est, lastResultsCache.V_est, lastResultsCache.W_est,
+                lastResultsCache.err_pct, lastResultsCache.failureMode
+            );
+        }
+    }
+
     // ==========================================
     // 1. 系統常數與基礎設定 (System Constants)
     // ==========================================
@@ -528,6 +578,7 @@
     let currentRayF = -1;
     let rayDirCache = new Float32Array(IMG_W * IMG_H * 3);
     let transformMaterials = null; 
+    window.lastResultsCache = null;
 
     const contexts = {};
     const imgBuffers = {};
@@ -1170,6 +1221,8 @@
 
         if (dryRun) return { failureMode };
 
+        // 緩存結果供語言切換時重繪
+        window.lastResultsCache = { px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode };
         updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
     }
 
@@ -1177,6 +1230,7 @@
     // 8. 實驗模組與面板操作 (Experiments & Panels)
     // ==========================================
     function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
+        const dict = I18N[currentLang];
         document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
         document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
         document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
@@ -1190,16 +1244,16 @@
         if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
             ['U', 'V', 'W'].forEach(axis => {
                 document.getElementById('est_' + axis).innerText = "NaN";
-                document.getElementById('rel_' + axis).innerText = "失敗";
+                document.getElementById('rel_' + axis).innerText = dict.err_fail_short;
             });
             elTotalErr.style.color = 'var(--danger-color)';
             document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
-            elTotalErr.innerText = "計算失敗";
+            elTotalErr.innerText = dict.err_calc_fail;
             
             if (failureMode === 'aperture') {
-                errorExp.innerHTML = "<strong>⚠️ 遭遇孔徑問題 (Aperture Problem)</strong><br>物體表面缺乏足夠的交錯紋理（例如僅有單一方向的條紋），導致光流演算法無法唯一確定真實的運動方向，產生多組解而導致計算失敗。";
+                errorExp.innerHTML = dict.err_aper_desc;
             } else {
-                errorExp.innerHTML = "<strong>⚠️ 目標移出視野 (Out of Bounds)</strong><br>物體在移動後已經超出（或部分超出）相機的投影範圍，導致無法擷取足夠的有效像素進行前後影格比對，追蹤因而中斷。";
+                errorExp.innerHTML = dict.err_out_desc;
             }
             errorExp.style.display = 'block';
         } else {
@@ -1213,13 +1267,13 @@
             let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
 
             if (failureMode === 'large_disp') {
-                elTotalErr.innerText = "計算失敗";
+                elTotalErr.innerText = dict.err_calc_fail;
                 elTotalErr.style.color = 'var(--danger-color)';
                 document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
-                errorExp.innerHTML = "<strong>⚠️ 移動距離過大或誤差超標 (Large Displacement)</strong><br>物體的位移量超出了目前設定的「計算窗口」與「金字塔層數」所能涵蓋的最大追蹤極限，或解析出的數值超過了你所設定的容許誤差閥值，導致預測被標記為失效。";
+                errorExp.innerHTML = dict.err_disp_desc;
                 errorExp.style.display = 'block';
             } else {
-                elTotalErr.innerText = pctStr + ' (成功)';
+                elTotalErr.innerText = pctStr + ' ' + dict.err_success;
                 elTotalErr.style.color = 'var(--success-color)';
                 ['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
                 document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
@@ -1441,14 +1495,18 @@
     // 9. 程式進入點 (Application Entry)
     // ==========================================
     window.onload = () => {
-        CANVAS_IDS.forEach(id => {
-            const canvas = document.getElementById('canvas_' + id);
-            contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
-            imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
-            imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
-        });
+        // 初始化語言
+        loadLanguagePack().then(() => {
+            
+            CANVAS_IDS.forEach(id => {
+                const canvas = document.getElementById('canvas_' + id);
+                contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
+                imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
+                imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
+            });
         
         document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
+            if (el.id === 'lang_select') return; // 忽略語言切換器
             el.addEventListener('change', (e) => {
                 if (e.target.type === 'number') {
                     let val = parseFloat(e.target.value);
