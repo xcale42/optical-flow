@@ -136,13 +136,20 @@
         .lang-popup-menu {
             position: absolute; bottom: 65px; left: 0; background: var(--panel-bg); border: 1px solid var(--border-color);
             border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; display: none; flex-direction: column; gap: 4px;
-            width: 140px; transform-origin: bottom left; animation: popupAnim 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            
+            /* 💡 關鍵修改：讓寬度根據內容自動撐開，而不是寫死 140px */
+            width: max-content; 
+            
+            transform-origin: bottom left; animation: popupAnim 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .lang-popup-menu.show { display: flex; }
         @keyframes popupAnim { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
         .lang-option {
             padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 10.5pt; font-weight: 600; color: var(--primary-color); transition: background 0.2s;
+            
+            /* 💡 關鍵修改：強制文字絕對不可以換行 */
+            white-space: nowrap; 
         }
         .lang-option:hover { background: var(--bg-color); color: var(--accent-color); }
         .lang-option.active { background: var(--accent-color); color: #fff; }
