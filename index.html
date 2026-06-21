@@ -137,8 +137,10 @@
             position: absolute; bottom: 65px; left: 0; background: var(--panel-bg); border: 1px solid var(--border-color);
             border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; display: none; flex-direction: column; gap: 4px;
             
-            /* 💡 關鍵修改：讓寬度根據內容自動撐開，而不是寫死 140px */
+            /* 💡 徹底解決外框沒跟著變大的問題 */
             width: max-content; 
+            min-width: 140px; /* 給予一個基礎的最小寬度 */
+            white-space: nowrap; /* 讓父容器也強制不換行，強迫撐開邊框 */
             
             transform-origin: bottom left; animation: popupAnim 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
@@ -148,7 +150,10 @@
         .lang-option {
             padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 10.5pt; font-weight: 600; color: var(--primary-color); transition: background 0.2s;
             
-            /* 💡 關鍵修改：強制文字絕對不可以換行 */
+            /* 💡 確保選項元素完整佔滿外框 */
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
             white-space: nowrap; 
         }
         .lang-option:hover { background: var(--bg-color); color: var(--accent-color); }
