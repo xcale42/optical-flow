@@ -116,12 +116,29 @@
         }
         .fab-settings:active { transform: scale(0.95); }
         .drawer-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 999; backdrop-filter: blur(2px); transition: opacity 0.3s;
+            /* 1. 捨棄 display: none，改用 visibility 與 opacity 來支援完美轉場 */
+            visibility: hidden; 
+            opacity: 0; 
+            pointer-events: none;
+            
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); 
+            z-index: 999; 
+            
+            /* 2. 補上 -webkit- 前綴，確保所有 iPhone/Safari 版本都能強制渲染模糊 */
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px); 
+            
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
-        body.drawer-open {
-            overflow: hidden;
-            touch-action: none; /* 防止 iOS 上的橡皮筋彈跳與下拉更新 */
+
+        /* 3. 當面板開啟時，平滑顯示遮罩並啟動模糊與點擊功能 */
+        body.drawer-open .drawer-overlay { 
+            visibility: visible; 
+            opacity: 1; 
+            pointer-events: auto; 
         }
 
         /* 2. 確保側邊欄內部依然可以滑動，但滑到底時不會連動背景 */
