@@ -71,7 +71,7 @@
         .btn-reset { background: #64748b; }
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
         input[type="range"] { 
-            width: 100%; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
+            width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
             /* 關鍵修復 1：禁止瀏覽器在此元素上觸發頁面捲動，把滑動判定 100% 留給滑桿 */
             touch-action: none; 
         }
@@ -215,7 +215,7 @@
                 align-items: center; 
                 background: #f8fafc; padding: 6px 10px; border-radius: 8px; 
                 border: 1px solid var(--border-color); margin-bottom: 6px;
-                width: 100%; box-sizing: border-box;
+                width: 100%; min-width: 100px; box-sizing: border-box;
             }
             
             /* 2. 第一行：標籤與數值 (利用 Grid 欄位跨越完美貼齊) */
