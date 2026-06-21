@@ -160,21 +160,26 @@
             #settings_drawer {
                 position: fixed; 
                 top: 0; 
-                /* 1. 隱藏時退到畫面外 100% 的距離，這樣無論面板多寬都能完美隱藏 */
                 right: -100%; 
                 
-                /* 2. 動態寬度限制：給予充足的 350px 空間，但在極窄手機上最多只佔螢幕的 92vw，確保不破版 */
-                width: min(350px, 92vw); 
+                /* 💡 1. 核心機制：寬度根據內部元件（如原本的 5 欄滑桿）自動撐開 */
+                width: fit-content; 
+                
+                /* 💡 2. 極限防護：最大不超過螢幕寬度的 92%，確保一定留有左側暗灰空間可點擊關閉 */
+                max-width: 92vw; 
+                
+                /* 💡 3. 最低限度：就算內容很少，也維持一個基本的視覺寬度 */
+                min-width: 320px; 
                 
                 height: 100%; height: 100dvh;
                 background: var(--panel-bg); z-index: 1000; 
                 
-                /* 3. 確保就算內部真的有極端長度的單字，也會自動隱藏卷軸，不撐破外框 */
-                overflow-y: auto; overflow-x: hidden;
+                /* 💡 4. 允許水平滾動：當手機螢幕極窄、觸發 92vw 極限時，讓面板內部可以左右滑動，而不會直接切斷數值 */
+                overflow-y: auto; overflow-x: auto; 
                 
                 transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
                 box-shadow: -2px 0 15px rgba(0,0,0,0.2); 
-                padding: 15px 12px 10px 12px; margin: 0; border-radius: 0; border: none;
+                padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
             }
             body.drawer-open #settings_drawer { right: 0; }
             
