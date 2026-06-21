@@ -359,8 +359,8 @@
                 <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')" data-i18n="btn_trans">位移</button>
                 <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')" data-i18n="btn_rot">旋轉</button>
                 <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); border: none; font-weight: bold; cursor: pointer; text-align: center; padding: 0 10px;" onchange="setTransformSpace(this.value)">
-                    <option value="local" data-i18n="opt_space_local">📌 區域座標 (Local)</option>
-                    <option value="world" data-i18n="opt_space_world">🌍 世界座標 (World)</option>
+                    <option value="local" data-i18n="opt_space_local">📌 區域座標</option>
+                    <option value="world" data-i18n="opt_space_world">🌍 世界座標</option>
                 </select>
             </div>
 
@@ -466,9 +466,9 @@
     <div class="panel" id="special_cases_panel">
         <h3 style="margin-bottom: 15px;" data-i18n="fail_title">特殊情境實驗</h3>
         <div class="failure-buttons">
-            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題 (Aperture Problem)</button>
-            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效 (Large Displacement)</button>
-            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野 (Out of Bounds)</button>
+            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題</button>
+            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效</button>
+            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野</button>
         </div>
     </div>
 
