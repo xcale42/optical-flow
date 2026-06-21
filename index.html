@@ -70,7 +70,11 @@
         .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-reset { background: #64748b; }
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
-        input[type="range"] { width: 100%; margin: 0; cursor: pointer; accent-color: var(--accent-color); }
+        input[type="range"] { 
+            width: 100%; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
+            /* 關鍵修復 1：禁止瀏覽器在此元素上觸發頁面捲動，把滑動判定 100% 留給滑桿 */
+            touch-action: none; 
+        }
 
         .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
         .viewport-card { 
@@ -183,7 +187,9 @@
             body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
             
             .axis-control.active-slider { 
-                opacity: 0.95 !important; transform: scale(1.02); z-index: 10; background: rgba(255, 255, 255, 0.95); 
+                opacity: 0.95 !important; 
+                /* 關鍵修復 2：移除 transform: scale(1.02); 避免點擊瞬間滑桿位置偏移而斷觸 */
+                z-index: 10; background: rgba(255, 255, 255, 0.95); 
                 border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color);
             }
 
