@@ -54,7 +54,7 @@
     "res_u": "$U$ (Horizontal)",
     "res_v": "$V$ (Vertical)",
     "res_w": "$W$ (Profondeur)",
-    "param_res": "Résolution de Rendu 2D",
+    "param_res": "Résolution de Rendu 2D (px)",
     "res_total": "Erreur Vectorielle Totale :",
     "res_geom": "Géométrie de la Caméra",
     "res_coord": "Coordonnées du centre $(x_L, y_L)$ :",
