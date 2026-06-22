@@ -54,7 +54,7 @@
     "res_u": "$U$ (横方向)",
     "res_v": "$V$ (垂直方向)",
     "res_w": "$W$ (奥行き)",
-    "param_res": "2D 演算解像度",
+    "param_res": "2D 演算解像度 (px)",
     "res_total": "総ベクトル誤差百分率：",
     "res_geom": "投影カメラ幾何情報",
     "res_coord": "中心点投影座標 $(x_L, y_L)$:",
