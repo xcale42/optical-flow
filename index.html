@@ -799,11 +799,6 @@
         } else {
             window.sliderAxisHelper.quaternion.identity();
         }
-    
-        // 替換成對應座標系的顏色 (世界=青/洋紅/黃，區域=紅/綠/藍)
-        window.sliderAxisLines['X'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_X : SYS_CONST.COLORS.AXIS_LOCAL_X);
-        window.sliderAxisLines['Y'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_Y : SYS_CONST.COLORS.AXIS_LOCAL_Y);
-        window.sliderAxisLines['Z'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_Z : SYS_CONST.COLORS.AXIS_LOCAL_Z);
     }
 
     // ==========================================
