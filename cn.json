@@ -54,7 +54,7 @@
     "res_u": "$U$ (横向)",
     "res_v": "$V$ (垂直)",
     "res_w": "$W$ (深度)",
-    "param_res": "2D 运算分辨率",
+    "param_res": "2D 运算分辨率 (px)",
     "res_total": "总向量误差百分比：",
     "res_geom": "投影相机几何信息",
     "res_coord": "中心点投影坐标 $(x_L, y_L)$:",
