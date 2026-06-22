@@ -67,7 +67,11 @@
         
         .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block; white-space: nowrap; }
         .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn:active { transform: translateY(1px); box-shadow: 0 1px 2px rgba(0,0,0,0.1); filter: brightness(0.95); }
+        .btn:active { 
+            transform: translateY(1px); 
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15); 
+            filter: brightness(0.95); 
+        }
         .btn-nudge-small { background: var(--accent-color); padding: 8px 0; font-size: 9pt; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
         .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-reset { background: #64748b; }
@@ -117,7 +121,6 @@
             background: var(--accent-color); color: white; align-items: center; justify-content: center;
             font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s;
         }
-        .fab-settings:active { transform: scale(0.95); }
 
         .lang-fab-wrapper {
             position: fixed; bottom: 20px; left: 20px; z-index: 1001; display: flex; align-items: flex-end;
@@ -128,7 +131,10 @@
             font-size: 26px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
         }
         .fab-lang:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-        .fab-lang:active { transform: scale(0.95); }
+        .fab-settings:active, .fab-lang:active { 
+            transform: scale(0.95) translateY(2px); 
+            box-shadow: 0 0 0 transparent; 
+        }
 
         .lang-popup-menu {
             position: absolute; bottom: 100%; margin-bottom: 10px; overflow-y: auto; overscroll-behavior: contain; max-height: 240px; left: 0; background: var(--panel-bg); border: 1px solid var(--border-color);
