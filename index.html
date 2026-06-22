@@ -117,7 +117,7 @@
         .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
         .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        canvas.projection { display: block; background: transparent; width: 100%; max-width: 240px; height: auto; margin: auto; }
+        canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
         
         .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; }
@@ -382,6 +382,14 @@
                 <div class="control-group type-num">
                     <label data-i18n="err_thresh">容許誤差閥值(%)</label>
                     <input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1">
+                </div>
+                <div class="control-group type-sel">
+                    <label data-i18n="param_res">2D 運算解析度</label>
+                    <select id="param_resolution">
+                        <option value="low">240 × 200 (極致流暢)</option>
+                        <option value="mid">360 × 300 (平衡推薦)</option>
+                        <option value="high" selected>480 × 400 (最高畫質)</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -728,7 +736,8 @@
         console.warn = function() {};
     }
 
-    const { IMG_W, IMG_H, CX, CY, DEFAULT_Z, TEX_SCALE, RAY_STEPS, CLOSE_THRESH_MULT, COLORS } = SYS_CONST;
+    let { IMG_W, IMG_H, CX, CY } = SYS_CONST;
+    const { DEFAULT_Z, TEX_SCALE, RAY_STEPS, CLOSE_THRESH_MULT, COLORS } = SYS_CONST;
     const CANVAS_IDS = ['Lt', 'Rt', 'Lt1', 'Rt1'];
 
     // ==========================================
@@ -820,6 +829,36 @@
         let s = val.toFixed(decimals);
         return parseFloat(s) === 0 ? (0).toFixed(decimals) : s;
     }
+
+    window.updateResolution = function() {
+        const res = document.getElementById('param_resolution').value;
+        
+        // 依據選擇設定新的內部解析度
+        if (res === 'low') { IMG_W = 240; IMG_H = 200; }
+        else if (res === 'mid') { IMG_W = 360; IMG_H = 300; }
+        else { IMG_W = 480; IMG_H = 400; }
+        
+        // 更新中心點
+        CX = IMG_W / 2;
+        CY = IMG_H / 2;
+    
+        // 重新配置 4 個 Canvas 的內部陣列與畫布大小
+        CANVAS_IDS.forEach(id => {
+            const canvas = document.getElementById('canvas_' + id);
+            canvas.width = IMG_W;
+            canvas.height = IMG_H;
+            
+            imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
+            imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
+        });
+    
+        // 重新生成光線步進的緩存矩陣
+        currentRayF = -1;
+        rayDirCache = new Float32Array(IMG_W * IMG_H * 3);
+    
+        // 強制重繪
+        updateSystem();
+    };
 
     function formatDeg(val) {
         let s = val.toFixed(1);
@@ -1794,6 +1833,8 @@
                     lastLoadedFailure = null; 
                     if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
                         updateObjectGeometry();
+                    } else if (e.target.id === 'param_resolution') {
+                        window.updateResolution();
                     } else {
                         updateSystem();
                     }
