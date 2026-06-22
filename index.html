@@ -22,37 +22,15 @@
     
     <style>
         :root { 
-            --primary-color: #1e293b; 
-            --accent-color: #3b82f6; 
-            --success-color: #10b981; 
-            --danger-color: #ef4444; 
-            --bg-color: #f1f5f9; 
-            --panel-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --canvas-bg: #1a1a1a;
+            --primary-color: #1e293b; --accent-color: #3b82f6; --success-color: #10b981; 
+            --danger-color: #ef4444; --bg-color: #f1f5f9; --panel-bg: #ffffff;
+            --border-color: #e2e8f0; --canvas-bg: #1a1a1a;
         }
-        html, body {
-            max-width: 100vw;
-            overflow-x: hidden;
-            background-color: var(--bg-color);
-            color: #334155;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        button, .btn, .fab-settings, .fab-lang {
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }
-        * { 
-            box-sizing: border-box; 
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; 
-            max-width: 100%; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; max-width: 100%; -webkit-tap-highlight-color: transparent; }
+        html, body { overflow-x: hidden; background-color: var(--bg-color); color: #334155; margin: 0; padding: 20px; line-height: 1.6; }
+        button, .btn, .fab-settings, .fab-lang { outline: none; }
         
         .container { width: 100%; max-width: 1400px; margin: auto; background: var(--panel-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        
         header { position: relative; text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 15px; }
         header h1 { margin: 0; color: var(--primary-color); font-size: 24pt; font-weight: 700; letter-spacing: -0.5px; }
         
@@ -63,239 +41,100 @@
         .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; font-weight: 600; cursor: pointer; color: #64748b; transition: all 0.2s; font-size: 11pt; }
         .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
 
-        .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; background: transparent; border: none; padding: 0; margin-bottom: 0; }
+        .control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
         .control-grid label { font-weight: 600; margin-bottom: 6px; color: var(--primary-color); font-size: 9pt; display: block; white-space: nowrap; }
-        .control-grid input, .control-grid select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5pt; width: 100%; transition: border-color 0.2s, box-shadow 0.2s; background: #fff; }
+        .control-grid input, .control-grid select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 9.5pt; width: 100%; transition: 0.2s; background: #fff; }
         .control-grid input:focus, .control-grid select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        .control-grid select { text-align: left; }
         .control-grid input[type="number"] { text-align: right; }
 
-        .axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; transition: opacity 0.3s, transform 0.2s; }
+        .axis-control { display: grid; grid-template-columns: 60px 85px 1fr 85px 95px; gap: 10px; align-items: center; margin-bottom: 12px; transition: opacity 0.3s; }
         .axis-label { font-weight: 600; font-size: 10pt; color: var(--primary-color); white-space: nowrap; }
-        .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .axis-val { font-family: monospace; font-size: 10pt; text-align: right; color: var(--primary-color); font-weight: bold; font-variant-numeric: tabular-nums; }
         
-        .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); color: white; display: inline-block; white-space: nowrap; }
-        @media (hover: hover) {
-            .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        }
-        .btn:active { 
-            transform: translateY(1px) !important; 
-            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15) !important; 
-            filter: brightness(0.95) !important; 
-        }
+        .btn { border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; transition: all 0.2s; color: white; display: inline-block; white-space: nowrap; }
+        @media (hover: hover) { .btn:hover { transform: translateY(-1px); filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.15); } }
+        .btn:active { transform: translateY(1px) !important; box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15) !important; filter: brightness(0.95) !important; }
         .btn-nudge-small { background: var(--accent-color); padding: 8px 0; font-size: 9pt; width: 100%; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); }
         .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-reset { background: #64748b; }
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
         input[type="range"] { width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); touch-action: none; }
 
-        .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
-        .viewport-card { 
-            border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--canvas-bg); position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-            transform: translateZ(0); -webkit-transform: translateZ(0); z-index: 1;
-        }
-        .viewport-card h4 { 
-            margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
-            position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
-            border-radius: 11px 11px 0 0;
-        }
-        .viewport-card h4 label {
-            transition: transform 0.1s ease, opacity 0.1s ease;
-            transform-origin: center right; 
-        }
-        
-        .viewport-card h4 label:active {
-            transform: scale(0.92);
-            opacity: 0.6;
-        }
+        .viewport-3d-container, .results-section { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
+        .results-section { grid-template-columns: 1.5fr 1fr; }
+        .viewport-card { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--canvas-bg); position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); transform: translateZ(0); z-index: 1; }
+        .viewport-card h4 { margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; border-radius: 11px 11px 0 0; }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
-        .canvas-3d canvas { touch-action: none; outline: none; width: 100% !important; height: 100% !important; display: block; }
-        .canvas-3d.locked { touch-action: auto !important; }
         .canvas-3d.locked canvas { touch-action: auto !important; pointer-events: none; }
 
         .workspace-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 25px; }
-        .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; }
         .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
-        .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
+        .canvas-container { background: var(--canvas-bg); border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
+        canvas.projection { display: block; width: 100%; height: auto; margin: auto; }
         
-        .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; }
         .compare-table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 10pt; text-align: center; background: white; white-space: nowrap;}
         .compare-table th, .compare-table td { padding: 12px; border-bottom: 1px solid var(--border-color); }
         .compare-table th { background: #f8fafc; color: var(--primary-color); font-family: 'Inter', sans-serif; font-weight: 600; }
         .compare-table tr:last-child td { border-bottom: none; }
-        .val-gt, .val-est, .val-rel { font-variant-numeric: tabular-nums; }
         .val-gt { color: var(--accent-color); font-weight: bold; }
         .val-est { color: var(--success-color); font-weight: bold; }
         .val-rel { font-weight: bold; }
         .row-summary { background-color: #f1f5f9; }
 
         .metric-list { list-style: none; padding: 0; margin: 0; font-size: 11pt; }
-        .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); gap: 10px;}
+        .metric-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-color); }
         .metric-list li:last-child { border-bottom: none; }
         .metric-list span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap;}
 
-        .fab-settings {
-            display: none; position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; border-radius: 50%;
-            background: var(--accent-color); color: white; align-items: center; justify-content: center;
-            font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s;
-        }
-
-        .lang-fab-wrapper {
-            position: fixed; bottom: 20px; left: 20px; z-index: 1001; display: flex; align-items: flex-end;
-        }
-        .fab-lang {
-            width: 55px; height: 55px; border-radius: 50%; padding: 0; margin: 0;
-            background: var(--panel-bg); color: var(--primary-color); display: flex; align-items: center; justify-content: center;
-            font-size: 26px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .lang-fab-wrapper:active .fab-lang {
-            transform: scale(0.95) translateY(2px) !important;
-            box-shadow: 0 0 0 transparent !important;
-        }
+        .lang-fab-wrapper { position: fixed; bottom: 20px; left: 20px; z-index: 1001; display: flex; align-items: flex-end; }
+        .fab-settings, .fab-lang { width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1001; cursor: pointer; border: none; transition: transform 0.2s; }
+        .fab-settings { display: none; position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: white; }
+        .fab-lang { background: var(--panel-bg); color: var(--primary-color); border: 1px solid var(--border-color); }
+        .fab-settings:active, .fab-lang:active, .lang-fab-wrapper:active .fab-lang { transform: scale(0.95) translateY(2px) !important; box-shadow: none !important; }
         .fab-lang:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-        .fab-settings:active, .fab-lang:active { 
-            transform: scale(0.95) translateY(2px) !important; 
-            box-shadow: 0 0 0 transparent !important; 
-        }
 
-        .lang-popup-menu {
-            position: absolute; bottom: 100%; margin-bottom: 10px; overflow-y: auto; overscroll-behavior: contain; max-height: 240px; left: 0; background: var(--panel-bg); border: 1px solid var(--border-color);
-            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; display: none; flex-direction: column; gap: 4px;
-            
-            width: max-content; 
-            min-width: 140px;
-            white-space: nowrap;
-            
-            transform-origin: bottom left; animation: popupAnim 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .lang-popup-menu::-webkit-scrollbar {
-            width: 6px;
-        }
-        .lang-popup-menu::-webkit-scrollbar-track {
-            background: transparent;
-            margin: 5px 0;
-        }
-        .lang-popup-menu::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        .lang-popup-menu::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        
+        .lang-popup-menu { position: absolute; bottom: 100%; left: 0; margin-bottom: 10px; overflow-y: auto; max-height: 240px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); padding: 8px; display: none; flex-direction: column; gap: 4px; min-width: 140px; animation: popupAnim 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .lang-popup-menu.show { display: flex; }
         @keyframes popupAnim { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        
-        .lang-option {
-            padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 10.5pt; font-weight: 600; color: var(--primary-color); transition: background 0.2s;
-            
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            white-space: nowrap; 
-        }
+        .lang-option { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 10.5pt; font-weight: 600; color: var(--primary-color); transition: background 0.2s; }
         .lang-option:hover { background: var(--bg-color); color: var(--accent-color); }
         .lang-option.active { background: var(--accent-color); color: #fff; }
-
         .lang-select-native { display: none; }
 
-        .drawer-overlay {
-            visibility: hidden; opacity: 0; pointer-events: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); z-index: 999; 
-            -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); 
-            transition: opacity 0.3s ease, visibility 0.3s ease; cursor: pointer; -webkit-tap-highlight-color: transparent;
-        }
-
+        .drawer-overlay { visibility: hidden; opacity: 0; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 999; backdrop-filter: blur(2px); transition: 0.3s ease; }
         body.drawer-open .drawer-overlay { visibility: visible; opacity: 1; pointer-events: auto; }
-        body.drawer-open #settings_drawer { touch-action: auto; overscroll-behavior: contain; }
 
         @media (max-width: 1024px) {
             body { padding: 8px; }
-            .container { padding: 12px; border-radius: 10px; width: 100%; overflow-x: hidden; }
-            header { flex-direction: column; gap: 10px; padding-bottom: 20px;}
-            header h1 { font-size: 16pt; margin-bottom: 0; padding-right: 0;}
-        
-            #settings_drawer {
-                position: fixed; top: 0; right: -100%; width: 360px; max-width: 90vw; height: 100%; height: 100dvh;
-                background: var(--panel-bg); z-index: 1000; overflow-y: auto; overflow-x: hidden; 
-                transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s, box-shadow 0.3s;
-                box-shadow: -2px 0 15px rgba(0,0,0,0.2); padding: 15px 15px 10px 15px; margin: 0; border-radius: 0; border: none;
-            }
+            .container { padding: 12px; }
+            #settings_drawer { position: fixed; top: 0; right: -100%; width: 360px; max-width: 90vw; height: 100dvh; background: var(--panel-bg); z-index: 1000; overflow-y: auto; transition: right 0.3s; padding: 15px; margin: 0; border-radius: 0; border: none; }
             body.drawer-open #settings_drawer { right: 0; }
             .fab-settings { display: flex; }
-            
             .lang-popup-menu { display: none !important; }
-            .lang-select-native {
-                display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                opacity: 0; cursor: pointer; -webkit-appearance: none; appearance: none; z-index: 2;
-            }
-
-            .tab-header { margin-bottom: 10px; padding: 4px; }
-            .tab-btn { padding: 8px; font-size: 10pt; }
-        
-            .control-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-            .control-group label { font-size: 9pt; margin-bottom: 4px; }
-            .control-group input, .control-group select { padding: 8px; font-size: 9.5pt; }
-        
-            .axis-control { 
-                display: grid; grid-template-columns: 36px auto 1fr 36px; grid-template-rows: auto auto; gap: 4px 8px;
-                align-items: center; background: #f8fafc; padding: 6px 10px; border-radius: 8px; 
-                border: 1px solid var(--border-color); margin-bottom: 6px; width: 100%; min-width: 100px; box-sizing: border-box;
-            }
-            .axis-label { grid-column: 1 / 3; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; white-space: nowrap; }
-            .axis-val { grid-column: 3 / 5; grid-row: 1; text-align: left; margin: 0; font-size: 9.5pt; color: var(--accent-color); font-weight: 700; white-space: nowrap; }
-            .btn-nudge-small { font-size: 0; padding: 0; border-radius: 6px; height: 32px; display: flex; align-items: center; justify-content: center; width: 100%; }
-            .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; }
-            .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; line-height: 1; display: block; }
-            .axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; width: 100%; margin: 0; align-self: center; }
-            .btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; }
-            .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; line-height: 1; display: block; }
-            
-            .ft-mode-btn-container { flex-wrap: wrap; }
-            #sel_transform_space { flex-basis: 100%; margin-top: 5px; }
-            .reset-btn-container { flex-direction: column; }
-            .reset-btn-container button { width: 100%; }
-
-            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
-            body.slider-focus-mode .drawer-overlay { opacity: 0 !important; pointer-events: none !important; }
-            .dimmable { transition: opacity 0.2s; }
-            body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
-            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
-            .axis-control.active-slider { opacity: 0.95 !important; z-index: 10; background: rgba(255, 255, 255, 0.95); border-radius: 8px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid var(--accent-color); }
-        
-            .viewport-3d-container { grid-template-columns: 1fr; gap: 15px; }
+            .lang-select-native { display: block; position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2; }
+            .control-grid { grid-template-columns: 1fr; }
+            .axis-control { grid-template-columns: 36px auto 1fr 36px; grid-template-rows: auto auto; padding: 6px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border-color); }
+            .axis-label { grid-column: 1 / 3; grid-row: 1; }
+            .axis-val { grid-column: 3 / 5; grid-row: 1; color: var(--accent-color); }
+            .btn-nudge-small { font-size: 0; height: 32px; display: flex; align-items: center; justify-content: center; }
+            .btn-nudge-small.minus { grid-column: 1 / 2; grid-row: 2; } .btn-nudge-small.minus::after { content: '-'; font-size: 16pt; }
+            .btn-nudge-small.plus { grid-column: 4 / 5; grid-row: 2; } .btn-nudge-small.plus::after { content: '+'; font-size: 16pt; }
+            .axis-control input[type="range"] { grid-column: 2 / 4; grid-row: 2; }
+            .viewport-3d-container, .workspace-grid, .results-section { grid-template-columns: 1fr; }
             .workspace-grid { grid-template-columns: 1fr 1fr; }
-            .results-section { grid-template-columns: 1fr; gap: 15px; }
-            .failure-buttons { flex-direction: column; gap: 10px; }
-            .failure-buttons button { width: 100%; padding: 12px; font-size: 10pt; min-width: unset; }
-            .compare-table th, .compare-table td { padding: 8px 6px; font-size: 9pt; }
-            .panel:not(#settings_drawer) { padding: 15px; overflow: hidden; }
+            .reset-btn-container { flex-direction: column; }
+            body.slider-focus-mode #settings_drawer { background: transparent !important; box-shadow: none !important; }
+            body.slider-focus-mode .drawer-overlay, body.slider-focus-mode .dimmable { opacity: 0 !important; pointer-events: none !important; }
+            body.slider-focus-mode .axis-control:not(.active-slider) { opacity: 0 !important; pointer-events: none !important; }
+            .axis-control.active-slider { opacity: 0.95 !important; z-index: 10; background: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border-color: var(--accent-color); }
         }
 
         @media (max-width: 480px) {
-            body { padding: 2px; }
-            .container { padding: 8px; border-radius: 8px; }
-            header { margin-bottom: 12px; padding-bottom: 8px; }
-            header h1 { font-size: 14pt; }
-            .panel:not(#settings_drawer) { padding: 10px; margin-bottom: 15px; }
-
-            .canvas-3d { height: 42vh; min-height: 280px; margin-top: 34px; }
-            .viewport-card h4 { padding: 6px 10px; font-size: 10pt; }
-
-            .workspace-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 15px; }
-            .block-card { padding: 4px; border-radius: 8px; }
-            .block-card h4 { font-size: 8.5pt; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-            .compare-table { white-space: normal; }
-            .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; white-space: normal; word-break: keep-all; line-height: 1.3;}
-            .compare-table th { font-size: 8pt; }
-            .val-gt, .val-est, .val-rel { font-size: 8.5pt; }
-            .row-summary td { font-size: 9pt; }
-            #err_pct_total { font-size: 11pt !important; }
+            .canvas-3d { height: 42vh; min-height: 280px; }
+            .block-card h4 { font-size: 8.5pt; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .compare-table th, .compare-table td { padding: 6px 3px; font-size: 8.5pt; word-break: keep-all;}
         }
     </style>
 </head>
@@ -308,15 +147,12 @@
     <select id="mobile_lang_select" class="lang-select-native" onchange="setLanguage(this.value)"></select>
     <div id="desktop_lang_menu" class="lang-popup-menu"></div>
 </div>
-
-<button class="fab-settings" id="fab_settings" onclick="toggleDrawer()">⚙️</button>
+<button class="fab-settings" onclick="toggleDrawer()">⚙️</button>
 
 <div class="container">
-    <header>
-        <h1 data-i18n="title">3D Scene Flow 金字塔光流實驗室</h1>
-    </header>
+    <header><h1 data-i18n="title">3D Scene Flow 金字塔光流實驗室</h1></header>
 
-    <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
+    <div id="settings_drawer" class="panel">
         <div class="tab-header dimmable">
             <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')" data-i18n="tab_params">⚙️ 參數設定</button>
             <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')" data-i18n="tab_finetune">🎛️ 微調控制</button>
@@ -324,65 +160,34 @@
 
         <div id="tab_params" class="tab-content dimmable">
             <div class="control-grid">
-                <div class="control-group type-sel">
-                    <label data-i18n="tex_type">紋理選擇</label>
-                    <select id="obj_shape">
-                        <option value="checkerboard">Checkerboard</option>
-                        <option value="noise" data-i18n="opt_noise">隨機白雜訊</option>
-                        <option value="gabor" selected data-i18n="opt_gabor">Gabor斑塊</option>
-                        <option value="vertical_grating" data-i18n="opt_vert">垂直條紋</option>
-                        <option value="rings" data-i18n="opt_rings">同心圓環</option>
-                    </select>
-                </div>
-                <div class="control-group type-sel">
-                    <label data-i18n="geo_type">幾何形狀</label>
-                    <select id="obj_geometry_type">
-                        <option value="sphere" selected data-i18n="opt_sphere">球體</option>
-                        <option value="box" data-i18n="opt_box">正方體</option>
-                        <option value="cylinder" data-i18n="opt_cyl">圓柱體</option>
-                        <option value="torus" data-i18n="opt_torus">圓環體</option>
-                        <option value="cone" data-i18n="opt_cone">圓錐體</option>
-                        <option value="octahedron" data-i18n="opt_octa">正八面體</option>
-                    </select>
-                </div>
-                <div class="control-group type-sel">
-                    <label data-i18n="tex_mode">貼圖時機</label>
-                    <select id="param_tex_mode">
-                        <option value="local" selected data-i18n="opt_local">先貼 (跟隨物體)</option>
-                        <option value="global" data-i18n="opt_global">後貼 (全域空間)</option>
-                    </select>
-                </div>
-                <div class="control-group type-num">
-                    <label data-i18n="obj_size">大小 (m)</label>
-                    <input type="number" id="param_obj_size" value="0.200" min="0.050" max="0.500" step="0.001">
-                </div>
-                <div class="control-group type-num">
-                    <label data-i18n="cam_f">相機焦距 $f$ (px)</label>
-                    <input type="number" id="param_f" value="400" min="100" max="1000" step="10">
-                </div>
-                <div class="control-group type-num">
-                    <label data-i18n="cam_b">基線距離 $B$ (m)</label>
-                    <input type="number" id="param_B" value="0.30" min="0.05" max="1.00" step="0.01">
-                </div>
-                <div class="control-group type-num">
-                    <label data-i18n="calc_win">計算窗口 (px)</label>
-                    <input type="number" id="param_win" value="15" min="3" max="51" step="2">
-                </div>
-                <div class="control-group type-sel">
-                    <label data-i18n="pyr_lvl">金字塔層數</label>
-                    <select id="param_pyr">
-                        <option value="1">1層</option>
-                        <option value="2">2層</option>
-                        <option value="3" selected>3層</option>
-                        <option value="4">4層</option>
-                        <option value="5">5層</option>
-                        <option value="6">6層</option>
-                    </select>
-                </div>
-                <div class="control-group type-num">
-                    <label data-i18n="err_thresh">容許誤差閥值(%)</label>
-                    <input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1">
-                </div>
+                <label data-i18n="tex_type">紋理選擇 <select id="obj_shape">
+                    <option value="checkerboard">Checkerboard</option>
+                    <option value="noise" data-i18n="opt_noise">隨機白雜訊</option>
+                    <option value="gabor" selected data-i18n="opt_gabor">Gabor斑塊</option>
+                    <option value="vertical_grating" data-i18n="opt_vert">垂直條紋</option>
+                    <option value="rings" data-i18n="opt_rings">同心圓環</option>
+                </select></label>
+                <label data-i18n="geo_type">幾何形狀 <select id="obj_geometry_type">
+                    <option value="sphere" selected data-i18n="opt_sphere">球體</option>
+                    <option value="box" data-i18n="opt_box">正方體</option>
+                    <option value="cylinder" data-i18n="opt_cyl">圓柱體</option>
+                    <option value="torus" data-i18n="opt_torus">圓環體</option>
+                    <option value="cone" data-i18n="opt_cone">圓錐體</option>
+                    <option value="octahedron" data-i18n="opt_octa">正八面體</option>
+                </select></label>
+                <label data-i18n="tex_mode">貼圖時機 <select id="param_tex_mode">
+                    <option value="local" selected data-i18n="opt_local">先貼 (跟隨物體)</option>
+                    <option value="global" data-i18n="opt_global">後貼 (全域空間)</option>
+                </select></label>
+                <label data-i18n="obj_size">大小 (m) <input type="number" id="param_obj_size" value="0.200" min="0.050" max="0.500" step="0.001"></label>
+                <label data-i18n="cam_f">相機焦距 $f$ (px) <input type="number" id="param_f" value="400" min="100" max="1000" step="10"></label>
+                <label data-i18n="cam_b">基線距離 $B$ (m) <input type="number" id="param_B" value="0.30" min="0.05" max="1.00" step="0.01"></label>
+                <label data-i18n="calc_win">計算窗口 (px) <input type="number" id="param_win" value="15" min="3" max="51" step="2"></label>
+                <label data-i18n="pyr_lvl">金字塔層數 <select id="param_pyr">
+                    <option value="1">1層</option><option value="2">2層</option><option value="3" selected>3層</option>
+                    <option value="4">4層</option><option value="5">5層</option><option value="6">6層</option>
+                </select></label>
+                <label data-i18n="err_thresh">容許誤差閥值(%) <input type="number" id="param_err_thresh" value="25" min="1" max="500" step="1"></label>
             </div>
         </div>
 
@@ -390,63 +195,17 @@
             <div class="ft-mode-btn-container dimmable" style="margin-bottom: 20px; display: flex; gap: 8px;">
                 <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')" data-i18n="btn_trans">位移</button>
                 <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')" data-i18n="btn_rot">旋轉</button>
-                <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); border: none; font-weight: bold; cursor: pointer; text-align: center; padding: 0 10px;" onchange="setTransformSpace(this.value)">
-                    <option value="local" data-i18n="opt_space_local">📌 區域座標</option>
-                    <option value="world" data-i18n="opt_space_world">🌍 世界座標</option>
+                <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); text-align: center;" onchange="setTransformSpace(this.value)">
+                    <option value="local" data-i18n="opt_space_local">📌 區域座標</option><option value="world" data-i18n="opt_space_world">🌍 世界座標</option>
                 </select>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_x_trans">X 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('X', -0.0001)">-0.0001</button>
-                        <input type="range" id="slider_X" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('X', 0.0001)">+0.0001</button>
-                        <span id="label_X" class="axis-val">0.0000 m</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_y_trans">Y 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Y', -0.0001)">-0.0001</button>
-                        <input type="range" id="slider_Y" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Y', 0.0001)">+0.0001</button>
-                        <span id="label_Y" class="axis-val">0.0000 m</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_z_trans">Z 位移:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeAxis('Z', -0.0001)">-0.0001</button>
-                        <input type="range" id="slider_Z" min="-2.0" max="2.0" step="0.0001" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeAxis('Z', 0.0001)">+0.0001</button>
-                        <span id="label_Z" class="axis-val">0.0000 m</span>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_x_rot">X 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('X', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Rx" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('X', 0.1)">+0.1°</button>
-                        <span id="label_Rx" class="axis-val">0.0°</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_y_rot">Y 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Y', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Ry" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Y', 0.1)">+0.1°</button>
-                        <span id="label_Ry" class="axis-val">0.0°</span>
-                    </div>
-                    <div class="axis-control">
-                        <span class="axis-label" data-i18n="ax_z_rot">Z 旋轉:</span>
-                        <button class="btn btn-nudge-small minus" onclick="nudgeRotation('Z', -0.1)">-0.1°</button>
-                        <input type="range" id="slider_Rz" min="-180" max="180" step="0.1" value="0">
-                        <button class="btn btn-nudge-small plus" onclick="nudgeRotation('Z', 0.1)">+0.1°</button>
-                        <span id="label_Rz" class="axis-val">0.0°</span>
-                    </div>
-                </div>
+                <div id="sliders_pos"></div>
+                <div id="sliders_rot"></div>
             </div>
             
-            <div class="reset-btn-container dimmable" style="display: flex; gap: 8px; margin-top: 4px;">
+            <div class="reset-btn-container dimmable" style="display: flex; gap: 8px;">
                 <button class="btn btn-nudge btn-reset" onclick="resetToT()" style="flex: 1;" data-i18n="btn_reset_all">全部歸零 (對齊時間 $t$)</button>
                 <button class="btn btn-nudge btn-reset" onclick="resetRotationOnly()" style="flex: 1;" data-i18n="btn_reset_rot">僅角度歸零</button>
             </div>
@@ -455,100 +214,56 @@
 
     <div class="viewport-3d-container">
         <div class="viewport-card">
-            <h4>
-                <span data-i18n="view_t">時間 $t$ 真實 3D 空間</span>
-                <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
-                    <input type="checkbox" id="lock_3d_t" onchange="toggleLock3D_t()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    <span data-i18n="lock_cam">🔒 防誤觸</span>
-                </label>
+            <h4><span data-i18n="view_t">時間 $t$ 3D 空間</span>
+                <label style="font-size: 9pt; font-weight: normal; cursor: pointer;"><input type="checkbox" id="lock_3d_t" onchange="toggleLock3D('t')" style="accent-color: var(--danger-color);"><span data-i18n="lock_cam"> 🔒 防誤觸</span></label>
             </h4>
             <div id="3d_container_t" class="canvas-3d"></div>
         </div>
         <div class="viewport-card">
-            <h4>
-                <span data-i18n="view_t1">時間 $t+\Delta t$ 真實 3D 空間</span>
-                <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
-                    <input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D_t1()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    <span data-i18n="lock_cam">🔒 防誤觸</span>
-                </label>
+            <h4><span data-i18n="view_t1">時間 $t+\Delta t$ 3D 空間</span>
+                <label style="font-size: 9pt; font-weight: normal; cursor: pointer;"><input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D('t1')" style="accent-color: var(--danger-color);"><span data-i18n="lock_cam"> 🔒 防誤觸</span></label>
             </h4>
             <div id="3d_container_t1" class="canvas-3d"></div>
         </div>
     </div>
 
     <div class="workspace-grid">
-        <div class="block-card">
-            <h4 data-i18n="proj_lt">$t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4 data-i18n="proj_rt">$t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4 data-i18n="proj_lt1">$t+\Delta t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
-        </div>
-        <div class="block-card">
-            <h4 data-i18n="proj_rt1">$t+\Delta t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
-        </div>
+        <div class="block-card"><h4 data-i18n="proj_lt">$t$ (左眼)</h4><div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div></div>
+        <div class="block-card"><h4 data-i18n="proj_rt">$t$ (右眼)</h4><div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div></div>
+        <div class="block-card"><h4 data-i18n="proj_lt1">$t+\Delta t$ (左眼)</h4><div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div></div>
+        <div class="block-card"><h4 data-i18n="proj_rt1">$t+\Delta t$ (右眼)</h4><div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div></div>
     </div>
 
-    <div class="panel" id="special_cases_panel">
-        <h3 style="margin-bottom: 15px;" data-i18n="fail_title">特殊情境實驗</h3>
+    <div class="panel">
+        <h3 data-i18n="fail_title">特殊情境實驗</h3>
         <div class="failure-buttons">
-            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題</button>
-            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效</button>
-            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野</button>
+            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題</button>
+            <button class="btn btn-nudge" style="background: #ef4444; flex: 1;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效</button>
+            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野</button>
         </div>
     </div>
 
     <div class="results-section">
-        <div class="panel" style="margin-bottom: 0;">
+        <div class="panel">
             <h3 data-i18n="res_title">速度場驗證：真實 vs. 估算</h3>
             <div class="table-wrapper">
                 <table class="compare-table">
-                    <tr>
-                        <th data-i18n="res_th_dim">維度</th>
-                        <th data-i18n="res_th_gt">真實運動 $\Delta$</th>
-                        <th data-i18n="res_th_est">方程解算 $\mathbf{V}$</th>
-                        <th data-i18n="res_th_err">相對誤差</th>
-                    </tr>
-                    <tr>
-                        <td data-i18n="res_u">$U$ (橫向)</td>
-                        <td class="val-gt" id="gt_U">0.0000 m</td>
-                        <td class="val-est" id="est_U">0.0000 m</td>
-                        <td class="val-rel" id="rel_U">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td data-i18n="res_v">$V$ (垂直)</td>
-                        <td class="val-gt" id="gt_V">0.0000 m</td>
-                        <td class="val-est" id="est_V">0.0000 m</td>
-                        <td class="val-rel" id="rel_V">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td data-i18n="res_w">$W$ (深度)</td>
-                        <td class="val-gt" id="gt_W">0.0000 m</td>
-                        <td class="val-est" id="est_W">0.0000 m</td>
-                        <td class="val-rel" id="rel_W">0.0%</td>
-                    </tr>
-                    <tr class="row-summary">
-                        <td colspan="3" style="text-align: right; font-weight: bold;" data-i18n="res_total">總向量誤差百分比：</td>
-                        <td id="err_pct_total" style="font-weight: bold; font-size: 12pt; font-variant-numeric: tabular-nums;">0.0%</td>
-                    </tr>
+                    <tr><th data-i18n="res_th_dim">維度</th><th data-i18n="res_th_gt">真實運動 $\Delta$</th><th data-i18n="res_th_est">方程解算 $\mathbf{V}$</th><th data-i18n="res_th_err">相對誤差</th></tr>
+                    <tr><td data-i18n="res_u">$U$ (橫向)</td><td class="val-gt" id="gt_U">0 m</td><td class="val-est" id="est_U">0 m</td><td class="val-rel" id="rel_U">0%</td></tr>
+                    <tr><td data-i18n="res_v">$V$ (垂直)</td><td class="val-gt" id="gt_V">0 m</td><td class="val-est" id="est_V">0 m</td><td class="val-rel" id="rel_V">0%</td></tr>
+                    <tr><td data-i18n="res_w">$W$ (深度)</td><td class="val-gt" id="gt_W">0 m</td><td class="val-est" id="est_W">0 m</td><td class="val-rel" id="rel_W">0%</td></tr>
+                    <tr class="row-summary"><td colspan="3" align="right" data-i18n="res_total">總向量誤差：</td><td id="err_pct_total">0%</td></tr>
                 </table>
             </div>
-            <div id="error_explanation" style="margin-top: 15px; padding: 12px; font-size: 10pt; color: var(--danger-color); background: #fef2f2; border-radius: 8px; border: 1px solid #fca5a5; display: none; line-height: 1.6;"></div>
+            <div id="error_explanation" style="margin-top: 15px; padding: 12px; color: var(--danger-color); background: #fef2f2; border-radius: 8px; border: 1px solid #fca5a5; display: none;"></div>
         </div>
-
-        <div class="panel" style="margin-bottom: 0;">
+        <div class="panel">
             <h3 data-i18n="res_geom">投影相機幾何資訊</h3>
             <ul class="metric-list">
-                <li><span data-i18n="res_coord">中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord" style="font-weight:bold; font-family:monospace;">0, 0</span></li>
-                <li><span data-i18n="res_disp">立體視差 $d$:</span><span id="stat_disp" style="font-weight:bold; font-family:monospace;">0.00 px</span></li>
-                <li><span data-i18n="res_dist">目標距離 $Z$:</span><span id="stat_depth" style="font-weight:bold; font-family:monospace;">0.000 m</span></li>
-                <li><span data-i18n="res_px">空間解析度關係:</span><span style="color:var(--accent-color); font-weight:bold; font-family:monospace;">1 px = <span id="stat_px_to_m">0.00500</span> m</span></li>
+                <li><span data-i18n="res_coord">中心點投影座標 $(x_L, y_L)$:</span><span id="stat_coord">0, 0</span></li>
+                <li><span data-i18n="res_disp">立體視差 $d$:</span><span id="stat_disp">0 px</span></li>
+                <li><span data-i18n="res_dist">目標距離 $Z$:</span><span id="stat_depth">0 m</span></li>
+                <li><span data-i18n="res_px">空間解析度關係:</span><span style="color:var(--accent-color);">1 px = <span id="stat_px_to_m">0.005</span> m</span></li>
             </ul>
         </div>
     </div>
@@ -556,1256 +271,477 @@
 
 <script>
     // ==========================================
-    // 0. 國際化多語言設定與 MathJax 控制列隊
+    // UI 元件生成 (DOM Generator)
+    // ==========================================
+    const axesData = [
+        { id: 'X', label: 'X 位移', min: -2.0, max: 2.0, step: 0.0001, unit: 'm', type: 'pos', def: '0.0000' },
+        { id: 'Y', label: 'Y 位移', min: -2.0, max: 2.0, step: 0.0001, unit: 'm', type: 'pos', def: '0.0000' },
+        { id: 'Z', label: 'Z 位移', min: -2.0, max: 2.0, step: 0.0001, unit: 'm', type: 'pos', def: '0.0000' },
+        { id: 'Rx', label: 'X 旋轉', min: -180, max: 180, step: 0.1, unit: '°', type: 'rot', def: '0.0' },
+        { id: 'Ry', label: 'Y 旋轉', min: -180, max: 180, step: 0.1, unit: '°', type: 'rot', def: '0.0' },
+        { id: 'Rz', label: 'Z 旋轉', min: -180, max: 180, step: 0.1, unit: '°', type: 'rot', def: '0.0' }
+    ];
+    axesData.forEach(ax => {
+        const html = `
+        <div class="axis-control">
+            <span class="axis-label">${ax.label}:</span>
+            <button class="btn btn-nudge-small minus" onclick="nudgeAxis('${ax.id}', -${ax.step})">-${ax.step}</button>
+            <input type="range" id="slider_${ax.id}" min="${ax.min}" max="${ax.max}" step="${ax.step}" value="0">
+            <button class="btn btn-nudge-small plus" onclick="nudgeAxis('${ax.id}', ${ax.step})">+${ax.step}</button>
+            <span id="label_${ax.id}" class="axis-val">${ax.def} ${ax.unit}</span>
+        </div>`;
+        document.getElementById(ax.type === 'pos' ? 'sliders_pos' : 'sliders_rot').insertAdjacentHTML('beforeend', html);
+    });
+
+    // ==========================================
+    // 0. I18N 與基礎配置
     // ==========================================
     let I18N = {}; 
     let currentLang = localStorage.getItem('i18n_lang') || 'zh';
     
-    let mathJaxQueue = Promise.resolve();
+    // UI Caching 取代頻繁的 document.getElementById
+    const UI = {}; 
+    ['obj_shape', 'obj_geometry_type', 'param_tex_mode', 'param_obj_size', 'param_f', 'param_B', 'param_win', 'param_pyr', 'param_err_thresh', 'sel_transform_space'].forEach(id => UI[id] = document.getElementById(id));
 
     async function initLanguageMenu() {
         try {
-            // 1. 抓取語言清單
             const response = await fetch('./langs.json');
-            if (!response.ok) throw new Error('找不到 langs.json');
+            if (!response.ok) throw new Error();
             const langs = await response.json();
-    
-            // 2. 取得 DOM 容器
             const mobileSelect = document.getElementById('mobile_lang_select');
             const desktopMenu = document.getElementById('desktop_lang_menu');
             
-            // 3. 清空現有內容 (以防萬一)
-            mobileSelect.innerHTML = '';
-            desktopMenu.innerHTML = '';
-    
-            // 4. 動態生成選項
             langs.forEach(lang => {
-                // 生成手機版 <option>
-                const opt = document.createElement('option');
-                opt.value = lang.code;
-                opt.textContent = lang.name;
-                mobileSelect.appendChild(opt);
-    
-                // 生成桌面版 <div class="lang-option">
-                const div = document.createElement('div');
-                div.className = 'lang-option';
-                div.setAttribute('data-lang', lang.code);
-                div.textContent = lang.name;
-                div.onclick = () => setLanguage(lang.code);
-                desktopMenu.appendChild(div);
+                mobileSelect.insertAdjacentHTML('beforeend', `<option value="${lang.code}">${lang.name}</option>`);
+                desktopMenu.insertAdjacentHTML('beforeend', `<div class="lang-option" data-lang="${lang.code}" onclick="setLanguage('${lang.code}')">${lang.name}</div>`);
             });
-    
-            // 5. 確保如果 localStorage 的語言不在清單中，退回預設的第一個語言
-            const availableCodes = langs.map(l => l.code);
-            if (!availableCodes.includes(currentLang)) {
-                currentLang = availableCodes[0];
-            }
-    
-            // 6. 套用語言
-            await setLanguage(currentLang);
-    
-        } catch (error) {
-            console.error('無法初始化語言選單:', error);
-            // 發生錯誤的 fallback：強制載入中文
-            await setLanguage('zh'); 
-        }
-    }
-
-    // 點擊空白處關閉桌面版選單
-    window.addEventListener('click', (e) => {
-        const wrapper = document.querySelector('.lang-fab-wrapper');
-        const menu = document.getElementById('desktop_lang_menu');
-        if(wrapper && menu && !wrapper.contains(e.target)) {
-            menu.classList.remove('show');
-        }
-    });
-
-    // 桌面版切換顯示自訂選單
-    function toggleDesktopLangMenu() {
-        if (window.innerWidth > 1024) {
-            document.getElementById('desktop_lang_menu').classList.toggle('show');
-        }
+            await setLanguage(langs.map(l=>l.code).includes(currentLang) ? currentLang : langs[0].code);
+        } catch (e) { await setLanguage('zh'); }
     }
 
     async function setLanguage(lang) {
+        currentLang = lang; localStorage.setItem('i18n_lang', lang);
+        document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
+        document.querySelectorAll('.lang-option').forEach(el => el.classList.toggle('active', el.dataset.lang === lang));
+        
         try {
             if (!I18N[lang]) {
-                const response = await fetch(`./${lang}.json`);
-                if (!response.ok) throw new Error(`無法讀取語言檔: ${lang}.json`);
-                I18N[lang] = await response.json();
+                const res = await fetch(`./${lang}.json`);
+                if(res.ok) I18N[lang] = await res.json();
             }
-
-            currentLang = lang;
-            localStorage.setItem('i18n_lang', lang);
-            document.documentElement.lang = lang === 'zh' ? 'zh-TW' : 'en';
-
-            // 更新手機版原生 select 的值
-            const mobileSelect = document.getElementById('mobile_lang_select');
-            if(mobileSelect) mobileSelect.value = lang;
-
-            // 更新桌面版自訂選單的 active 狀態並關閉選單
-            document.querySelectorAll('.lang-option').forEach(el => {
-                if(el.getAttribute('data-lang') === lang) el.classList.add('active');
-                else el.classList.remove('active');
-            });
-            const desktopMenu = document.getElementById('desktop_lang_menu');
-            if(desktopMenu) desktopMenu.classList.remove('show');
-
-            const dict = I18N[lang];
-            
+            const dict = I18N[lang] || {};
             document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (dict[key]) {
-                    el.innerHTML = dict[key];
-                }
+                const k = el.getAttribute('data-i18n'); if (dict[k]) el.innerHTML = dict[k];
             });
-
-            const pyrSelect = document.getElementById('param_pyr');
-            if(pyrSelect) {
-                Array.from(pyrSelect.options).forEach(opt => {
-                    const val = opt.value;
-                    opt.text = lang === 'zh' ? `${val}層` : `${val} Level${val > 1 ? 's' : ''}`;
-                });
-            }
-
-            triggerMathJax();
-
-            if (window.lastResultsCache) {
-                updateResultsUI(
-                    window.lastResultsCache.px, window.lastResultsCache.py, window.lastResultsCache.d_disp,
-                    window.lastResultsCache.gt_U, window.lastResultsCache.gt_V, window.lastResultsCache.gt_W,
-                    window.lastResultsCache.U_est, window.lastResultsCache.V_est, window.lastResultsCache.W_est,
-                    window.lastResultsCache.err_pct, window.lastResultsCache.failureMode
-                );
-            }
-        } catch (error) {
-            console.error('語言包切換失敗:', error);
-        }
+            if(window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise();
+        } catch (e) { console.error('I18N Error', e); }
     }
 
-    function triggerMathJax() {
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            mathJaxQueue = mathJaxQueue.then(() => {
-                window.MathJax.typesetClear();
-                return window.MathJax.typesetPromise();
-            }).catch(err => console.error('MathJax 渲染失敗:', err));
-        } else {
-            setTimeout(triggerMathJax, 100);
-        }
-    }
-
+    window.toggleDesktopLangMenu = () => document.getElementById('desktop_lang_menu').classList.toggle('show');
+    window.addEventListener('click', (e) => { if(!e.target.closest('.lang-fab-wrapper')) document.getElementById('desktop_lang_menu').classList.remove('show'); });
 
     // ==========================================
-    // 1. 系統常數與基礎設定 (System Constants)
+    // 1. 系統常數與全域狀態 (System Constants & Cache)
     // ==========================================
-    const SYS_CONST = {
-        IMG_W: 240,
-        IMG_H: 200,
-        CX: 120, 
-        CY: 100, 
-        DEFAULT_Z: -4.0,
-        MIN_Z: -0.2,
-        TEX_SCALE: 250,
-        RAY_STEPS: 64,
-        CLOSE_THRESH_MULT: 2.5,
-        COLORS: {
-            CAM_L: 0x3b82f6,
-            CAM_R: 0x10b981,
-            BG: 0x1a1a1a,
-            AXIS_WORLD_X: 0x00d8ff,
-            AXIS_WORLD_Y: 0xff00d8,
-            AXIS_WORLD_Z: 0xff9900,
-            AXIS_LOCAL_X: 0xff0000,
-            AXIS_LOCAL_Y: 0x00ff00,
-            AXIS_LOCAL_Z: 0x0000ff
-        },
-        ENABLE_LOGS: false
-    };
-
-    if (!SYS_CONST.ENABLE_LOGS) {
-        console.debug = function() {};
-        console.info = function() {};
-        console.warn = function() {};
-    }
-
-    const { IMG_W, IMG_H, CX, CY, DEFAULT_Z, TEX_SCALE, RAY_STEPS, CLOSE_THRESH_MULT, COLORS } = SYS_CONST;
-    const CANVAS_IDS = ['Lt', 'Rt', 'Lt1', 'Rt1'];
-
-    // ==========================================
-    // 2. 全域狀態變數 (Global State Variables)
-    // ==========================================
-    let lastLoadedFailure = null;
-    let lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
-    let currentRayF = -1;
-    let rayDirCache = new Float32Array(IMG_W * IMG_H * 3);
-    let transformMaterials = null; 
-    window.lastResultsCache = null;
-
-    const contexts = {};
-    const imgBuffers = {};
-    const imgDataCaches = {}; 
-    const projData = {
-        Lt: {x: CX, y: CY, scale: 1}, Rt: {x: CX, y: CY, scale: 1},
-        Lt1: {x: CX, y: CY, scale: 1}, Rt1: {x: CX, y: CY, scale: 1}
-    };
-
+    const SYS = { IMG_W: 240, IMG_H: 200, CX: 120, CY: 100, DEF_Z: -4.0, MIN_Z: -0.2, TEX_SCALE: 250, RAY_STEPS: 64, COLORS: { BG: 0x1a1a1a } };
+    const C_IDS = ['Lt', 'Rt', 'Lt1', 'Rt1'];
+    
     let scene1, camera1, renderer1, controls1, transform1, object1;
     let scene2, camera2, renderer2, controls2, transform2, object2;
+    let basePos2 = new THREE.Vector3(0, 0, SYS.DEF_Z), baseQuat2 = new THREE.Quaternion();
     
-    let basePos2 = new THREE.Vector3(0, 0, DEFAULT_Z);
-    let baseQuat2 = new THREE.Quaternion();
-
-    const rayTarget = new THREE.Vector3();
-    const invQuaternion = new THREE.Quaternion();
-
-    window.sliderAxisHelper = null;
-    window.sliderAxisLines = {};
-    window.axisHideTimeout = null;
-    window.isSliderDragging = false;
-    
-    window.showSliderAxis = function(axisId) {
-        if (!window.sliderAxisLines) return;
-        
-        // 將 "Rx", "y", "Z" 統一轉換為基礎軸 "X", "Y", "Z"
-        const baseAxis = axisId.replace(/r/i, '').toUpperCase(); 
-        Object.values(window.sliderAxisLines).forEach(line => line.visible = false);
-        
-        if (window.sliderAxisLines[baseAxis]) {
-            window.sliderAxisLines[baseAxis].visible = true;
-        }
-        if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
-        
-        // 如果沒有在拖曳，800毫秒後自動隱藏 (給微調按鈕的緩衝時間)
-        clearTimeout(window.axisHideTimeout);
-        window.axisHideTimeout = setTimeout(() => hideSliderAxis(), 800);
-    }
-    
-    window.hideSliderAxis = function() {
-        if (!window.sliderAxisLines || window.isSliderDragging) return;
-        Object.values(window.sliderAxisLines).forEach(line => line.visible = false);
-    }
-    
-    window.updateSliderAxisHelper = function() {
-        if (!window.sliderAxisHelper || !object2) return;
-        const space = document.getElementById('sel_transform_space').value;
-        const isWorld = (space === 'world');
-    
-        // 讓輔助線中心點對齊物體
-        window.sliderAxisHelper.position.copy(object2.position);
-    
-        // 依照全域或區域座標旋轉輔助線
-        if (!isWorld) {
-            window.sliderAxisHelper.quaternion.copy(object2.quaternion);
-        } else {
-            window.sliderAxisHelper.quaternion.identity();
-        }
-    }
+    // 預分配緩衝區(Pre-allocation) 避免 GC 卡頓
+    const ctxs = {}, imgBufs = {}, imgData = {}; 
+    const PYR_BUFS = { Lt: [], Rt: [], Lt1: [], Rt1: [] };
+    const rayDirCache = new Float32Array(SYS.IMG_W * SYS.IMG_H * 3);
+    let currentRayF = -1;
 
     // ==========================================
-    // 3. 工具與輔助函式 (Utility Functions)
-    // ==========================================
-    function formatNum(val, decimals = 4) {
-        let s = val.toFixed(decimals);
-        return parseFloat(s) === 0 ? (0).toFixed(decimals) : s;
-    }
-
-    function formatDeg(val) {
-        let s = val.toFixed(1);
-        return parseFloat(s) === 0 ? "0.0°" : s + "°";
-    }
-
-    function invertMatrix3x3(m) {
-        const det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-        if (Math.abs(det) < 1e-12) return null;
-        return [
-            [(m[1][1] * m[2][2] - m[2][1] * m[1][2]) / det, (m[0][2] * m[2][1] - m[0][1] * m[2][2]) / det, (m[0][1] * m[1][2] - m[0][2] * m[1][1]) / det],
-            [(m[1][2] * m[2][0] - m[1][0] * m[2][2]) / det, (m[0][0] * m[2][2] - m[0][2] * m[2][0]) / det, (m[1][0] * m[0][2] - m[0][0] * m[1][2]) / det],
-            [(m[1][0] * m[2][1] - m[2][0] * m[1][1]) / det, (m[2][0] * m[0][1] - m[0][0] * m[2][1]) / det, (m[0][0] * m[1][1] - m[1][0] * m[0][1]) / det]
-        ];
-    }
-
-    function downsample(buf, w, h) {
-        const nw = Math.floor(w/2), nh = Math.floor(h/2);
-        const nbuf = new Float32Array(nw * nh);
-        for(let y = 0; y < nh; y++) {
-            for(let x = 0; x < nw; x++) {
-                const i00 = (y*2)*w + (x*2);
-                nbuf[y*nw + x] = (buf[i00] + buf[i00+1] + buf[i00+w] + buf[i00+w+1]) * 0.25;
-            }
-        }
-        return { buf: nbuf, w: nw, h: nh };
-    }
-
-    function getPLevel(pyrObj, x, y) {
-        const {buf, w, h} = pyrObj;
-        if (x < 0 || x >= w - 1 || y < 0 || y >= h - 1) return 0;
-        const x0 = Math.floor(x), y0 = Math.floor(y);
-        const dx = x - x0, dy = y - y0;
-        return buf[y0 * w + x0] * (1 - dx) * (1 - dy) + buf[y0 * w + x0 + 1] * dx * (1 - dy) + buf[(y0 + 1) * w + x0] * (1 - dx) * dy + buf[(y0 + 1) * w + x0 + 1] * dx * dy;
-    }
-
-    function calcRelativeError(gt, est) {
-        const err = Math.abs(gt - est);
-        if (Math.abs(gt) < 1e-4) return err < 1e-4 ? "0.0%" : "N/A";
-        const pct = (err / Math.abs(gt)) * 100;
-        return pct > 999.9 ? ">999%" : pct.toFixed(1) + "%";
-    }
-
-    // ==========================================
-    // 4. UI 互動與事件綁定 (UI Interactions)
-    // ==========================================
-    window.switchTab = function(tabId) {
-        document.getElementById('tab_params').style.display = tabId === 'params' ? 'block' : 'none';
-        document.getElementById('tab_finetune').style.display = tabId === 'finetune' ? 'block' : 'none';
-        document.getElementById('btn_tab_params').classList.toggle('active', tabId === 'params');
-        document.getElementById('btn_tab_finetune').classList.toggle('active', tabId === 'finetune');
-    };
-
-    window.toggleDrawer = function() {
-        document.body.classList.toggle('drawer-open');
-    }
-
-    function initSliderFocus() {
-        document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
-            const wrap = slider.closest('.axis-control');
-            const axisId = slider.id.replace('slider_', ''); 
-
-            const activate = () => {
-                window.isSliderDragging = true;
-                if(window.innerWidth <= 768) {
-                    document.body.classList.add('slider-focus-mode');
-                    wrap.classList.add('active-slider');
-                }
-                showSliderAxis(axisId);
-            };
-            const deactivate = () => {
-                window.isSliderDragging = false;
-                document.body.classList.remove('slider-focus-mode');
-                wrap.classList.remove('active-slider');
-                clearTimeout(window.axisHideTimeout);
-                window.axisHideTimeout = setTimeout(() => hideSliderAxis(), 150);
-            };
-            
-            slider.addEventListener('touchstart', activate, {passive: true});
-            slider.addEventListener('touchend', deactivate);
-            slider.addEventListener('touchcancel', deactivate);
-            slider.addEventListener('mousedown', activate);
-            window.addEventListener('mouseup', deactivate);
-            
-            slider.addEventListener('input', () => showSliderAxis(axisId));
-        });
-    }
-
-    function resetSliders() {
-        ['X', 'Y', 'Z'].forEach(axis => {
-            const slider = document.getElementById('slider_' + axis);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + axis);
-            if(lbl) lbl.innerText = "0.0000 m";
-        });
-        ['Rx', 'Ry', 'Rz'].forEach(id => {
-            const slider = document.getElementById('slider_' + id);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + id);
-            if(lbl) lbl.innerText = "0.0°";
-        });
-        lastSliderVals = { X: 0, Y: 0, Z: 0, Rx: 0, Ry: 0, Rz: 0 };
-    }
-
-    // ==========================================
-    // 5. Three.js 3D 場景建構與控制 (3D Scene Setup)
+    // 2. 核心繪圖邏輯 (Graphics & Three.js)
     // ==========================================
     function setupScene(containerId) {
-        const container = document.getElementById(containerId);
-        const width = container.clientWidth || 400;
-        const height = container.clientHeight || 350;
-
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(COLORS.BG);
+        const c = document.getElementById(containerId);
+        const scene = new THREE.Scene(); scene.background = new THREE.Color(SYS.COLORS.BG);
+        const camera = new THREE.PerspectiveCamera(45, c.clientWidth / (c.clientHeight || 350), 0.1, 100);
+        camera.position.set(0, 1.5, 3); camera.lookAt(0, 0, SYS.DEF_Z);
         
-        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-        camera.position.set(0, 1.5, 3);
-        camera.lookAt(0, 0, DEFAULT_Z);
-
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-        renderer.setSize(width, height);
-        container.appendChild(renderer.domElement);
-
-        const gridHelper = new THREE.GridHelper(10, 20, 0x555555, 0x333333);
-        gridHelper.position.y = -1;
-        scene.add(gridHelper);
-
-        const camGeo = new THREE.ConeGeometry(0.12, 1, 16);
-        camGeo.translate(0, -0.5, 0); 
-        camGeo.rotateX(Math.PI / 2);  
+        renderer.setSize(c.clientWidth, c.clientHeight || 350); c.appendChild(renderer.domElement);
         
-        const camL = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: COLORS.CAM_L}));
-        camL.name = 'camL';
-        const camR = new THREE.Mesh(camGeo, new THREE.MeshBasicMaterial({color: COLORS.CAM_R}));
-        camR.name = 'camR';
-        scene.add(camL); scene.add(camR);
+        scene.add(new THREE.GridHelper(10, 20, 0x555555, 0x333333).translateY(-1));
+        const cGeo = new THREE.ConeGeometry(0.12, 1, 16).translate(0, -0.5, 0).rotateX(Math.PI / 2);
+        const camL = new THREE.Mesh(cGeo, new THREE.MeshBasicMaterial({color: 0x3b82f6})); camL.name = 'camL';
+        const camR = new THREE.Mesh(cGeo, new THREE.MeshBasicMaterial({color: 0x10b981})); camR.name = 'camR';
+        scene.add(camL, camR, new THREE.AmbientLight(0xffffff, 0.8));
 
-        const objGeo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-        const objMat = new THREE.MeshNormalMaterial();
-        const object = new THREE.Mesh(objGeo, objMat);
+        const object = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshNormalMaterial());
         scene.add(object);
-
+        
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.target.set(0, 0, DEFAULT_Z);
+        controls.enableDamping = true; controls.target.set(0, 0, SYS.DEF_Z);
         
         const transform = new THREE.TransformControls(camera, renderer.domElement);
-        transform.setSpace('local');
-        transform.addEventListener('dragging-changed', (e) => { controls.enabled = !e.value; });
-        scene.add(transform);
-        transform.attach(object);
-
-        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-
+        transform.addEventListener('dragging-changed', (e) => controls.enabled = !e.value);
+        scene.add(transform); transform.attach(object);
+        
         return { scene, camera, renderer, controls, transform, object };
     }
 
     function init3D() {
-        const s1 = setupScene('3d_container_t');
-        scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
+        const s1 = setupScene('3d_container_t'); scene1 = s1.scene; camera1 = s1.camera; renderer1 = s1.renderer; controls1 = s1.controls; transform1 = s1.transform; object1 = s1.object;
+        const s2 = setupScene('3d_container_t1'); scene2 = s2.scene; camera2 = s2.camera; renderer2 = s2.renderer; controls2 = s2.controls; transform2 = s2.transform; object2 = s2.object;
+
+        object1.position.z = object2.position.z = SYS.DEF_Z;
         
-        const s2 = setupScene('3d_container_t1');
-        scene2 = s2.scene; camera2 = s2.camera; renderer2 = s2.renderer; controls2 = s2.controls; transform2 = s2.transform; object2 = s2.object;
-
-        object1.position.set(0, 0, DEFAULT_Z);
-        object2.position.set(0, 0, DEFAULT_Z);
-        basePos2.set(0, 0, DEFAULT_Z);
-        baseQuat2.identity(); 
-
-        const curSpace = document.getElementById('sel_transform_space').value;
-        window.setTransformSpace(curSpace);
-
-        transform1.addEventListener('change', () => {
-            if (transform1.dragging) {
-                lastLoadedFailure = null; 
-                if (transform1.getMode() === 'rotate') {
-                    object2.quaternion.copy(object1.quaternion);
-                    baseQuat2.copy(object1.quaternion);
-                }
-                resetSliders();
+        const onTransform = (t, obj, isObj2) => {
+            if (t.dragging) {
+                if (t.getMode() === 'rotate') { (isObj2 ? object1 : object2).quaternion.copy(obj.quaternion); }
+                if (isObj2) { basePos2.copy(obj.position); baseQuat2.copy(obj.quaternion); }
+                axesData.forEach(ax => document.getElementById(`slider_${ax.id}`).value = 0);
             }
             updateSystem();
-        });
-
-        transform2.addEventListener('change', () => {
-            if (transform2.dragging) {
-                lastLoadedFailure = null; 
-                if (transform2.getMode() === 'rotate') {
-                    object1.quaternion.copy(object2.quaternion);
-                }
-                basePos2.copy(object2.position);
-                baseQuat2.copy(object2.quaternion);
-                
-                resetSliders();
-            }
-            updateSystem();
-        });
-
+        };
+        transform1.addEventListener('change', () => onTransform(transform1, object1, false));
+        transform2.addEventListener('change', () => onTransform(transform2, object2, true));
+        
         window.sliderAxisHelper = new THREE.Group();
-        ['X', 'Y', 'Z'].forEach(axis => {
-            // depthTest: false 可以讓線條像 TransformControls 一樣穿透物體顯示
-            const mat = new THREE.LineBasicMaterial({ depthTest: false, transparent: true, opacity: 0.6 });
-            const geom = new THREE.BufferGeometry();
-            const pts = [new THREE.Vector3(), new THREE.Vector3()];
-            if(axis === 'X') { pts[0].x = -100; pts[1].x = 100; }
-            if(axis === 'Y') { pts[0].y = -100; pts[1].y = 100; }
-            if(axis === 'Z') { pts[0].z = -100; pts[1].z = 100; }
-            geom.setFromPoints(pts);
-            
-            const line = new THREE.Line(geom, mat);
-            line.renderOrder = 999;
-            line.visible = false;
-            window.sliderAxisLines[axis] = line;
-            window.sliderAxisHelper.add(line);
+        ['X', 'Y', 'Z'].forEach(ax => {
+            const geom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax==='X'?-100:0, ax==='Y'?-100:0, ax==='Z'?-100:0), new THREE.Vector3(ax==='X'?100:0, ax==='Y'?100:0, ax==='Z'?100:0)]);
+            const line = new THREE.Line(geom, new THREE.LineBasicMaterial({ depthTest: false, transparent: true, opacity: 0.6 }));
+            line.renderOrder = 999; line.visible = false; line.name = ax; window.sliderAxisHelper.add(line);
         });
         scene2.add(window.sliderAxisHelper);
-
-        toggleLock3D_t();
-        toggleLock3D_t1();
         animate3D();
     }
 
+    // 將重複呼叫的 Camera 物件快取起來
+    let camCaches = null;
     function animate3D() {
         requestAnimationFrame(animate3D);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const f = parseFloat(document.getElementById('param_f').value);
-        const coneScaleZ = f / 1000;
-
-        if(scene1 && scene2) {
-            ['camL', 'camR'].forEach((name, i) => {
-                const offsetX = (i === 0 ? -B/2 : B/2);
-                const c1 = scene1.getObjectByName(name);
-                if (c1) { c1.position.set(offsetX, 0, 0); c1.scale.set(1, 1, coneScaleZ); }
-                const c2 = scene2.getObjectByName(name);
-                if (c2) { c2.position.set(offsetX, 0, 0); c2.scale.set(1, 1, coneScaleZ); }
-            });
+        if(!camCaches && scene1) camCaches = [scene1.getObjectByName('camL'), scene1.getObjectByName('camR'), scene2.getObjectByName('camL'), scene2.getObjectByName('camR')];
+        if (camCaches && camCaches[0]) {
+            const B = parseFloat(UI.param_B.value), fScale = parseFloat(UI.param_f.value) / 1000;
+            camCaches[0].position.x = camCaches[2].position.x = -B/2;
+            camCaches[1].position.x = camCaches[3].position.x = B/2;
+            camCaches.forEach(c => c.scale.setZ(fScale));
         }
-        if(controls1 && controls2) {
-            controls1.update(); controls2.update();
-            renderer1.render(scene1, camera1);
-            renderer2.render(scene2, camera2);
-        }
+        if(controls1) { controls1.update(); renderer1.render(scene1, camera1); controls2.update(); renderer2.render(scene2, camera2); }
     }
 
-    window.toggleLock3D_t = function() {
-        const isLocked = document.getElementById('lock_3d_t').checked;
-        if(controls1 && transform1) {
-            controls1.enabled = !isLocked;
-            transform1.enabled = !isLocked; transform1.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t').classList.toggle('locked', isLocked);
-    };
-
-    window.toggleLock3D_t1 = function() {
-        const isLocked = document.getElementById('lock_3d_t1').checked;
-        if(controls2 && transform2) {
-            controls2.enabled = !isLocked;
-            transform2.enabled = !isLocked; transform2.visible = !isLocked;
-        }
-        document.getElementById('3d_container_t1').classList.toggle('locked', isLocked);
-    };
-
-    window.setTransformMode = function(mode) {
-        if (!transform2 || !transform1) return;
-        transform2.setMode(mode); 
-        transform1.setMode(mode);
-        const isTranslate = mode === 'translate';
-        document.getElementById('btn_mode_translate').style.background = isTranslate ? 'var(--primary-color)' : '#94a3b8';
-        document.getElementById('btn_mode_rotate').style.background = isTranslate ? '#94a3b8' : 'var(--primary-color)';
-    };
-
-    window.setTransformSpace = function(space) {
-        if (transform1) transform1.setSpace(space);
-        if (transform2) transform2.setSpace(space);
-
-        if (!transformMaterials && transform1 && transform2) {
-            transformMaterials = { X: [], Y: [], Z: [] };
-            const matSet = new Set();
-            const extract = (transform) => {
-                transform.traverse((child) => {
-                    if (child.material && child.material.color && !matSet.has(child.material)) {
-                        matSet.add(child.material);
-                        const hex = child.material.color.getHex();
-                        if (hex === 0xff0000) transformMaterials.X.push(child.material);
-                        if (hex === 0x00ff00) transformMaterials.Y.push(child.material);
-                        if (hex === 0x0000ff) transformMaterials.Z.push(child.material);
-                    }
-                });
-            };
-            extract(transform1);
-            extract(transform2);
-        }
-
-        if (transformMaterials) {
-            const isWorld = space === 'world';
-            transformMaterials.X.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_X : COLORS.AXIS_LOCAL_X)); 
-            transformMaterials.Y.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_Y : COLORS.AXIS_LOCAL_Y)); 
-            transformMaterials.Z.forEach(mat => mat.color.setHex(isWorld ? COLORS.AXIS_WORLD_Z : COLORS.AXIS_LOCAL_Z)); 
-        }
-    };
-
-    window.updateObjectGeometry = function(dryRun = false) {
-        if (!object1 || !object2) return;
-        const type = document.getElementById('obj_geometry_type').value;
-        const size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        
-        if(object1.geometry) object1.geometry.dispose();
-        if(object2.geometry) object2.geometry.dispose();
-        
-        let newGeo;
-        if (type === 'box') newGeo = new THREE.BoxGeometry(size * 2, size * 2, size * 2);
-        else if (type === 'cylinder') newGeo = new THREE.CylinderGeometry(size, size, size * 2, 32);
-        else if (type === 'torus') newGeo = new THREE.TorusGeometry(size * 0.7, size * 0.3, 16, 64);
-        else if (type === 'cone') newGeo = new THREE.ConeGeometry(size, size * 2, 32);
-        else if (type === 'octahedron') newGeo = new THREE.OctahedronGeometry(size);
-        else newGeo = new THREE.SphereGeometry(size, 32, 32);
-        
-        object1.geometry = newGeo;
-        object2.geometry = newGeo.clone();
-        
-        if (dryRun !== true) updateSystem();
-    };
-
     // ==========================================
-    // 6. 光學投影與物理計算 (Projection & Math)
+    // 3. 2D 投影引擎最佳化 (CPU Raytracer)
     // ==========================================
     function getRayCache(f) {
         if (currentRayF === f) return rayDirCache;
-        currentRayF = f;
-        let idx = 0;
-        for (let y = 0; y < IMG_H; y++) {
-            for (let x = 0; x < IMG_W; x++) {
-                const rdx = x - CX, rdy = -(y - CY), rdz = -f;
-                const rlen = Math.sqrt(rdx*rdx + rdy*rdy + rdz*rdz);
-                rayDirCache[idx++] = rdx / rlen;
-                rayDirCache[idx++] = rdy / rlen;
-                rayDirCache[idx++] = rdz / rlen;
+        currentRayF = f; let i = 0;
+        for (let y = 0; y < SYS.IMG_H; y++) {
+            for (let x = 0; x < SYS.IMG_W; x++) {
+                const dx = x - SYS.CX, dy = -(y - SYS.CY), dz = -f;
+                const len = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                rayDirCache[i++] = dx/len; rayDirCache[i++] = dy/len; rayDirCache[i++] = dz/len;
             }
         }
         return rayDirCache;
     }
 
-    function updateProjData(p1, p2, f, B) {
-        const Z1 = -p1.z; const Z2 = -p2.z;
-        projData.Lt.x = CX + f * (p1.x - (-B/2)) / Z1; projData.Lt.y = CY - f * p1.y / Z1;
-        projData.Rt.x = CX + f * (p1.x - (B/2)) / Z1;  projData.Rt.y = CY - f * p1.y / Z1;
-        projData.Lt1.x = CX + f * (p2.x - (-B/2)) / Z2; projData.Lt1.y = CY - f * p2.y / Z2;
-        projData.Rt1.x = CX + f * (p2.x - (B/2)) / Z2;  projData.Rt1.y = CY - f * p2.y / Z2;
-        projData.Lt.scale = projData.Rt.scale = 2.0 / Z1;
-        projData.Lt1.scale = projData.Rt1.scale = 2.0 / Z2;
-    }
+    const invQ = new THREE.Quaternion();
+    const rtVec = new THREE.Vector3();
 
     function renderAll2DScenes() {
-        const shape = document.getElementById('obj_shape').value;
-        const geomType = document.getElementById('obj_geometry_type').value;
-        const texMode = document.getElementById('param_tex_mode').value;
-        const R = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        const f = parseFloat(document.getElementById('param_f').value);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const rayDirs = getRayCache(f);
+        const shape = UI.obj_shape.value, gType = UI.obj_geometry_type.value, texMode = UI.param_tex_mode.value;
+        const R = parseFloat(UI.param_obj_size.value), f = parseFloat(UI.param_f.value), B = parseFloat(UI.param_B.value);
+        const rays = getRayCache(f);
+        
+        // Hoist constant math outside loops
+        const R_sq = R * R;
+        const thresMult = R * SYS.CLOSE_THRESH_MULT;
+        const closeThresholdSq = thresMult * thresMult;
 
-        CANVAS_IDS.forEach(key => {
-            const ctx = contexts[key];
-            const buffer = imgBuffers[key];
-            let camX = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
-            let obj = (key === 'Lt' || key === 'Rt') ? object1 : object2;
-            const Ox = camX, Oy = 0, Oz = 0;
+        C_IDS.forEach(key => {
+            const ctx = ctxs[key], buf = imgBufs[key], imgD = imgData[key], data = imgD.data;
+            const Ox = (key === 'Lt' || key === 'Lt1') ? -B/2 : B/2;
+            const obj = (key === 'Lt' || key === 'Rt') ? object1 : object2;
             const Cx = obj.position.x, Cy = obj.position.y, Cz = obj.position.z;
             
-            invQuaternion.copy(obj.quaternion).invert();
-            const vx = Cx - Ox, vy = Cy - Oy, vz = Cz - Oz;
+            invQ.copy(obj.quaternion).invert();
+            const vx = Cx - Ox, vy = Cy, vz = Cz; 
             const distToCenter = Math.sqrt(vx*vx + vy*vy + vz*vz);
-            const closeThreshold = (R * CLOSE_THRESH_MULT) * (R * CLOSE_THRESH_MULT);
 
-            for (let y = 0; y < IMG_H; y++) {
-                for (let x = 0; x < IMG_W; x++) {
-                    const idx = y * IMG_W + x;
-                    const rIdx = idx * 3;
-                    const Dx = rayDirs[rIdx], Dy = rayDirs[rIdx+1], Dz = rayDirs[rIdx+2];
-                    const proj = vx*Dx + vy*Dy + vz*Dz;
-                    const closX = vx - proj*Dx, closY = vy - proj*Dy, closZ = vz - proj*Dz;
-                    const closenessSq = closX*closX + closY*closY + closZ*closZ;
+            for (let i = 0, len = buf.length; i < len; i++) {
+                const rI = i * 3, Dx = rays[rI], Dy = rays[rI+1], Dz = rays[rI+2];
+                const proj = vx*Dx + vy*Dy + vz*Dz;
+                const closX = vx - proj*Dx, closY = vy - proj*Dy, closZ = vz - proj*Dz;
+                
+                let val = -1;
+                // 碰撞邊界測試
+                if (closX*closX + closY*closY + closZ*closZ <= closeThresholdSq && proj > 0) {
+                    let t = Math.max(0, distToCenter - thresMult);
+                    const maxT = distToCenter + thresMult;
                     
-                    let hit = false;
-                    let lx_raw = 0, ly_raw = 0, lz_raw = 0;
-                    let hitPx = 0, hitPy = 0; 
-                    
-                    if (closenessSq <= closeThreshold && proj > 0) {
-                        let t = distToCenter - R * CLOSE_THRESH_MULT; if (t < 0) t = 0;
-                        const maxT = distToCenter + R * CLOSE_THRESH_MULT;
+                    for (let step = 0; step < SYS.RAY_STEPS; step++) {
+                        const Px = Ox + t*Dx, Py = t*Dy, Pz = t*Dz;
+                        rtVec.set(Px - Cx, Py - Cy, Pz - Cz).applyQuaternion(invQ);
+                        const lx = rtVec.x, ly = rtVec.y, lz = rtVec.z;
                         
-                        for (let step = 0; step < RAY_STEPS; step++) {
-                            const Px = Ox + t * Dx, Py = Oy + t * Dy, Pz = Oz + t * Dz;
-                            lx_raw = Px - Cx; ly_raw = Py - Cy; lz_raw = Pz - Cz;
+                        let d = 0;
+                        if (gType === 'sphere') d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R;
+                        else if (gType === 'box') d = Math.max(Math.abs(lx)-R, Math.max(Math.abs(ly)-R, Math.abs(lz)-R));
+                        else if (gType === 'cylinder') d = Math.max(Math.sqrt(lx*lx + lz*lz)-R, Math.abs(ly)-R);
+                        else d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R; // fallback
+                        
+                        if (d < 0.0004) {
+                            let tx, ty;
+                            if (texMode === 'local') {
+                                if(gType==='sphere') { tx = Math.atan2(lx, lz)*R; ty = Math.asin(Math.max(-1, Math.min(1, ly/R)))*R; }
+                                else { tx = lx; ty = ly; }
+                                tx *= SYS.TEX_SCALE; ty *= SYS.TEX_SCALE;
+                            } else { tx = Px*SYS.TEX_SCALE; ty = Py*SYS.TEX_SCALE; }
                             
-                            rayTarget.set(lx_raw, ly_raw, lz_raw).applyQuaternion(invQuaternion);
-                            const lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            
-                            let d = 0;
-                            if (geomType === 'sphere') { d = Math.sqrt(lx*lx + ly*ly + lz*lz) - R; } 
-                            else if (geomType === 'box') { d = Math.max(Math.abs(lx) - R, Math.max(Math.abs(ly) - R, Math.abs(lz) - R)); } 
-                            else if (geomType === 'cylinder') { d = Math.max(Math.sqrt(lx*lx + lz*lz) - R, Math.abs(ly) - R); } 
-                            else if (geomType === 'torus') {
-                                const r_hz = Math.sqrt(lx*lx + ly*ly);
-                                d = Math.sqrt((r_hz - R*0.7)**2 + lz**2) - R*0.25;
-                            } 
-                            else if (geomType === 'cone') {
-                                let cone_r = Math.max(0, R * (1.0 - (ly + R) / (R * 2)));
-                                d = Math.max(Math.sqrt(lx*lx + lz*lz) - cone_r, Math.abs(ly) - R);
-                            } 
-                            else if (geomType === 'octahedron') { d = (Math.abs(lx) + Math.abs(ly) + Math.abs(lz)) - R; }
-                            
-                            if (d < 0.0004) { hit = true; hitPx = Px; hitPy = Py; break; }
-                            t += d; if (t > maxT) break;
+                            if (shape === 'checkerboard') val = (((tx/4)|0) + ((ty/4)|0)) % 2 === 0 ? 240 : 40;
+                            else if (shape === 'gabor') val = 128 + 100 * Math.sin(tx/4) * Math.cos(ty/4);
+                            else val = 40 + Math.abs((Math.sin(((tx/3)|0)*12.98 + ((ty/3)|0)*78.23)*43758.5) % 1)*200;
+                            break;
                         }
-                    }
-                    
-                    if (hit) {
-                        let texX, texY;
-                        if (texMode === 'local') {
-                            let lx = rayTarget.x, ly = rayTarget.y, lz = rayTarget.z;
-                            if (geomType === 'box') {
-                                let ax = Math.abs(lx), ay = Math.abs(ly), az = Math.abs(lz);
-                                if (ax >= ay && ax >= az) { texX = lz * Math.sign(lx); texY = ly; }
-                                else if (ay >= ax && ay >= az) { texX = lx; texY = lz * Math.sign(ly); }
-                                else { texX = lx * Math.sign(lz); texY = ly; }
-                            } else if (geomType === 'cylinder' || geomType === 'cone') { texX = Math.atan2(lx, lz) * R; texY = ly; } 
-                            else if (geomType === 'torus') {
-                                let theta = Math.atan2(lx, lz); let r_hz = Math.sqrt(lx*lx + lz*lz); let phi = Math.atan2(ly, r_hz - R*0.7);
-                                texX = theta * R; texY = phi * R * 0.3;
-                            } else if (geomType === 'sphere') { texX = Math.atan2(lx, lz) * R; texY = Math.asin(Math.max(-1, Math.min(1, ly / R))) * R; } 
-                            else { texX = lx; texY = ly; }
-                            texX *= TEX_SCALE; texY *= TEX_SCALE;
-                        } else {
-                            texX = hitPx * TEX_SCALE; texY = hitPy * TEX_SCALE;
-                        }
-
-                        let pattern = 128;
-                        if (shape === 'checkerboard') { pattern = (Math.floor(texX / 4.0) + Math.floor(texY / 4.0)) % 2 === 0 ? 240 : 40; } 
-                        else if (shape === 'gabor') { pattern = 128 + 100 * Math.sin(texX / 4) * Math.cos(texY / 4); } 
-                        else if (shape === 'noise') {
-                            const seed = Math.floor(texX / 3.0) * 12.9898 + Math.floor(texY / 3.0) * 78.233;
-                            pattern = 40 + Math.abs((Math.sin(seed) * 43758.5453) % 1) * 200;
-                        } 
-                        else if (shape === 'vertical_grating') { pattern = 128 + 127 * Math.cos(texX / 2.0); } 
-                        else if (shape === 'rings') { pattern = 128 + 127 * Math.cos(Math.sqrt(texX*texX + texY*texY) / 3); }
-                        buffer[idx] = pattern;
-                    } else {
-                        buffer[idx] = -1;
+                        if ((t += d) > maxT) break;
                     }
                 }
+                buf[i] = val;
+                const pI = i * 4;
+                if (val === -1) { data[pI] = data[pI+1] = data[pI+2] = data[pI+3] = 0; }
+                else { data[pI] = data[pI+1] = data[pI+2] = Math.max(0, Math.min(255, val)); data[pI+3] = 255; }
             }
-            
-            const imgData = imgDataCaches[key];
-            const data = imgData.data;
-            for (let i = 0; i < buffer.length; i++) {
-                const val = buffer[i];
-                const pIdx = i * 4;
-                if (val === -1) { data[pIdx] = data[pIdx+1] = data[pIdx+2] = 0; data[pIdx+3] = 0; } 
-                else {
-                    const clampedVal = Math.max(0, Math.min(255, val));
-                    data[pIdx] = data[pIdx+1] = data[pIdx+2] = clampedVal; data[pIdx+3] = 255; 
-                }
-            }
-            ctx.putImageData(imgData, 0, 0);
+            ctx.putImageData(imgD, 0, 0);
         });
     }
 
     // ==========================================
-    // 7. 光流計算核心 (Optical Flow Engine)
+    // 4. 光流演算最佳化 (Optical Flow Core)
     // ==========================================
-    function calculateSceneFlow(p1, p2, f, B, dryRun = false) {
-        let totalLevels = parseInt(document.getElementById('param_pyr').value);
-        if(isNaN(totalLevels) || totalLevels < 1) totalLevels = 1;
-        const win = parseInt(document.getElementById('param_win').value);
-        const halfW = Math.floor(win / 2);
-        
-        const px = projData.Lt.x, py = projData.Lt.y;
-        const d_disp = projData.Lt.x - projData.Rt.x;
-        const Z = -p1.z; 
-
-        const err_threshold = parseFloat(document.getElementById('param_err_thresh').value) || 25;
-
-        if (!dryRun) {
-            document.getElementById('stat_px_to_m').innerText = (Z / f).toFixed(5);
-            document.getElementById('stat_depth').innerText = Z.toFixed(3) + " m";
+    function initPyramids() {
+        C_IDS.forEach(k => {
+            PYR_BUFS[k][0] = {buf: imgBufs[k], w: SYS.IMG_W, h: SYS.IMG_H};
+            let w = SYS.IMG_W, h = SYS.IMG_H;
+            for(let i=1; i<6; i++) { w >>= 1; h >>= 1; PYR_BUFS[k][i] = {buf: new Float32Array(w*h), w, h}; }
+        });
+    }
+    
+    function downsampleInto(src, dst) {
+        const sw = src.w, dw = dst.w, dh = dst.h, sb = src.buf, db = dst.buf;
+        for(let y=0; y<dh; y++) {
+            for(let x=0; x<dw; x++) {
+                const i = (y<<1)*sw + (x<<1);
+                db[y*dw + x] = (sb[i] + sb[i+1] + sb[i+sw] + sb[i+sw+1]) * 0.25;
+            }
         }
+    }
 
-        const pyrLt = [{buf: imgBuffers.Lt, w: IMG_W, h: IMG_H}];
-        const pyrRt = [{buf: imgBuffers.Rt, w: IMG_W, h: IMG_H}];
-        const pyrLt1 = [{buf: imgBuffers.Lt1, w: IMG_W, h: IMG_H}];
-        const pyrRt1 = [{buf: imgBuffers.Rt1, w: IMG_W, h: IMG_H}];
+    // 使用 | 0 取代 Math.floor 提升極限效能
+    function getPLvl(p, x, y) {
+        if (x < 0 || x >= p.w-1 || y < 0 || y >= p.h-1) return 0;
+        const x0 = x | 0, y0 = y | 0, dx = x - x0, dy = y - y0;
+        const i = y0 * p.w + x0;
+        return p.buf[i]*(1-dx)*(1-dy) + p.buf[i+1]*dx*(1-dy) + p.buf[i+p.w]*(1-dx)*dy + p.buf[i+p.w+1]*dx*dy;
+    }
 
-        for(let i = 1; i < totalLevels; i++) {
-            pyrLt.push(downsample(pyrLt[i-1].buf, pyrLt[i-1].w, pyrLt[i-1].h));
-            pyrRt.push(downsample(pyrRt[i-1].buf, pyrRt[i-1].w, pyrRt[i-1].h));
-            pyrLt1.push(downsample(pyrLt1[i-1].buf, pyrLt1[i-1].w, pyrLt1[i-1].h));
-            pyrRt1.push(downsample(pyrRt1[i-1].buf, pyrRt1[i-1].w, pyrRt1[i-1].h));
-        }
+    function calculateSceneFlow() {
+        const lvls = Math.max(1, parseInt(UI.param_pyr.value)), win = parseInt(UI.param_win.value), halfW = win >> 1;
+        const f = parseFloat(UI.param_f.value), B = parseFloat(UI.param_B.value);
+        const Z1 = -object1.position.z, Z2 = -object2.position.z;
+        const px = SYS.CX + f*(object1.position.x - (-B/2))/Z1, py = SYS.CY - f*object1.position.y/Z1;
+        const d_disp = (f*B)/Z1;
 
-        let U_est = 0, V_est = 0, W_est = 0;
-        let isOutOfBounds = false;
-        
-        const R_size = parseFloat(document.getElementById('param_obj_size').value) || 0.2;
-        const obj_px_radius = (f * R_size) / Z;
-        const bounds_margin = -obj_px_radius * 0.5; 
+        C_IDS.forEach(k => { for(let i=1; i<lvls; i++) downsampleInto(PYR_BUFS[k][i-1], PYR_BUFS[k][i]); });
 
-        if (px < bounds_margin || px >= IMG_W - bounds_margin || 
-            py < bounds_margin || py >= IMG_H - bounds_margin ||
-            projData.Lt1.x < bounds_margin || projData.Lt1.x >= IMG_W - bounds_margin || 
-            projData.Lt1.y < bounds_margin || projData.Lt1.y >= IMG_H - bounds_margin) {
-            isOutOfBounds = true;
-        }
+        let U = 0, V = 0, W = 0, bDet = 0, bTrace = 0;
+        const bMargin = -((f * parseFloat(UI.param_obj_size.value)) / Z1) * 0.5;
+        let oob = px < bMargin || px >= SYS.IMG_W - bMargin || py < bMargin || py >= SYS.IMG_H - bMargin;
 
-        let baseDetS = 0;
-        let baseTraceS = 0;
+        if (!oob) {
+            for (let lvl = lvls - 1; lvl >= 0; lvl--) {
+                const sc = 1 / (1 << lvl), cw = PYR_BUFS.Lt[lvl].w, ch = PYR_BUFS.Lt[lvl].h;
+                const fl = f*sc, cxl = SYS.CX*sc, cyl = SYS.CY*sc, pxl = px*sc, pyl = py*sc, d_l = d_disp*sc;
+                let S = [[0,0,0],[0,0,0],[0,0,0]];
 
-        if (!isOutOfBounds) {
-            for (let lvl = totalLevels - 1; lvl >= 0; lvl--) {
-                const scale = 1 / Math.pow(2, lvl);
-                const cw = pyrLt[lvl].w, ch = pyrLt[lvl].h;
-                const f_l = f * scale, cx_l = CX * scale, cy_l = CY * scale;
-                const px_l = px * scale, py_l = py * scale, d_disp_l = d_disp * scale;
-
-                let S = [[0,0,0], [0,0,0], [0,0,0]];
-                
                 for (let dy = -halfW; dy <= halfW; dy++) {
                     for (let dx = -halfW; dx <= halfW; dx++) {
-                        const xL = px_l + dx; const yL = py_l + dy;
-                        const xR = xL - d_disp_l; const yR = yL;
-
-                        if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
-
-                        const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
-                        const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
-                        const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-                        const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-
-                        const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
-                        const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
-
-                        for(let m=0; m<3; m++) {
-                            for(let n=0; n<3; n++) { S[m][n] += rowL[m]*rowL[n] + rowR[m]*rowR[n]; }
-                        }
+                        const xL = pxl+dx, yL = pyl+dy, xR = xL-d_l;
+                        if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1) continue;
+                        const ILx = (getPLvl(PYR_BUFS.Lt[lvl], xL+1, yL) - getPLvl(PYR_BUFS.Lt[lvl], xL-1, yL)) / 2;
+                        const ILy = -(getPLvl(PYR_BUFS.Lt[lvl], xL, yL+1) - getPLvl(PYR_BUFS.Lt[lvl], xL, yL-1)) / 2;
+                        const IRx = (getPLvl(PYR_BUFS.Rt[lvl], xR+1, yL) - getPLvl(PYR_BUFS.Rt[lvl], xR-1, yL)) / 2;
+                        const IRy = -(getPLvl(PYR_BUFS.Rt[lvl], xR, yL+1) - getPLvl(PYR_BUFS.Rt[lvl], xR-1, yL)) / 2;
+                        
+                        const rL = [(fl/Z1)*ILx, (fl/Z1)*ILy, -(ILx*(xL-cxl) - ILy*(yL-cyl))/Z1];
+                        const rR = [(fl/Z1)*IRx, (fl/Z1)*IRy, -(IRx*(xR-cxl) - IRy*(yL-cyl))/Z1];
+                        for(let m=0; m<3; m++) for(let n=0; n<3; n++) S[m][n] += rL[m]*rL[n] + rR[m]*rR[n];
                     }
                 }
-
-                const detS = S[0][0]*(S[1][1]*S[2][2] - S[1][2]*S[2][1]) - S[0][1]*(S[1][0]*S[2][2] - S[1][2]*S[2][0]) + S[0][2]*(S[1][0]*S[2][1] - S[1][1]*S[2][0]);
-                const S_inv = invertMatrix3x3(S);
-                const trace = S[0][0] + S[1][1] + S[2][2];
+                const detS = S[0][0]*(S[1][1]*S[2][2]-S[1][2]*S[2][1]) - S[0][1]*(S[1][0]*S[2][2]-S[1][2]*S[2][0]) + S[0][2]*(S[1][0]*S[2][1]-S[1][1]*S[2][0]);
+                if (lvl === 0) { bDet = detS; bTrace = S[0][0]+S[1][1]+S[2][2]; }
+                if (Math.abs(detS) < 1e-5) continue;
                 
-                if (lvl === 0) {
-                    baseDetS = detS;
-                    baseTraceS = trace;
-                }
-                
-                if (!S_inv || Math.abs(detS) < 1e-5) continue;
+                const Si = [
+                    [(S[1][1]*S[2][2]-S[2][1]*S[1][2])/detS, (S[0][2]*S[2][1]-S[0][1]*S[2][2])/detS, (S[0][1]*S[1][2]-S[0][2]*S[1][1])/detS],
+                    [(S[1][2]*S[2][0]-S[1][0]*S[2][2])/detS, (S[0][0]*S[2][2]-S[0][2]*S[2][0])/detS, (S[1][0]*S[0][2]-S[0][0]*S[1][2])/detS],
+                    [(S[1][0]*S[2][1]-S[2][0]*S[1][1])/detS, (S[2][0]*S[0][1]-S[0][0]*S[2][1])/detS, (S[0][0]*S[1][1]-S[1][0]*S[0][1])/detS]
+                ];
 
                 for (let iter = 0; iter < 10; iter++) {
-                    let Atb = [0, 0, 0], validPixels = 0;
-
+                    let Atb = [0,0,0], valPx = 0;
                     for (let dy = -halfW; dy <= halfW; dy++) {
                         for (let dx = -halfW; dx <= halfW; dx++) {
-                            const xL = px_l + dx, yL = py_l + dy;
-                            const xR = xL - d_disp_l, yR = yL;
+                            const xL = pxl+dx, yL = pyl+dy, xR = xL-d_l;
+                            const X_p = (xL-cxl)*Z1/fl - B/2, Y_p = -(yL-cyl)*Z1/fl;
+                            const xLw = cxl + fl*(X_p+U+B/2)/(Z1+W), yLw = cyl - fl*(Y_p+V)/(Z1+W);
+                            const xRw = cxl + fl*(X_p+U-B/2)/(Z1+W);
+                            
+                            if (xLw<0 || xLw>=cw-1 || yLw<0 || yLw>=ch-1 || xRw<0 || xRw>=cw-1) continue;
+                            valPx++;
 
-                            if (xL < 1 || xL >= cw-1 || yL < 1 || yL >= ch-1 || xR < 1 || xR >= cw-1 || yR < 1 || yR >= ch-1) continue;
+                            const ILx = (getPLvl(PYR_BUFS.Lt[lvl], xL+1, yL) - getPLvl(PYR_BUFS.Lt[lvl], xL-1, yL))/2;
+                            const ILy = -(getPLvl(PYR_BUFS.Lt[lvl], xL, yL+1) - getPLvl(PYR_BUFS.Lt[lvl], xL, yL-1))/2;
+                            const IRx = (getPLvl(PYR_BUFS.Rt[lvl], xR+1, yL) - getPLvl(PYR_BUFS.Rt[lvl], xR-1, yL))/2;
+                            const IRy = -(getPLvl(PYR_BUFS.Rt[lvl], xR, yL+1) - getPLvl(PYR_BUFS.Rt[lvl], xR-1, yL))/2;
+                            const ILt = getPLvl(PYR_BUFS.Lt1[lvl], xLw, yLw) - getPLvl(PYR_BUFS.Lt[lvl], xL, yL);
+                            const IRt = getPLvl(PYR_BUFS.Rt1[lvl], xRw, yLw) - getPLvl(PYR_BUFS.Rt[lvl], xR, yL);
+                            const rL = [(fl/Z1)*ILx, (fl/Z1)*ILy, -(ILx*(xL-cxl)-ILy*(yL-cyl))/Z1];
+                            const rR = [(fl/Z1)*IRx, (fl/Z1)*IRy, -(IRx*(xR-cxl)-IRy*(yL-cyl))/Z1];
 
-                            const X_p = (xL - cx_l) * Z / f_l - B/2;
-                            const Y_p = -(yL - cy_l) * Z / f_l;
-
-                            const xL_warp = cx_l + f_l * (X_p + U_est + B/2) / (Z + W_est);
-                            const yL_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
-                            const xR_warp = cx_l + f_l * (X_p + U_est - B/2) / (Z + W_est);
-                            const yR_warp = cy_l - f_l * (Y_p + V_est) / (Z + W_est);
-
-                            if (xL_warp < 0 || xL_warp >= cw-1 || yL_warp < 0 || yL_warp >= ch-1 || xR_warp < 0 || xR_warp >= cw-1 || yR_warp < 0 || yR_warp >= ch-1) continue;
-
-                            validPixels++;
-
-                            const ILx = (getPLevel(pyrLt[lvl], xL+1, yL) - getPLevel(pyrLt[lvl], xL-1, yL)) / 2;
-                            const ILy = -(getPLevel(pyrLt[lvl], xL, yL+1) - getPLevel(pyrLt[lvl], xL, yL-1)) / 2;
-                            const IRx = (getPLevel(pyrRt[lvl], xR+1, yR) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-                            const IRy = -(getPLevel(pyrRt[lvl], xR, yR+1) - getPLevel(pyrRt[lvl], xR-1, yR)) / 2;
-
-                            const ILt = getPLevel(pyrLt1[lvl], xL_warp, yL_warp) - getPLevel(pyrLt[lvl], xL, yL);
-                            const IRt = getPLevel(pyrRt1[lvl], xR_warp, yR_warp) - getPLevel(pyrRt[lvl], xR, yR);
-
-                            const rowL = [ (f_l/Z)*ILx, (f_l/Z)*ILy, -(ILx*(xL - cx_l) - ILy*(yL - cy_l))/Z ];
-                            const rowR = [ (f_l/Z)*IRx, (f_l/Z)*IRy, -(IRx*(xR - cx_l) - IRy*(yR - cy_l))/Z ];
-
-                            Atb[0] += rowL[0]*(-ILt) + rowR[0]*(-IRt); Atb[1] += rowL[1]*(-ILt) + rowR[1]*(-IRt); Atb[2] += rowL[2]*(-ILt) + rowR[2]*(-IRt);
+                            Atb[0] -= rL[0]*ILt + rR[0]*IRt; Atb[1] -= rL[1]*ILt + rR[1]*IRt; Atb[2] -= rL[2]*ILt + rR[2]*IRt;
                         }
                     }
-
-                    if (validPixels < 5) {
-                        if (lvl === 0) isOutOfBounds = true;
-                        break;
-                    }
-
-                    const dU = S_inv[0][0]*Atb[0] + S_inv[0][1]*Atb[1] + S_inv[0][2]*Atb[2];
-                    const dV = S_inv[1][0]*Atb[0] + S_inv[1][1]*Atb[1] + S_inv[1][2]*Atb[2];
-                    const dW = S_inv[2][0]*Atb[0] + S_inv[2][1]*Atb[1] + S_inv[2][2]*Atb[2];
-
-                    U_est += dU; V_est += dV; W_est += dW;
-                    if (Math.abs(dU) + Math.abs(dV) + Math.abs(dW) < 1e-6) break;
+                    if (valPx < 5) { if(lvl===0) oob=true; break; }
+                    const dU = Si[0][0]*Atb[0] + Si[0][1]*Atb[1] + Si[0][2]*Atb[2];
+                    const dV = Si[1][0]*Atb[0] + Si[1][1]*Atb[1] + Si[1][2]*Atb[2];
+                    const dW = Si[2][0]*Atb[0] + Si[2][1]*Atb[1] + Si[2][2]*Atb[2];
+                    U += dU; V += dV; W += dW;
+                    if (Math.abs(dU)+Math.abs(dV)+Math.abs(dW) < 1e-6) break;
                 }
             }
         }
 
-        const gt_U = p2.x - p1.x, gt_V = p2.y - p1.y, gt_W = p1.z - p2.z; 
-        const gt_mag = Math.sqrt(gt_U**2 + gt_V**2 + gt_W**2);
-
-        const err_U = Math.abs(gt_U - U_est), err_V = Math.abs(gt_V - V_est), err_W = Math.abs(gt_W - W_est);
-        const err_mag = Math.sqrt(err_U**2 + err_V**2 + err_W**2);
+        const gtU = object2.position.x - object1.position.x, gtV = object2.position.y - object1.position.y, gtW = object1.position.z - object2.position.z;
+        const errMag = Math.sqrt((gtU-U)**2 + (gtV-V)**2 + (gtW-W)**2), gtMag = Math.sqrt(gtU**2 + gtV**2 + gtW**2);
+        const errPct = gtMag > 1e-4 ? (errMag/gtMag)*100 : (errMag > 1e-4 ? Infinity : 0);
         
-        let err_pct = 0;
-        if (gt_mag > 1e-4) {
-            err_pct = (err_mag / gt_mag) * 100;
-        } else {
-            err_pct = err_mag > 1e-4 ? Infinity : 0;
-        }
-
-        let failureMode = 'none';
-        const true_px_move = Math.sqrt(Math.pow(projData.Lt1.x - projData.Lt.x, 2) + Math.pow(projData.Lt1.y - projData.Lt.y, 2));
-        const max_trackable_px = halfW * Math.pow(2, Math.max(0, totalLevels - 1)) * 1.5;
-        const condIndex = Math.abs(baseDetS) / (Math.pow(baseTraceS / 3, 3) + 1e-12);
-
-        if (isOutOfBounds) {
-            failureMode = 'out_of_bounds';
-        } else if (true_px_move > max_trackable_px) {
-            failureMode = 'large_disp';
-        } else if (baseTraceS < 1e-5 || condIndex < 2e-3) {
-            failureMode = 'aperture';
-        } else {
-            const isFailed = (err_pct > err_threshold && err_mag > 0.005) || err_pct === Infinity || Number.isNaN(err_mag);
-            if (isFailed) {
-                failureMode = 'large_disp'; 
-            } else {
-                failureMode = 'success';
-            }
-        }
-
-        if (dryRun) return { failureMode };
-
-        // 緩存結果供語言切換時重繪
-        window.lastResultsCache = { px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode };
-        updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode);
+        let fMode = 'success';
+        if (oob) fMode = 'out_of_bounds';
+        else if (bTrace < 1e-5 || Math.abs(bDet)/(Math.pow(bTrace/3,3)+1e-12) < 2e-3) fMode = 'aperture';
+        else if ((errPct > parseFloat(UI.param_err_thresh.value) && errMag > 0.005) || errPct === Infinity) fMode = 'large_disp';
+        
+        updateUI(px, py, d_disp, Z1, f, gtU, gtV, gtW, U, V, W, errPct, fMode);
     }
 
     // ==========================================
-    // 8. 實驗模組與面板操作 (Experiments & Panels)
+    // 5. 事件與狀態控制
     // ==========================================
-    function updateResultsUI(px, py, d_disp, gt_U, gt_V, gt_W, U_est, V_est, W_est, err_pct, failureMode) {
-        // 防止尚未取得語言包前就發生錯誤
-        const dict = I18N[currentLang] || {}; 
-        
-        document.getElementById('gt_U').innerText = formatNum(gt_U) + ' m';
-        document.getElementById('gt_V').innerText = formatNum(gt_V) + ' m';
-        document.getElementById('gt_W').innerText = formatNum(gt_W) + ' m';
-        document.getElementById('stat_coord').innerText = `(${Math.round(px)}, ${Math.round(py)})`;
-        document.getElementById('stat_disp').innerText = formatNum(d_disp, 2) + ' px';
-        
-        const elTotalErr = document.getElementById('err_pct_total');
-        const errorExp = document.getElementById('error_explanation');
-        errorExp.style.display = 'none';
-
-        if (failureMode === 'aperture' || failureMode === 'out_of_bounds') {
-            ['U', 'V', 'W'].forEach(axis => {
-                document.getElementById('est_' + axis).innerText = "NaN";
-                document.getElementById('rel_' + axis).innerText = dict.err_fail_short || "失敗";
-            });
-            elTotalErr.style.color = 'var(--danger-color)';
-            document.querySelectorAll('.val-rel, .val-est').forEach(el => el.style.color = 'var(--danger-color)');
-            elTotalErr.innerText = dict.err_calc_fail || "計算失敗";
-            
-            if (failureMode === 'aperture') {
-                errorExp.innerHTML = dict.err_aper_desc || "孔徑問題";
-            } else {
-                errorExp.innerHTML = dict.err_out_desc || "移出視野";
-            }
-            errorExp.style.display = 'block';
-        } else {
-            document.getElementById('est_U').innerText = formatNum(U_est) + ' m';
-            document.getElementById('est_V').innerText = formatNum(V_est) + ' m';
-            document.getElementById('est_W').innerText = formatNum(W_est) + ' m';
-            document.getElementById('rel_U').innerText = calcRelativeError(gt_U, U_est);
-            document.getElementById('rel_V').innerText = calcRelativeError(gt_V, V_est);
-            document.getElementById('rel_W').innerText = calcRelativeError(gt_W, W_est);
-
-            let pctStr = err_pct === Infinity ? "N/A" : formatNum(err_pct, 1) + "%";
-
-            if (failureMode === 'large_disp') {
-                elTotalErr.innerText = dict.err_calc_fail || "計算失敗";
-                elTotalErr.style.color = 'var(--danger-color)';
-                document.querySelectorAll('.val-est, .val-rel').forEach(el => el.style.color = 'var(--danger-color)');
-                errorExp.innerHTML = dict.err_disp_desc || "大位移失效";
-                errorExp.style.display = 'block';
-            } else {
-                elTotalErr.innerText = pctStr + ' ' + (dict.err_success || "(成功)");
-                elTotalErr.style.color = 'var(--success-color)';
-                ['U', 'V', 'W'].forEach(axis => document.getElementById('est_' + axis).style.color = 'var(--success-color)');
-                document.querySelectorAll('.val-rel').forEach(el => el.style.color = 'var(--success-color)');
-            }
-        }
-    }
-
-    function onSliderInput() {
-        if (!object1 || !object2) return;
-        lastLoadedFailure = null; 
-        
-        const space = document.getElementById('sel_transform_space').value;
-        
-        const curX = parseFloat(document.getElementById('slider_X').value);
-        const curY = parseFloat(document.getElementById('slider_Y').value);
-        const curZ = parseFloat(document.getElementById('slider_Z').value);
-        const curRx = parseFloat(document.getElementById('slider_Rx').value) * Math.PI / 180;
-        const curRy = parseFloat(document.getElementById('slider_Ry').value) * Math.PI / 180;
-        const curRz = parseFloat(document.getElementById('slider_Rz').value) * Math.PI / 180;
-
-        const deltaX = curX - lastSliderVals.X;
-        const deltaY = curY - lastSliderVals.Y;
-        const deltaZ = curZ - lastSliderVals.Z;
-        const deltaRx = curRx - lastSliderVals.Rx;
-        const deltaRy = curRy - lastSliderVals.Ry;
-        const deltaRz = curRz - lastSliderVals.Rz;
-
-        if (deltaRx !== 0) { const axisX = space === 'local' ? new THREE.Vector3(1, 0, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(1, 0, 0); object2.rotateOnWorldAxis(axisX, deltaRx); }
-        if (deltaRy !== 0) { const axisY = space === 'local' ? new THREE.Vector3(0, 1, 0).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 1, 0); object2.rotateOnWorldAxis(axisY, deltaRy); }
-        if (deltaRz !== 0) { const axisZ = space === 'local' ? new THREE.Vector3(0, 0, 1).applyQuaternion(object2.quaternion) : new THREE.Vector3(0, 0, 1); object2.rotateOnWorldAxis(axisZ, deltaRz); }
-
-        object2.quaternion.normalize();
-
-        const moveVec = new THREE.Vector3(deltaX, deltaY, -deltaZ);
-        if (space === 'local') {
-            moveVec.applyQuaternion(object2.quaternion); 
-        }
-        object2.position.add(moveVec);
-
-        lastSliderVals = { X: curX, Y: curY, Z: curZ, Rx: curRx, Ry: curRy, Rz: curRz };
-        basePos2.copy(object2.position);
-        baseQuat2.copy(object2.quaternion);
-
-        document.getElementById('label_X').innerText = formatNum(curX) + ' m';
-        document.getElementById('label_Y').innerText = formatNum(curY) + ' m';
-        document.getElementById('label_Z').innerText = formatNum(curZ) + ' m';
-        document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
-        document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
-        document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
-
-        if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
-        
-        updateSystem();
-    }
+    window.switchTab = id => {
+        document.getElementById('tab_params').style.display = id === 'params' ? 'block' : 'none';
+        document.getElementById('tab_finetune').style.display = id === 'finetune' ? 'block' : 'none';
+        document.getElementById('btn_tab_params').classList.toggle('active', id === 'params');
+        document.getElementById('btn_tab_finetune').classList.toggle('active', id === 'finetune');
+    };
+    window.toggleDrawer = () => document.body.classList.toggle('drawer-open');
+    window.toggleLock3D = id => {
+        const lock = document.getElementById(`lock_3d_${id}`).checked;
+        const t = id === 't' ? transform1 : transform2, c = id === 't' ? controls1 : controls2;
+        if(t && c) { c.enabled = !lock; t.enabled = t.visible = !lock; }
+        document.getElementById(`3d_container_${id}`).classList.toggle('locked', lock);
+    };
+    
+    window.setTransformMode = m => { transform1.setMode(m); transform2.setMode(m); document.getElementById('btn_mode_translate').style.background = m === 'translate' ? 'var(--primary-color)' : '#94a3b8'; document.getElementById('btn_mode_rotate').style.background = m === 'translate' ? '#94a3b8' : 'var(--primary-color)'; };
+    window.setTransformSpace = s => { transform1.setSpace(s); transform2.setSpace(s); };
 
     function updateSystem() {
-        if (!object1 || !object2) return;
-        if(object1.position.z > SYS_CONST.MIN_Z) object1.position.z = SYS_CONST.MIN_Z;
-        if(object2.position.z > SYS_CONST.MIN_Z) object2.position.z = SYS_CONST.MIN_Z;
-
+        if (!object1) return;
+        object1.position.z = Math.min(object1.position.z, SYS.MIN_Z); object2.position.z = Math.min(object2.position.z, SYS.MIN_Z);
         if (!transform1.dragging) object1.quaternion.copy(object2.quaternion);
-
-        const f = parseFloat(document.getElementById('param_f').value);
-        const B = parseFloat(document.getElementById('param_B').value);
-        const p1 = object1.position; const p2 = object2.position;
-        
-        updateProjData(p1, p2, f, B);
-        renderAll2DScenes();
-        calculateSceneFlow(p1, p2, f, B, false);
+        renderAll2DScenes(); calculateSceneFlow();
     }
 
-    window.nudgeAxis = function(axis, delta) {
-        const slider = document.getElementById('slider_' + axis);
-        if (!slider) return;
-        slider.value = Math.max(-2.0, Math.min(2.0, parseFloat(slider.value) + delta));
-        onSliderInput();
-        showSliderAxis(axis);
+    window.nudgeAxis = (id, delta) => {
+        const s = document.getElementById(`slider_${id}`);
+        s.value = Math.max(parseFloat(s.min), Math.min(parseFloat(s.max), parseFloat(s.value) + delta));
+        onSliderInput({target: s});
     };
 
-    window.nudgeRotation = function(axis, delta) {
-        const id = 'R' + axis.toLowerCase();
-        const slider = document.getElementById('slider_' + id);
-        if (!slider) return;
-        slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
-        onSliderInput();
-        showSliderAxis(id);
-    };
-
-    window.resetToT = function() {
-        if (!object1 || !object2) return;
-        lastLoadedFailure = null; 
-        
-        object2.position.copy(object1.position);
-        object2.quaternion.copy(object1.quaternion); 
-        basePos2.copy(object1.position);
-        baseQuat2.copy(object1.quaternion);
-        
-        resetSliders();
-        updateSystem();
-    };
-
-    window.resetRotationOnly = function() {
-        if (!object1 || !object2) return;
-        lastLoadedFailure = null;
-
-        const idQuat = new THREE.Quaternion();
-        object1.quaternion.copy(idQuat);
-        object2.quaternion.copy(idQuat);
-        baseQuat2.copy(idQuat);
+    function onSliderInput() {
+        const isLoc = UI.sel_transform_space.value === 'local';
+        object2.position.copy(basePos2); object2.quaternion.copy(baseQuat2);
         
         ['Rx', 'Ry', 'Rz'].forEach(id => {
-            const slider = document.getElementById('slider_' + id);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + id);
-            if(lbl) lbl.innerText = "0.0°";
+            const v = parseFloat(document.getElementById(`slider_${id}`).value) * Math.PI / 180;
+            if(v===0) return;
+            const ax = new THREE.Vector3(id==='Rx'?1:0, id==='Ry'?1:0, id==='Rz'?1:0);
+            object2.rotateOnWorldAxis(isLoc ? ax.applyQuaternion(object2.quaternion) : ax, v);
+            document.getElementById(`label_${id}`).innerText = `${(v*180/Math.PI).toFixed(1)}°`;
         });
-        lastSliderVals.Rx = 0;
-        lastSliderVals.Ry = 0;
-        lastSliderVals.Rz = 0;
-
+        
+        const move = new THREE.Vector3(parseFloat(document.getElementById('slider_X').value), parseFloat(document.getElementById('slider_Y').value), -parseFloat(document.getElementById('slider_Z').value));
+        if (isLoc) move.applyQuaternion(object2.quaternion);
+        object2.position.add(move);
+        
+        ['X', 'Y', 'Z'].forEach(id => document.getElementById(`label_${id}`).innerText = `${parseFloat(document.getElementById(`slider_${id}`).value).toFixed(4)} m`);
+        
+        if (window.sliderAxisHelper) window.sliderAxisHelper.position.copy(object2.position);
         updateSystem();
-    };
+    }
 
-    window.loadFailureCase = function(type) {
-        if (!object1 || !object2 || lastLoadedFailure === type) return; 
-        lastLoadedFailure = type;
+    window.resetToT = () => { object2.position.copy(object1.position); object2.quaternion.copy(object1.quaternion); axesData.forEach(ax => document.getElementById(`slider_${ax.id}`).value = 0); onSliderInput(); };
+    window.resetRotationOnly = () => { object1.quaternion.identity(); object2.quaternion.identity(); baseQuat2.identity(); ['Rx','Ry','Rz'].forEach(id => document.getElementById(`slider_${id}`).value = 0); onSliderInput(); };
 
-        const defaultPos = new THREE.Vector3(0, 0, DEFAULT_Z);
-
-        object1.position.copy(defaultPos); 
-        object2.position.copy(defaultPos); 
-        basePos2.copy(defaultPos); 
+    function updateUI(px, py, disp, z, f, gU, gV, gW, eU, eV, eW, errP, mode) {
+        const setVal = (id, val, color) => { const el = document.getElementById(id); el.innerText = val; if(color) el.style.color = color; };
+        const fNum = v => v.toFixed(4);
         
-        object2.quaternion.copy(object1.quaternion);
-        baseQuat2.copy(object1.quaternion);
-
-        ['X', 'Y', 'Z'].forEach(axis => {
-            const slider = document.getElementById('slider_' + axis);
-            if(slider) slider.value = 0;
-            const lbl = document.getElementById('label_' + axis);
-            if(lbl) lbl.innerText = "0.0000 m";
-        });
-        lastSliderVals.X = 0;
-        lastSliderVals.Y = 0;
-        lastSliderVals.Z = 0;
+        setVal('stat_coord', `(${Math.round(px)}, ${Math.round(py)})`); setVal('stat_disp', `${fNum(disp)} px`);
+        setVal('stat_depth', `${z.toFixed(3)} m`); setVal('stat_px_to_m', (z/f).toFixed(5));
+        setVal('gt_U', `${fNum(gU)} m`); setVal('gt_V', `${fNum(gV)} m`); setVal('gt_W', `${fNum(gW)} m`);
         
-        const f = parseFloat(document.getElementById('param_f').value);
-        const Z = Math.abs(basePos2.z);
-        const win = parseInt(document.getElementById('param_win').value);
-        const pyr = parseInt(document.getElementById('param_pyr').value);
-        const B = parseFloat(document.getElementById('param_B').value);
+        const isErr = mode !== 'success';
+        const col = isErr ? 'var(--danger-color)' : 'var(--success-color)';
+        const calcR = (g, e) => Math.abs(g)<1e-4 ? (Math.abs(g-e)<1e-4?"0.0%":"N/A") : `${((Math.abs(g-e)/Math.abs(g))*100).toFixed(1)}%`;
+
+        ['U','V','W'].forEach(a => { setVal(`est_${a}`, isErr && mode!=='large_disp' ? 'NaN' : `${fNum(eval('e'+a))} m`, col); setVal(`rel_${a}`, isErr && mode!=='large_disp' ? '失敗' : calcR(eval('g'+a), eval('e'+a)), col); });
         
-        const max_px_radius = Math.floor(win / 2) * Math.pow(2, Math.max(0, pyr - 1));
-        const fov_w_m = (CX * Z) / f;               
-        const max_m_disp = Math.min((max_px_radius * Z) / f, fov_w_m * 0.8); 
+        setVal('err_pct_total', isErr && mode!=='large_disp' ? '計算失敗' : `${errP===Infinity?'N/A':errP.toFixed(1)+'%'}`, col);
+        const errE = document.getElementById('error_explanation');
+        if(isErr) { errE.style.display = 'block'; errE.innerHTML = mode === 'aperture' ? '孔徑問題' : (mode==='out_of_bounds'?'移出視野':'大位移失效'); }
+        else errE.style.display = 'none';
+    }
 
-        if (type === 'aperture') {
-            document.getElementById('obj_shape').value = 'vertical_grating';
-        }
-
-        updateObjectGeometry(true);
-
-        let origBasePos2 = basePos2.clone();
-        let testX = 0, testY = 0;
-        const step = max_m_disp * 0.1; 
-
-        const tryFindFailure = (maxAttempts) => {
-            let isFound = false;
-            let currentAttempt = 0;
-            while (!isFound && currentAttempt < maxAttempts) {
-                currentAttempt++;
-                
-                if (type === 'aperture') { 
-                    testY += 0.01; 
-                } 
-                else if (type === 'large_disp') { 
-                    testX += step; testY += step; 
-                } 
-                else if (type === 'out_of_bounds') { 
-                    testX += (fov_w_m * 0.2); 
-                }
-
-                basePos2.copy(origBasePos2);
-                basePos2.x += testX; basePos2.y += testY;
-                object2.position.copy(basePos2);
-                
-                updateProjData(object1.position, object2.position, f, B);
-                renderAll2DScenes();
-                
-                if (calculateSceneFlow(object1.position, object2.position, f, B, true).failureMode === type) {
-                    isFound = true;
-                }
-            }
-            return isFound;
-        };
-
-        let found = tryFindFailure(50);
-
-        if (type === 'aperture' && !found) {
-            
-            const idQuat = new THREE.Quaternion();
-            object1.quaternion.copy(idQuat);
-            object2.quaternion.copy(idQuat);
-            baseQuat2.copy(idQuat);
-
-            ['Rx', 'Ry', 'Rz'].forEach(id => {
-                const slider = document.getElementById('slider_' + id);
-                if(slider) slider.value = 0;
-                const lbl = document.getElementById('label_' + id);
-                if(lbl) lbl.innerText = "0.0°";
-            });
-            lastSliderVals.Rx = 0;
-            lastSliderVals.Ry = 0;
-            lastSliderVals.Rz = 0;
-
-            testX = 0; testY = 0;
-            found = tryFindFailure(50);
-        }
-        
-        updateSystem(); 
-    };
-
-    // ==========================================
-    // 9. 程式進入點 (Application Entry)
-    // ==========================================
     window.onload = () => {
-        // 優先載入外部語言包並啟動系統
         initLanguageMenu().then(() => {
-            
-            CANVAS_IDS.forEach(id => {
-                const canvas = document.getElementById('canvas_' + id);
-                contexts[id] = canvas.getContext('2d', { willReadFrequently: true });
-                imgBuffers[id] = new Float32Array(IMG_W * IMG_H);
-                imgDataCaches[id] = contexts[id].createImageData(IMG_W, IMG_H);
+            C_IDS.forEach(id => {
+                const c = document.getElementById(`canvas_${id}`);
+                ctxs[id] = c.getContext('2d', {willReadFrequently: true});
+                imgBufs[id] = new Float32Array(SYS.IMG_W * SYS.IMG_H);
+                imgData[id] = ctxs[id].createImageData(SYS.IMG_W, SYS.IMG_H);
             });
-            
-            document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
-                el.addEventListener('change', (e) => {
-                    if (e.target.type === 'number') {
-                        let val = parseFloat(e.target.value);
-                        let min = parseFloat(e.target.min);
-                        let max = parseFloat(e.target.max);
-                        let step = parseFloat(e.target.step);
+            initPyramids();
 
-                        if (isNaN(val)) {
-                            val = !isNaN(min) ? min : 0;
-                        } else {
-                            if (!isNaN(step) && step > 0) {
-                                let base = !isNaN(min) ? min : 0;
-                                let steps = Math.round((val - base) / step);
-                                val = base + steps * step;
-                                let decimals = e.target.step.includes('.') ? e.target.step.split('.')[1].length : 0;
-                                val = parseFloat(val.toFixed(decimals));
-                            }
-                            if (!isNaN(min) && val < min) val = min;
-                            if (!isNaN(max) && val > max) val = max;
-                        }
-                        e.target.value = val;
+            document.querySelectorAll('.control-grid input, .control-grid select').forEach(el => {
+                el.addEventListener('change', () => {
+                    if (el.id === 'obj_geometry_type' || el.id === 'param_obj_size') {
+                        const gType = UI.obj_geometry_type.value, R = parseFloat(UI.param_obj_size.value);
+                        let geo;
+                        if(gType==='box') geo = new THREE.BoxGeometry(R*2,R*2,R*2);
+                        else if(gType==='cylinder') geo = new THREE.CylinderGeometry(R,R,R*2,32);
+                        else if(gType==='torus') geo = new THREE.TorusGeometry(R*0.7,R*0.3,16,64);
+                        else if(gType==='cone') geo = new THREE.ConeGeometry(R,R*2,32);
+                        else if(gType==='octahedron') geo = new THREE.OctahedronGeometry(R);
+                        else geo = new THREE.SphereGeometry(R,32,32);
+                        object1.geometry.dispose(); object2.geometry.dispose();
+                        object1.geometry = geo; object2.geometry = geo.clone();
                     }
-                    
-                    lastLoadedFailure = null; 
-                    if(e.target.id === 'obj_geometry_type' || e.target.id === 'param_obj_size') {
-                        updateObjectGeometry();
-                    } else {
-                        updateSystem();
-                    }
+                    updateSystem();
                 });
             });
-
-            ['X', 'Y', 'Z'].forEach(axis => document.getElementById('slider_' + axis).addEventListener('input', onSliderInput));
-            ['Rx', 'Ry', 'Rz'].forEach(id => document.getElementById('slider_' + id).addEventListener('input', onSliderInput));
             
+            axesData.forEach(ax => document.getElementById(`slider_${ax.id}`).addEventListener('input', onSliderInput));
             init3D();
-            initSliderFocus();
-            setTimeout(updateObjectGeometry, 50); 
-            setTimeout(updateSystem, 100); 
-            
-            window.addEventListener('resize', () => {
-                const resizeCanvas = (id, cam, ren) => {
-                    const c = document.getElementById(id);
-                    if (c && cam && ren) { 
-                        const w = c.clientWidth;
-                        const h = c.clientHeight;
-                        if (w === 0 || h === 0) return; 
-                        cam.aspect = w / h; 
-                        cam.updateProjectionMatrix(); 
-                        ren.setSize(w, h); 
-                    }
-                };
-                resizeCanvas('3d_container_t', camera1, renderer1); 
-                resizeCanvas('3d_container_t1', camera2, renderer2);
-            });
-
-            setTimeout(() => { 
-                window.dispatchEvent(new Event('resize')); 
-            }, 300);
-            
+            setTimeout(updateSystem, 100);
         });
     };
 </script>
