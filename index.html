@@ -1041,6 +1041,9 @@
             scene.add(window.sliderAxisHelpers[idx]);
         });
 
+        if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
+        if (window.hideSliderAxis) window.hideSliderAxis();
+
         toggleLock3D_t();
         toggleLock3D_t1();
         animate3D();
