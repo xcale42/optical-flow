@@ -117,7 +117,7 @@
         .block-card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .block-card h4 { margin: 0 0 12px 0; color: var(--primary-color); font-size: 11pt; font-weight: 600; } 
         .canvas-container { background: var(--canvas-bg); border-radius: 8px; display: inline-block; overflow: hidden; position: relative; border: 1px solid var(--border-color); width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        canvas.projection { display: block; background: transparent; width: 100%; height: auto; margin: auto; }
+        canvas.projection { display: block; background: transparent; width: 100%; max-width: 240px; height: auto; margin: auto; }
         
         .results-section { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
         .table-wrapper { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); width: 100%; }
@@ -479,19 +479,19 @@
     <div class="workspace-grid">
         <div class="block-card">
             <h4 data-i18n="proj_lt">$t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="240" height="200"></canvas></div>
+            <div class="canvas-container"><canvas id="canvas_Lt" class="projection" width="480" height="400"></canvas></div>
         </div>
         <div class="block-card">
             <h4 data-i18n="proj_rt">$t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="240" height="200"></canvas></div>
+            <div class="canvas-container"><canvas id="canvas_Rt" class="projection" width="480" height="400"></canvas></div>
         </div>
         <div class="block-card">
             <h4 data-i18n="proj_lt1">$t+\Delta t$ (左眼 $I_L$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="240" height="200"></canvas></div>
+            <div class="canvas-container"><canvas id="canvas_Lt1" class="projection" width="480" height="400"></canvas></div>
         </div>
         <div class="block-card">
             <h4 data-i18n="proj_rt1">$t+\Delta t$ (右眼 $I_R$)</h4>
-            <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="240" height="200"></canvas></div>
+            <div class="canvas-container"><canvas id="canvas_Rt1" class="projection" width="480" height="400"></canvas></div>
         </div>
     </div>
 
@@ -699,10 +699,10 @@
     // 1. 系統常數與基礎設定 (System Constants)
     // ==========================================
     const SYS_CONST = {
-        IMG_W: 240,
-        IMG_H: 200,
-        CX: 120, 
-        CY: 100, 
+        IMG_W: 480,
+        IMG_H: 400,
+        CX: 240, 
+        CY: 200, 
         DEFAULT_Z: -4.0,
         MIN_Z: -0.2,
         TEX_SCALE: 250,
