@@ -1685,6 +1685,7 @@
 
         if (type === 'aperture') {
             document.getElementById('obj_shape').value = 'vertical_grating';
+            document.getElementById('obj_geometry_type').value = 'box';
         }
 
         updateObjectGeometry(true);
@@ -1731,6 +1732,9 @@
             object1.quaternion.copy(idQuat);
             object2.quaternion.copy(idQuat);
             baseQuat2.copy(idQuat);
+
+            document.getElementById('obj_geometry_type').value = 'box';
+            updateObjectGeometry(true);
 
             ['Rx', 'Ry', 'Rz'].forEach(id => {
                 const slider = document.getElementById('slider_' + id);
