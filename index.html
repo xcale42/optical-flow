@@ -758,6 +758,54 @@
     const rayTarget = new THREE.Vector3();
     const invQuaternion = new THREE.Quaternion();
 
+    window.sliderAxisHelper = null;
+    window.sliderAxisLines = {};
+    window.axisHideTimeout = null;
+    window.isSliderDragging = false;
+    
+    window.showSliderAxis = function(axisId) {
+        if (!window.sliderAxisLines) return;
+        
+        // 將 "Rx", "y", "Z" 統一轉換為基礎軸 "X", "Y", "Z"
+        const baseAxis = axisId.replace(/r/i, '').toUpperCase(); 
+        Object.values(window.sliderAxisLines).forEach(line => line.visible = false);
+        
+        if (window.sliderAxisLines[baseAxis]) {
+            window.sliderAxisLines[baseAxis].visible = true;
+        }
+        if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
+        
+        // 如果沒有在拖曳，800毫秒後自動隱藏 (給微調按鈕的緩衝時間)
+        clearTimeout(window.axisHideTimeout);
+        window.axisHideTimeout = setTimeout(() => hideSliderAxis(), 800);
+    }
+    
+    window.hideSliderAxis = function() {
+        if (!window.sliderAxisLines || window.isSliderDragging) return;
+        Object.values(window.sliderAxisLines).forEach(line => line.visible = false);
+    }
+    
+    window.updateSliderAxisHelper = function() {
+        if (!window.sliderAxisHelper || !object2) return;
+        const space = document.getElementById('sel_transform_space').value;
+        const isWorld = (space === 'world');
+    
+        // 讓輔助線中心點對齊物體
+        window.sliderAxisHelper.position.copy(object2.position);
+    
+        // 依照全域或區域座標旋轉輔助線
+        if (!isWorld) {
+            window.sliderAxisHelper.quaternion.copy(object2.quaternion);
+        } else {
+            window.sliderAxisHelper.quaternion.identity();
+        }
+    
+        // 替換成對應座標系的顏色 (世界=青/洋紅/黃，區域=紅/綠/藍)
+        window.sliderAxisLines['X'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_X : SYS_CONST.COLORS.AXIS_LOCAL_X);
+        window.sliderAxisLines['Y'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_Y : SYS_CONST.COLORS.AXIS_LOCAL_Y);
+        window.sliderAxisLines['Z'].material.color.setHex(isWorld ? SYS_CONST.COLORS.AXIS_WORLD_Z : SYS_CONST.COLORS.AXIS_LOCAL_Z);
+    }
+
     // ==========================================
     // 3. 工具與輔助函式 (Utility Functions)
     // ==========================================
@@ -825,21 +873,31 @@
     function initSliderFocus() {
         document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
             const wrap = slider.closest('.axis-control');
+            const axisId = slider.id.replace('slider_', ''); 
+
             const activate = () => {
+                window.isSliderDragging = true;
                 if(window.innerWidth <= 768) {
                     document.body.classList.add('slider-focus-mode');
                     wrap.classList.add('active-slider');
                 }
+                showSliderAxis(axisId);
             };
             const deactivate = () => {
+                window.isSliderDragging = false;
                 document.body.classList.remove('slider-focus-mode');
                 wrap.classList.remove('active-slider');
+                clearTimeout(window.axisHideTimeout);
+                window.axisHideTimeout = setTimeout(() => hideSliderAxis(), 150);
             };
+            
             slider.addEventListener('touchstart', activate, {passive: true});
             slider.addEventListener('touchend', deactivate);
             slider.addEventListener('touchcancel', deactivate);
             slider.addEventListener('mousedown', activate);
             window.addEventListener('mouseup', deactivate);
+            
+            slider.addEventListener('input', () => showSliderAxis(axisId));
         });
     }
 
@@ -953,6 +1011,25 @@
             }
             updateSystem();
         });
+
+        window.sliderAxisHelper = new THREE.Group();
+        ['X', 'Y', 'Z'].forEach(axis => {
+            // depthTest: false 可以讓線條像 TransformControls 一樣穿透物體顯示
+            const mat = new THREE.LineBasicMaterial({ depthTest: false, transparent: true, opacity: 0.6 });
+            const geom = new THREE.BufferGeometry();
+            const pts = [new THREE.Vector3(), new THREE.Vector3()];
+            if(axis === 'X') { pts[0].x = -100; pts[1].x = 100; }
+            if(axis === 'Y') { pts[0].y = -100; pts[1].y = 100; }
+            if(axis === 'Z') { pts[0].z = -100; pts[1].z = 100; }
+            geom.setFromPoints(pts);
+            
+            const line = new THREE.Line(geom, mat);
+            line.renderOrder = 999;
+            line.visible = false;
+            window.sliderAxisLines[axis] = line;
+            window.sliderAxisHelper.add(line);
+        });
+        scene2.add(window.sliderAxisHelper);
 
         toggleLock3D_t();
         toggleLock3D_t1();
@@ -1486,6 +1563,8 @@
         document.getElementById('label_Rx').innerText = formatDeg(parseFloat(document.getElementById('slider_Rx').value));
         document.getElementById('label_Ry').innerText = formatDeg(parseFloat(document.getElementById('slider_Ry').value));
         document.getElementById('label_Rz').innerText = formatDeg(parseFloat(document.getElementById('slider_Rz').value));
+
+        if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
         
         updateSystem();
     }
@@ -1511,13 +1590,16 @@
         if (!slider) return;
         slider.value = Math.max(-2.0, Math.min(2.0, parseFloat(slider.value) + delta));
         onSliderInput();
+        showSliderAxis(axis);
     };
 
     window.nudgeRotation = function(axis, delta) {
-        const slider = document.getElementById('slider_R' + axis.toLowerCase());
+        const id = 'R' + axis.toLowerCase();
+        const slider = document.getElementById('slider_' + id);
         if (!slider) return;
         slider.value = Math.max(-180, Math.min(180, parseFloat(slider.value) + delta));
         onSliderInput();
+        showSliderAxis(id);
     };
 
     window.resetToT = function() {
