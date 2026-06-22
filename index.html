@@ -993,6 +993,20 @@
         const curSpace = document.getElementById('sel_transform_space').value;
         window.setTransformSpace(curSpace);
 
+        [transform1, transform2].forEach(t => {
+            t.addEventListener('dragging-changed', (e) => {
+                window.isSliderDragging = e.value; // 借用滑桿的狀態鎖，防止提前消失
+                if (e.value && t.axis) {
+                    // t.axis 會是 'X', 'Y', 'Z' 或是平面的 'XY' 等
+                    // 我們透過正則表達式抓出主要的 XYZ 軸並顯示對應輔助線
+                    const activeAxis = t.axis.match(/[XYZ]/i); 
+                    if (activeAxis) showSliderAxis(activeAxis[0]);
+                } else {
+                    hideSliderAxis();
+                }
+            });
+        });
+
         transform1.addEventListener('change', () => {
             if (transform1.dragging) {
                 lastLoadedFailure = null; 
@@ -1001,6 +1015,7 @@
                     baseQuat2.copy(object1.quaternion);
                 }
                 resetSliders();
+                if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
             }
             updateSystem();
         });
@@ -1013,8 +1028,8 @@
                 }
                 basePos2.copy(object2.position);
                 baseQuat2.copy(object2.quaternion);
-                
                 resetSliders();
+                if (window.updateSliderAxisHelper) window.updateSliderAxisHelper();
             }
             updateSystem();
         });
