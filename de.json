@@ -54,7 +54,7 @@
     "res_u": "$U$ (Horizontal)",
     "res_v": "$V$ (Vertikal)",
     "res_w": "$W$ (Tiefe)",
-    "param_res": "2D-Renderauflösung",
+    "param_res": "2D-Renderauflösung (px)",
     "res_total": "Gesamter Vektorfehler:",
     "res_geom": "Kamerageometrie",
     "res_coord": "Mittelpunktkoordinaten $(x_L, y_L)$:",
