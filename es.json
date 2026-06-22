@@ -54,7 +54,7 @@
     "res_u": "$U$ (Lateral)",
     "res_v": "$V$ (Vertical)",
     "res_w": "$W$ (Profundidad)",
-    "param_res": "Resolución de Renderizado 2D",
+    "param_res": "Resolución de Renderizado 2D (px)",
     "res_total": "Porcentaje de Error de Vector Total:",
     "res_geom": "Información Geométrica de Cámara",
     "res_coord": "Coordenadas de Proyección Central $(x_L, y_L)$:",
