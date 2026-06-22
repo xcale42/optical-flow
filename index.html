@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>3D Scene Flow 金字塔光流實驗室</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -37,8 +37,10 @@
             background-color: var(--bg-color);
             color: #334155;
             margin: 0;
-            padding: 20px;
+            padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
             line-height: 1.6;
+            -webkit-text-size-adjust: 100%;
+            overscroll-behavior-y: none;
         }
         * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; max-width: 100%; }
         
@@ -72,7 +74,19 @@
         .btn-nudge { background: var(--accent-color); padding: 12px; font-size: 10pt; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
         .btn-reset { background: #64748b; }
         .failure-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
-        input[type="range"] { width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); touch-action: none; }
+        input[type="range"] { 
+            width: 100%; min-width: 120px; margin: 0; cursor: pointer; accent-color: var(--accent-color); 
+            touch-action: none; 
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #cbd5e1; height: 6px; border-radius: 3px;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #cbd5e1; height: 6px; border-radius: 3px;
+        }
 
         .viewport-3d-container { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 25px; }
         .viewport-card { 
@@ -80,9 +94,15 @@
             transform: translateZ(0); -webkit-transform: translateZ(0); z-index: 1;
         }
         .viewport-card h4 { 
-            margin: 0; padding: 10px 15px; background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
-            position: absolute; top: 0; width: 100%; z-index: 10; backdrop-filter: blur(4px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
+            margin: 0; padding: 10px 15px; 
+            background: rgba(255,255,255,0.95); color: var(--primary-color); font-size: 11pt; font-weight: 600; 
+            position: absolute; top: 0; width: 100%; z-index: 10; 
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px); 
+            border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;
             border-radius: 11px 11px 0 0;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .canvas-3d { width: 100%; height: 350px; display: block; touch-action: none; margin-top: 40px; }
         .canvas-3d canvas { touch-action: none; outline: none; width: 100% !important; height: 100% !important; display: block; }
@@ -779,21 +799,26 @@
     function initSliderFocus() {
         document.querySelectorAll('.axis-control input[type="range"]').forEach(slider => {
             const wrap = slider.closest('.axis-control');
-            const activate = () => {
+            
+            const activate = (e) => {
+                // 防止 Firefox 在拖曳時引發預設的拖放行為
+                if(e.cancelable) e.preventDefault(); 
                 if(window.innerWidth <= 768) {
                     document.body.classList.add('slider-focus-mode');
                     wrap.classList.add('active-slider');
                 }
             };
+            
             const deactivate = () => {
                 document.body.classList.remove('slider-focus-mode');
                 wrap.classList.remove('active-slider');
             };
-            slider.addEventListener('touchstart', activate, {passive: true});
-            slider.addEventListener('touchend', deactivate);
-            slider.addEventListener('touchcancel', deactivate);
-            slider.addEventListener('mousedown', activate);
-            window.addEventListener('mouseup', deactivate);
+            
+            // 使用統一的 Pointer Events 取代分離的 mouse/touch 事件
+            slider.addEventListener('pointerdown', activate);
+            slider.addEventListener('pointerup', deactivate);
+            slider.addEventListener('pointercancel', deactivate);
+            window.addEventListener('pointerup', deactivate); // 確保滑鼠在滑桿外放開也能觸發
         });
     }
 
@@ -1663,21 +1688,29 @@
             setTimeout(updateObjectGeometry, 50); 
             setTimeout(updateSystem, 100); 
             
-            window.addEventListener('resize', () => {
-                const resizeCanvas = (id, cam, ren) => {
-                    const c = document.getElementById(id);
-                    if (c && cam && ren) { 
-                        const w = c.clientWidth;
-                        const h = c.clientHeight;
-                        if (w === 0 || h === 0) return; 
-                        cam.aspect = w / h; 
-                        cam.updateProjectionMatrix(); 
-                        ren.setSize(w, h); 
-                    }
-                };
+            const resizeCanvas = (id, cam, ren) => {
+                const c = document.getElementById(id);
+                if (c && cam && ren) { 
+                    // 使用 getBoundingClientRect 獲取帶有小數點的精確尺寸，避免在高 DPI 螢幕上產生模糊或抖動
+                    const rect = c.getBoundingClientRect();
+                    const w = rect.width;
+                    const h = rect.height;
+                    if (w === 0 || h === 0) return; 
+                    cam.aspect = w / h; 
+                    cam.updateProjectionMatrix(); 
+                    ren.setSize(w, h, false); // 傳入 false 防止 renderer 覆寫 inline style 導致的循環觸發
+                }
+            };
+
+            const resizeObserver = new ResizeObserver(() => {
                 resizeCanvas('3d_container_t', camera1, renderer1); 
                 resizeCanvas('3d_container_t1', camera2, renderer2);
             });
+
+            const containerT = document.getElementById('3d_container_t');
+            const containerT1 = document.getElementById('3d_container_t1');
+            if (containerT) resizeObserver.observe(containerT);
+            if (containerT1) resizeObserver.observe(containerT1);
 
             setTimeout(() => { 
                 window.dispatchEvent(new Event('resize')); 
