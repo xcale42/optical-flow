@@ -54,7 +54,7 @@
     "res_u": "$U$ (Lateral)",
     "res_v": "$V$ (Vertical)",
     "res_w": "$W$ (Depth)",
-    "param_res": "2D Render Resolution",
+    "param_res": "2D Render Resolution (px)",
     "res_total": "Total Vector Error %:",
     "res_geom": "Projection Geometry Info",
     "res_coord": "Center Proj. Coord $(x_L, y_L)$:",
