@@ -136,11 +136,6 @@
             background: var(--panel-bg); color: var(--primary-color); display: flex; align-items: center; justify-content: center;
             font-size: 26px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; border: 1px solid var(--border-color); transition: transform 0.2s, box-shadow 0.2s;
         }
-        .lang-fab-wrapper:has(.lang-select-native:active) .fab-lang {
-            transform: scale(0.95) translateY(2px) !important; 
-            box-shadow: 0 0 0 transparent !important; 
-            filter: brightness(0.95) !important;
-        }
         .fab-lang:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
         .fab-settings:active, .fab-lang:active { 
             transform: scale(0.95) translateY(2px) !important; 
@@ -187,7 +182,7 @@
         .lang-option:hover { background: var(--bg-color); color: var(--accent-color); }
         .lang-option.active { background: var(--accent-color); color: #fff; }
 
-        .lang-select-native {-webkit-tap-highlight-color: transparent; }
+        .lang-select-native { display: none; }
 
         .drawer-overlay {
             visibility: hidden; opacity: 0; pointer-events: none;
@@ -292,7 +287,7 @@
 
 <div class="lang-fab-wrapper">
     <button class="fab-lang" id="fab_lang" onclick="toggleDesktopLangMenu()" title="切換語言 / Switch Language">🌍</button>
-    <select id="mobile_lang_select" class="lang-select-native" onchange="setLanguage(this.value)" ontouchstart="">
+    <select id="mobile_lang_select" class="lang-select-native" onchange="setLanguage(this.value)"></select>
     <div id="desktop_lang_menu" class="lang-popup-menu"></div>
 </div>
 
