@@ -639,10 +639,13 @@
 
     async function setLanguage(lang) {
         try {
+            // (若未來不需要可將這行刪除)
+            I18N[lang] = null; 
+
             if (!I18N[lang]) {
-                const response = await fetch(`./${lang}.json`);
+                /* 時間戳記，強制瀏覽器不要使用舊快取，每次都抓最新檔案 */
+                const response = await fetch(`./${lang}.json?v=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`無法讀取語言檔: ${lang}.json`);
-                I18N[lang] = await response.json();
             }
 
             currentLang = lang;
