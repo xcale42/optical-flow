@@ -11,6 +11,7 @@
     "calc_win": "Window Size (px)",
     "pyr_lvl": "Pyramid Levels",
     "err_thresh": "Error Threshold (%)",
+    "opt_board": "checkerboard",
     "opt_noise": "White Noise",
     "opt_gabor": "Gabor Patches",
     "opt_vert": "Vertical Grating",
