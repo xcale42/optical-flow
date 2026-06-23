@@ -11,6 +11,7 @@
     "calc_win": "계산 창 (px)",
     "pyr_lvl": "피라미드 레벨",
     "err_thresh": "허용 오차 임계값(%)",
+    "opt_board": "서양 장기판",
     "opt_noise": "백색 잡음",
     "opt_gabor": "가버(Gabor) 패치",
     "opt_vert": "수직 줄무늬",
