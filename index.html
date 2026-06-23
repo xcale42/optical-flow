@@ -320,8 +320,8 @@
 
     <div id="settings_drawer" class="panel" style="margin-bottom: 25px;">
         <div class="tab-header dimmable">
-            <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')" data-i18n="tab_params">⚙️ 參數設定</button>
-            <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')" data-i18n="tab_finetune">🎛️ 微調控制</button>
+            <button id="btn_tab_params" class="tab-btn active" onclick="switchTab('params')" data-i18n="tab_params">參數設定</button>
+            <button id="btn_tab_finetune" class="tab-btn" onclick="switchTab('finetune')" data-i18n="tab_finetune">微調控制</button>
         </div>
 
         <div id="tab_params" class="tab-content dimmable">
@@ -401,8 +401,8 @@
                 <button id="btn_mode_translate" class="btn btn-nudge" style="flex:1; background: var(--primary-color);" onclick="setTransformMode('translate')" data-i18n="btn_trans">位移</button>
                 <button id="btn_mode_rotate" class="btn btn-nudge" style="flex:1; background: #94a3b8; color: #fff;" onclick="setTransformMode('rotate')" data-i18n="btn_rot">旋轉</button>
                 <select id="sel_transform_space" class="btn btn-nudge" style="flex:1.5; background: #e2e8f0; color: var(--primary-color); border: none; font-weight: bold; cursor: pointer; text-align: center; padding: 0 10px;" onchange="setTransformSpace(this.value)">
-                    <option value="local" data-i18n="opt_space_local">📌 區域座標</option>
-                    <option value="world" data-i18n="opt_space_world">🌍 世界座標</option>
+                    <option value="local" data-i18n="opt_space_local">區域座標</option>
+                    <option value="world" data-i18n="opt_space_world">世界座標</option>
                 </select>
             </div>
 
@@ -469,7 +469,7 @@
                 <span data-i18n="view_t">時間 $t$ 真實 3D 空間</span>
                 <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
                     <input type="checkbox" id="lock_3d_t" onchange="toggleLock3D_t()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    <span data-i18n="lock_cam">🔒 防誤觸</span>
+                    <span data-i18n="lock_cam">防誤觸</span>
                 </label>
             </h4>
             <div id="3d_container_t" class="canvas-3d"></div>
@@ -479,7 +479,7 @@
                 <span data-i18n="view_t1">時間 $t+\Delta t$ 真實 3D 空間</span>
                 <label style="font-size: 9pt; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; margin: 0; color: #64748b;">
                     <input type="checkbox" id="lock_3d_t1" onchange="toggleLock3D_t1()" style="width: 16px; height: 16px; accent-color: var(--danger-color); margin: 0;">
-                    <span data-i18n="lock_cam">🔒 防誤觸</span>
+                    <span data-i18n="lock_cam">防誤觸</span>
                 </label>
             </h4>
             <div id="3d_container_t1" class="canvas-3d"></div>
@@ -508,9 +508,9 @@
     <div class="panel" id="special_cases_panel">
         <h3 style="margin-bottom: 15px;" data-i18n="fail_title">特殊情境實驗</h3>
         <div class="failure-buttons">
-            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">⚠️ 觸發：孔徑問題</button>
-            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">⚠️ 觸發：大位移失效</button>
-            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">⚠️ 觸發：移出視野</button>
+            <button class="btn btn-nudge" style="background: #f59e0b; flex: 1; color: white;" onclick="loadFailureCase('aperture')" data-i18n="fail_aper">觸發：孔徑問題</button>
+            <button class="btn btn-nudge" style="background: #ef4444; flex: 1; color: white;" onclick="loadFailureCase('large_disp')" data-i18n="fail_disp">觸發：大位移失效</button>
+            <button class="btn btn-nudge" style="background: #8b5cf6; flex: 1; color: white;" onclick="loadFailureCase('out_of_bounds')" data-i18n="fail_out">觸發：移出視野</button>
         </div>
     </div>
 
