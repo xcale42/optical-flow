@@ -11,6 +11,7 @@
     "calc_win": "Fenêtre de calcul (px)",
     "pyr_lvl": "Niveaux de pyramide",
     "err_thresh": "Tolérance d'erreur (%)",
+    "opt_board": "damier",
     "opt_noise": "Bruit blanc",
     "opt_gabor": "Filtre de Gabor",
     "opt_vert": "Rayures verticales",
