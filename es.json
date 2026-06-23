@@ -11,6 +11,7 @@
     "calc_win": "Ventana de Cálculo (px)",
     "pyr_lvl": "Niveles de Pirámide",
     "err_thresh": "Umbral de Error (%)",
+    "opt_board": "tablero de damas",
     "opt_noise": "Ruido Blanco",
     "opt_gabor": "Parches de Gabor",
     "opt_vert": "Franjas Verticales",
