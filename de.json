@@ -11,6 +11,7 @@
     "calc_win": "Berechnungsfenster (px)",
     "pyr_lvl": "Pyramidenstufen",
     "err_thresh": "Fehlertoleranz (%)",
+    "opt_board": "Schachbrett",
     "opt_noise": "Weißes Rauschen",
     "opt_gabor": "Gabor-Patch",
     "opt_vert": "Vertikale Streifen",
