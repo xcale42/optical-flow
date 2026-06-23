@@ -11,6 +11,7 @@
     "calc_win": "計算ウィンドウ (px)",
     "pyr_lvl": "ピラミッド階層数",
     "err_thresh": "許容誤差しきい値(%)",
+    "opt_board": "市松模様",
     "opt_noise": "ランダムホワイトノイズ",
     "opt_gabor": "ガボールパッチ",
     "opt_vert": "垂直ストライプ",
