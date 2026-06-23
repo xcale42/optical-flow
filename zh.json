@@ -11,6 +11,7 @@
     "calc_win": "計算窗口 (px)",
     "pyr_lvl": "金字塔層數",
     "err_thresh": "容許誤差閥值(%)",
+    "opt_board": "棋盤",
     "opt_noise": "隨機白雜訊",
     "opt_gabor": "Gabor斑塊",
     "opt_vert": "垂直條紋",
